@@ -14,19 +14,6 @@
 [ext_resource type="Texture2D" uid="uid://cl4b6h753htlj" path="res://Assets/OS/Player/Attack01/Player_Attack01_10.png" id="12_q7bba"]
 [ext_resource type="Texture2D" uid="uid://caqlwlml24yy7" path="res://Assets/OS/Player/Attack01/Player_Attack01_11.png" id="13_44o7f"]
 [ext_resource type="Texture2D" uid="uid://ck513lvn6ijib" path="res://Assets/OS/Player/Attack01/Player_Attack01_12.png" id="14_pru1i"]
-[ext_resource type="Texture2D" uid="uid://b44bo35xav3ye" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_01.png" id="15_5lh02"]
-[ext_resource type="Texture2D" uid="uid://b0na6wsw3umci" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_02.png" id="16_kuhkb"]
-[ext_resource type="Texture2D" uid="uid://nasrglo8jq7v" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_03.png" id="17_nvqpi"]
-[ext_resource type="Texture2D" uid="uid://cchii0ifj5heg" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_04.png" id="18_igmr8"]
-[ext_resource type="Texture2D" uid="uid://cjxt7f12l87yk" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_05.png" id="19_yxy1g"]
-[ext_resource type="Texture2D" uid="uid://dsckc3a78xymw" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_06.png" id="20_m3is1"]
-[ext_resource type="Texture2D" uid="uid://bur01x0oc2g1n" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_07.png" id="21_d1clw"]
-[ext_resource type="Texture2D" uid="uid://cup2plr0skxjl" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_08.png" id="22_76ui1"]
-[ext_resource type="Texture2D" uid="uid://dxxukkfqldj8s" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_09.png" id="23_1e7wv"]
-[ext_resource type="Texture2D" uid="uid://22dkmmamxnfp" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_10.png" id="24_iyor8"]
-[ext_resource type="Texture2D" uid="uid://ogy2ckhut6jw" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_11.png" id="25_1wrxw"]
-[ext_resource type="Texture2D" uid="uid://dyxnvvvbfvyuh" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_12.png" id="26_l60qa"]
-[ext_resource type="Texture2D" uid="uid://bfgmocumhxds8" path="res://Assets/CharacterPack/Player/Attack02/player_attack02_13.png" id="27_gh5h7"]
 [ext_resource type="Texture2D" uid="uid://fn7ox7q0bktq" path="res://Assets/OS/Player/Idle/Player_Idle_02.png" id="34_grarc"]
 [ext_resource type="Texture2D" uid="uid://be1ixvve26neb" path="res://Assets/OS/Player/Idle/Player_Idle_03.png" id="35_adowb"]
 [ext_resource type="Texture2D" uid="uid://bjxuw82g5ygwm" path="res://Assets/OS/Player/Idle/Player_Idle_04.png" id="36_vkkev"]
@@ -155,6 +142,45 @@ tracks/2/keys = {
 }]
 }
 
+[sub_resource type="Resource" id="Resource_uytvf"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_01.png"
+
+[sub_resource type="Resource" id="Resource_s7lb4"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_02.png"
+
+[sub_resource type="Resource" id="Resource_ed4yo"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_03.png"
+
+[sub_resource type="Resource" id="Resource_fsa4a"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_04.png"
+
+[sub_resource type="Resource" id="Resource_6f3s4"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_05.png"
+
+[sub_resource type="Resource" id="Resource_l3y8b"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_06.png"
+
+[sub_resource type="Resource" id="Resource_ujsok"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_07.png"
+
+[sub_resource type="Resource" id="Resource_txwsf"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_08.png"
+
+[sub_resource type="Resource" id="Resource_i10l2"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_09.png"
+
+[sub_resource type="Resource" id="Resource_fgqou"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_10.png"
+
+[sub_resource type="Resource" id="Resource_01r87"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_11.png"
+
+[sub_resource type="Resource" id="Resource_jhxql"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_12.png"
+
+[sub_resource type="Resource" id="Resource_ilb4b"]
+metadata/__load_path__ = "res://Assets/CharacterPack/Player/Attack02/player_attack02_13.png"
+
 [sub_resource type="Animation" id="Animation_ibc4f"]
 resource_name = "attack2"
 length = 0.25
@@ -169,7 +195,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0.0188679, 0.0377358, 0.0566038, 0.0754717, 0.0943396, 0.113208, 0.132075, 0.150943, 0.169811, 0.188679, 0.207547, 0.226415, 0.245283),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 1,
-"values": [ExtResource("15_5lh02"), ExtResource("16_kuhkb"), ExtResource("17_nvqpi"), ExtResource("18_igmr8"), ExtResource("19_yxy1g"), ExtResource("20_m3is1"), ExtResource("21_d1clw"), ExtResource("22_76ui1"), ExtResource("23_1e7wv"), ExtResource("24_iyor8"), ExtResource("25_1wrxw"), ExtResource("26_l60qa"), ExtResource("27_gh5h7")]
+"values": [SubResource("Resource_uytvf"), SubResource("Resource_s7lb4"), SubResource("Resource_ed4yo"), SubResource("Resource_fsa4a"), SubResource("Resource_6f3s4"), SubResource("Resource_l3y8b"), SubResource("Resource_ujsok"), SubResource("Resource_txwsf"), SubResource("Resource_i10l2"), SubResource("Resource_fgqou"), SubResource("Resource_01r87"), SubResource("Resource_jhxql"), SubResource("Resource_ilb4b")]
 }
 tracks/1/type = "value"
 tracks/1/imported = false

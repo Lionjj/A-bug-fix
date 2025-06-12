@@ -26,24 +26,6 @@
 [ext_resource type="Texture2D" uid="uid://bhkwe8y6tt12v" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_09.png" id="24_248yk"]
 [ext_resource type="Texture2D" uid="uid://c06pjowk3xu32" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_10.png" id="25_iu5ag"]
 
-[sub_resource type="Animation" id="Animation_y4a2k"]
-resource_name = "idle"
-length = 0.45
-loop_mode = 1
-step = 0.0563
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Heart1:texture")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0.0555556, 0.111111, 0.166667, 0.222222, 0.277778, 0.333333, 0.388889, 0.444444),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
-"update": 1,
-"values": [ExtResource("1_30rnx"), ExtResource("2_jxc4a"), ExtResource("3_qktbx"), ExtResource("4_jk5po"), ExtResource("5_iaqyx"), ExtResource("6_r8ii8"), ExtResource("7_wxia4"), ExtResource("8_lnvec")]
-}
-
 [sub_resource type="Animation" id="Animation_l7al2"]
 length = 0.001
 tracks/0/type = "value"
@@ -73,6 +55,24 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
 "update": 1,
 "values": [ExtResource("9_1dfq6"), ExtResource("10_8n8aa"), ExtResource("11_8tccj"), ExtResource("12_yog8i"), ExtResource("13_y0fbh"), ExtResource("1_30rnx"), ExtResource("14_53wra"), ExtResource("15_g5107")]
+}
+
+[sub_resource type="Animation" id="Animation_y4a2k"]
+resource_name = "idle"
+length = 0.45
+loop_mode = 1
+step = 0.0563
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Heart1:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0555556, 0.111111, 0.166667, 0.222222, 0.277778, 0.333333, 0.388889, 0.444444),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_30rnx"), ExtResource("2_jxc4a"), ExtResource("3_qktbx"), ExtResource("4_jk5po"), ExtResource("5_iaqyx"), ExtResource("6_r8ii8"), ExtResource("7_wxia4"), ExtResource("8_lnvec")]
 }
 
 [sub_resource type="Animation" id="Animation_bckbl"]
@@ -105,6 +105,7 @@ layout_mode = 3
 anchors_preset = 0
 
 [node name="Heart1" type="TextureRect" parent="."]
+layout_mode = 0
 offset_right = 32.0
 offset_bottom = 31.0
 texture = ExtResource("1_30rnx")
