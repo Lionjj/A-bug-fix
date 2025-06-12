@@ -1,0 +1,115 @@
+[gd_scene load_steps=31 format=3 uid="uid://dypcqw8xjmgou"]
+
+[ext_resource type="Texture2D" uid="uid://c81774fjmxf2m" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_01.png" id="1_30rnx"]
+[ext_resource type="Texture2D" uid="uid://2m6qwthmfrd" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_02.png" id="2_jxc4a"]
+[ext_resource type="Texture2D" uid="uid://cty7qawwi2u6n" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_03.png" id="3_qktbx"]
+[ext_resource type="Texture2D" uid="uid://cg2ew3msunxmx" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_04.png" id="4_jk5po"]
+[ext_resource type="Texture2D" uid="uid://4l3gqhg63xeh" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_05.png" id="5_iaqyx"]
+[ext_resource type="Texture2D" uid="uid://dxbg7ujdh6ulo" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_06.png" id="6_r8ii8"]
+[ext_resource type="Texture2D" uid="uid://b3vcb5ohupulv" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_07.png" id="7_wxia4"]
+[ext_resource type="Texture2D" uid="uid://0youm30scq5r" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_08.png" id="8_lnvec"]
+[ext_resource type="Texture2D" uid="uid://bo76cc2ogntw" path="res://Assets/OS/ShieldsUI/Create/Shield_Create_01.png" id="9_1dfq6"]
+[ext_resource type="Texture2D" uid="uid://chbcfiknvrhxd" path="res://Assets/OS/ShieldsUI/Create/Shield_Create_02.png" id="10_8n8aa"]
+[ext_resource type="Texture2D" uid="uid://doimvprr733we" path="res://Assets/OS/ShieldsUI/Create/Shield_Create_03.png" id="11_8tccj"]
+[ext_resource type="Texture2D" uid="uid://cyssj7wtnbor6" path="res://Assets/OS/ShieldsUI/Create/Shield_Create_04.png" id="12_yog8i"]
+[ext_resource type="Texture2D" uid="uid://bjfnnqd4ofjev" path="res://Assets/OS/ShieldsUI/Create/Shield_Create_05.png" id="13_y0fbh"]
+[ext_resource type="Texture2D" uid="uid://x8cvqaltc8dj" path="res://Assets/OS/ShieldsUI/Create/Shield_Create_06.png" id="14_53wra"]
+[ext_resource type="Texture2D" uid="uid://ionf15mbfwvw" path="res://Assets/OS/ShieldsUI/Create/Shield_Create_07.png" id="15_g5107"]
+[ext_resource type="Texture2D" uid="uid://cpdg5t3cn6moo" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_01.png" id="16_lje7d"]
+[ext_resource type="Texture2D" uid="uid://bblujkcnlddhg" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_02.png" id="17_728mr"]
+[ext_resource type="Texture2D" uid="uid://dpl453mtwmlk" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_03.png" id="18_54xka"]
+[ext_resource type="Texture2D" uid="uid://ickwtwcyup2" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_04.png" id="19_kawr6"]
+[ext_resource type="Texture2D" uid="uid://dgcw5oyctmu07" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_05.png" id="20_bkg14"]
+[ext_resource type="Texture2D" uid="uid://v8df4m13nuug" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_06.png" id="21_0jcpy"]
+[ext_resource type="Texture2D" uid="uid://dnov72q0bk6og" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_07.png" id="22_cyg4o"]
+[ext_resource type="Texture2D" uid="uid://cakqodxh3hec7" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_08.png" id="23_nx584"]
+[ext_resource type="Texture2D" uid="uid://bhkwe8y6tt12v" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_09.png" id="24_248yk"]
+[ext_resource type="Texture2D" uid="uid://c06pjowk3xu32" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_10.png" id="25_iu5ag"]
+
+[sub_resource type="Animation" id="Animation_y4a2k"]
+resource_name = "idle"
+length = 0.45
+loop_mode = 1
+step = 0.0563
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Heart1:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0555556, 0.111111, 0.166667, 0.222222, 0.277778, 0.333333, 0.388889, 0.444444),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_30rnx"), ExtResource("2_jxc4a"), ExtResource("3_qktbx"), ExtResource("4_jk5po"), ExtResource("5_iaqyx"), ExtResource("6_r8ii8"), ExtResource("7_wxia4"), ExtResource("8_lnvec")]
+}
+
+[sub_resource type="Animation" id="Animation_l7al2"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Heart1:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_30rnx")]
+}
+
+[sub_resource type="Animation" id="Animation_fp033"]
+resource_name = "gain"
+step = 0.043
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Heart1:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0434783, 0.0869565, 0.130435, 0.173913, 0.217391, 0.26087, 0.608696),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("9_1dfq6"), ExtResource("10_8n8aa"), ExtResource("11_8tccj"), ExtResource("12_yog8i"), ExtResource("13_y0fbh"), ExtResource("1_30rnx"), ExtResource("14_53wra"), ExtResource("15_g5107")]
+}
+
+[sub_resource type="Animation" id="Animation_bckbl"]
+resource_name = "lost"
+length = 0.3
+step = 0.03
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Heart1:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.030303, 0.0606061, 0.0909091, 0.121212, 0.151515, 0.181818, 0.212121, 0.242424, 0.272727),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("16_lje7d"), ExtResource("17_728mr"), ExtResource("18_54xka"), ExtResource("19_kawr6"), ExtResource("20_bkg14"), ExtResource("21_0jcpy"), ExtResource("22_cyg4o"), ExtResource("23_nx584"), ExtResource("24_248yk"), ExtResource("25_iu5ag")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_imcre"]
+_data = {
+&"RESET": SubResource("Animation_l7al2"),
+&"gain": SubResource("Animation_fp033"),
+&"idle": SubResource("Animation_y4a2k"),
+&"lost": SubResource("Animation_bckbl")
+}
+
+[node name="Heart" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Heart1" type="TextureRect" parent="."]
+offset_right = 32.0
+offset_bottom = 31.0
+texture = ExtResource("1_30rnx")
+
+[node name="HeartAnimation" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_imcre")
+}

@@ -1,3 +1,82 @@
-[gd_scene format=3 uid="uid://5mm4ltm5jn3f"]
+[gd_scene load_steps=22 format=3 uid="uid://5mm4ltm5jn3f"]
+
+[ext_resource type="Script" uid="uid://dudg7nd2tdt0j" path="res://Scripts/Interactable/checkpoint.gd" id="1_2ecfr"]
+[ext_resource type="Texture2D" uid="uid://d4c1m1x05jqtp" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_01.png" id="1_lc2ix"]
+[ext_resource type="Texture2D" uid="uid://bewplv38d8qy3" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_02.png" id="2_2ecfr"]
+[ext_resource type="Texture2D" uid="uid://d11n8kcvh8ul3" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_03.png" id="3_g4src"]
+[ext_resource type="Texture2D" uid="uid://ba4ff2kymm0at" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_04.png" id="4_jg43b"]
+[ext_resource type="Texture2D" uid="uid://s33k3lc3wf5e" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_05.png" id="5_wpjgl"]
+[ext_resource type="Texture2D" uid="uid://d236ta7r20h08" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_06.png" id="6_4ahrn"]
+[ext_resource type="Texture2D" uid="uid://blslm1388bnp6" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_07.png" id="7_na1eu"]
+[ext_resource type="Texture2D" uid="uid://cya4go4l30om8" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_08.png" id="8_mxud1"]
+[ext_resource type="Texture2D" uid="uid://dc3op6uxintc6" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_09.png" id="9_d35f8"]
+[ext_resource type="Texture2D" uid="uid://c5pcps20dnnql" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_10.png" id="10_818u1"]
+[ext_resource type="Texture2D" uid="uid://k2byhxjmqs0p" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_11.png" id="11_0eg0c"]
+[ext_resource type="Texture2D" uid="uid://df7e6xk1h0dgq" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_12.png" id="12_ys5nf"]
+[ext_resource type="Texture2D" uid="uid://iaru7lsrubja" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_13.png" id="13_njfm2"]
+[ext_resource type="Texture2D" uid="uid://qdwwfu2t6iic" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_14.png" id="14_0gm6u"]
+[ext_resource type="Texture2D" uid="uid://bpifmv70babba" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_15.png" id="15_5pd2h"]
+[ext_resource type="Texture2D" uid="uid://he38kfpusffc" path="res://Assets/CharacterPack/GPE/nextlevel/nextlevel1/nextlevel_1_16.png" id="16_px81i"]
+
+[sub_resource type="Animation" id="Animation_suo28"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_lc2ix")]
+}
+
+[sub_resource type="Animation" id="Animation_7utco"]
+resource_name = "activated"
+loop_mode = 1
+step = 0.0625
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0625, 0.0626, 0.125, 0.1875, 0.25, 0.3125, 0.375, 0.4375, 0.5, 0.5625, 0.625, 0.6875, 0.75, 0.8125, 0.875, 0.9375),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_lc2ix"), null, ExtResource("2_2ecfr"), ExtResource("3_g4src"), ExtResource("4_jg43b"), ExtResource("5_wpjgl"), ExtResource("6_4ahrn"), ExtResource("7_na1eu"), ExtResource("8_mxud1"), ExtResource("9_d35f8"), ExtResource("10_818u1"), ExtResource("11_0eg0c"), ExtResource("12_ys5nf"), ExtResource("13_njfm2"), ExtResource("14_0gm6u"), ExtResource("15_5pd2h"), ExtResource("16_px81i")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_vf3gd"]
+_data = {
+&"RESET": SubResource("Animation_suo28"),
+&"activated": SubResource("Animation_7utco")
+}
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g4src"]
+size = Vector2(34, 38)
 
 [node name="Checkpoint" type="Node2D"]
+script = ExtResource("1_2ecfr")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_vf3gd")
+}
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(1.42109e-14, -19)
+scale = Vector2(1.32407, 1.33621)
+texture = ExtResource("1_lc2ix")
+
+[node name="Area2D" type="Area2D" parent="."]
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(-1, -19)
+shape = SubResource("RectangleShape2D_g4src")
+
+[connection signal="area_entered" from="Area2D" to="." method="_on_area_2d_area_entered"]

@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://4bihs36486qi"]
+
+[ext_resource type="Script" uid="uid://c4j0gw8v470sj" path="res://Scripts/Core/hud_player.gd" id="1_8oa5u"]
+
+[node name="HudPlayer" type="CanvasLayer"]
+script = ExtResource("1_8oa5u")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/separation = 25

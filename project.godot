@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="A bug fix"
-run/main_scene="uid://djrbkfbyj3kcq"
+run/main_scene="uid://baa3yfh28dcjb"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+GameManager="*res://Scripts/Core/GameManager.gd"
 
 [display]
 
