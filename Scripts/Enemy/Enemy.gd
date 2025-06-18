@@ -6,6 +6,7 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 @export var gravity_scale: float = 1.0
 @export var fall_multiplier: float = 2.5
 @export var low_jump_multiplier: float = 3.5
+@onready var healt_container = $HealtContainer.get_children()
 
 # Vita del nemico
 @export var max_hp = 3
@@ -13,6 +14,7 @@ var current_hp = 3
 
 var hit = false
 var dead = false
+var texture_0: CompressedTexture2D
 
 # Direzione del nnemico
 var direction
@@ -20,6 +22,7 @@ var direction
 signal damaged_player(player: Player)
 
 func _ready() -> void:
+	texture_0 = preload("res://Assets/OS/Enemies/0.png")
 	current_hp = max_hp
 	direction = 1.0
 
@@ -49,32 +52,12 @@ func applay_gravity(delta):
 	else:
 		velocity.y = 0
 
-#func die():
-	#speed = 0
-	#dead = true
-	#anim.play("die")
-	#await anim.animation_finished
-	#queue_free()
-
-#func take_damage(damage: int):
-	#print("Nemico colpito! HP attuali prima del danno:", current_hp, " | Danno ricevuto:", damage)
-#
-	#current_hp -= damage
-	#
-	#print(current_hp)
-	#
-	#if current_hp <= 0:
-		#die()
-	#else:
-		#take_hit = true
-		#anim.play("take_hit")
-		#await anim.animation_finished
-		#take_hit = false
-
 func take_damage(damage: int):
 	if dead:
 		return
-
+	
+	healt_container[current_hp - 1].texture = texture_0
+	
 	current_hp -= damage
 	hit = true
 	

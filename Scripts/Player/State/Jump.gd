@@ -27,7 +27,7 @@ func Physics_Update(delta):
 	player.velocity.x = direction * player.speed
 	
 	# Gestione opzionale: riduci salita se rilasciano il salto
-	if player.velocity.y < 0 and not Input.is_action_pressed("ui_accept"):
+	if player.velocity.y < 0 and not Input.is_action_pressed("jump"):
 		player.velocity.y += player.gravity * (player.low_jump_multiplier - 1.0) * delta
 	else:
 		player.velocity.y += player.gravity * delta

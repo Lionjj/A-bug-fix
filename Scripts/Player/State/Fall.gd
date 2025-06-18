@@ -25,7 +25,7 @@ func Physics_Update(delta):
 	if not player.is_on_floor():
 		if player.velocity.y > 0:
 			player.velocity.y += player.gravity * (player.fall_multiplier - 1.0) * delta
-		elif player.velocity.y < 0 and not Input.is_action_pressed("ui_accept"):
+		elif player.velocity.y < 0 and not Input.is_action_pressed("jump"):
 			player.velocity.y += player.gravity * (player.low_jump_multiplier - 1.0) * delta
 		else:
 			player.velocity.y += player.gravity * delta

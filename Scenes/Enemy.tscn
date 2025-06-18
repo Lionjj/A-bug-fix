@@ -310,7 +310,8 @@ height = 40.0
 size = Vector2(33, 9)
 
 [node name="Minion1" type="CharacterBody2D" groups=["Enemies"]]
-collision_layer = 2
+collision_layer = 3
+collision_mask = 5
 script = ExtResource("1_bhm5b")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -319,7 +320,7 @@ shape = SubResource("RectangleShape2D_kpr8r")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(5, -23)
-texture = ExtResource("2_umsle")
+texture = ExtResource("4_6s1gy")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
@@ -389,5 +390,28 @@ script = ExtResource("74_54k7x")
 enemy = NodePath("../..")
 anim = NodePath("../../AnimationPlayer")
 metadata/_custom_type_script = "uid://chd6cpemsaxpi"
+
+[node name="HealtContainer" type="HBoxContainer" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -28.0
+offset_top = -52.0
+offset_right = 30.0
+offset_bottom = -20.0
+grow_horizontal = 2
+theme_override_constants/separation = -20
+
+[node name="Icon1" type="TextureRect" parent="HealtContainer"]
+layout_mode = 2
+texture = ExtResource("3_j1qmk")
+
+[node name="Icon2" type="TextureRect" parent="HealtContainer"]
+layout_mode = 2
+texture = ExtResource("3_j1qmk")
+
+[node name="Icon3" type="TextureRect" parent="HealtContainer"]
+layout_mode = 2
+texture = ExtResource("3_j1qmk")
 
 [connection signal="area_entered" from="Hitbox" to="." method="_on_hitbox_area_entered"]

@@ -13,11 +13,11 @@ func Update(delta: float):
 	if not (Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right")):
 		Transitioned.emit(self, "Idle")  # Torna a Idle se non si muove
 
-	if Input.is_action_just_pressed("ui_accept"):
+	if Input.is_action_just_pressed("jump"):
 		player.jump_buffer_timer = player.jump_buffer_time
 
 	# Jump buffer
-	if Input.is_action_just_pressed("ui_accept"):
+	if Input.is_action_just_pressed("jump"):
 		player.jump_buffer_timer = player.jump_buffer_time
 
 	# Coyote time

@@ -19,7 +19,7 @@ func Update(delta: float):
 	if Input.is_action_just_pressed("attack"):
 		pass
 	
-	if Input.is_action_just_pressed("ui_accept"):
+	if Input.is_action_just_pressed("jump"):
 		player.jump_buffer_timer = player.jump_buffer_time
 		Transitioned.emit(self, "Jump")
 	

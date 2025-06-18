@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3 uid="uid://dtb7jeqgi6cv"]
+
+[ext_resource type="Script" uid="uid://dasscxv4m438s" path="res://Scripts/Object/FloatingTree.gd" id="1_g08ef"]
+[ext_resource type="Texture2D" uid="uid://dn2u6kyx865mt" path="res://Assets/OS/Environments/Trees/Tree02.png" id="2_g08ef"]
+[ext_resource type="Shader" uid="uid://dk4ba5lv04wp6" path="res://Shaders/Glich.gdshader" id="2_uuy27"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3fvjh"]
+shader = ExtResource("2_uuy27")
+shader_parameter/glitch_strength = 0.03
+shader_parameter/glitch_speed = 10.0
+shader_parameter/slice_height = 0.05
+
+[node name="FloatingTree" type="Node2D"]
+script = ExtResource("1_g08ef")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+z_index = -1
+material = SubResource("ShaderMaterial_3fvjh")
+position = Vector2(-1, -47)
+scale = Vector2(1.5, 1.395)
+texture = ExtResource("2_g08ef")
