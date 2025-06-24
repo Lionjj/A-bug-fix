@@ -14,3 +14,4 @@ func activate():
 func _on_area_2d_area_entered(area: Area2D) -> void:
 	if area.get_parent() is Player && !activated:
 		activate()
+		area.get_parent().glitch_flash()

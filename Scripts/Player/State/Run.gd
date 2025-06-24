@@ -16,10 +16,6 @@ func Update(delta: float):
 	if Input.is_action_just_pressed("jump"):
 		player.jump_buffer_timer = player.jump_buffer_time
 
-	# Jump buffer
-	if Input.is_action_just_pressed("jump"):
-		player.jump_buffer_timer = player.jump_buffer_time
-
 	# Coyote time
 	if player.is_on_floor():
 		player.coyote_timer = player.coyote_time
@@ -41,8 +37,11 @@ func Update(delta: float):
 	if player.hit:
 		Transitioned.emit(self, "Hit")
 
+	if Input.is_action_just_pressed("dodge") and player.can_dodge:
+		Transitioned.emit(self, "Roll")
+		
 func Physics_Update(delta: float):
 	var direction = Input.get_axis("ui_left", "ui_right")
 	player.velocity.x = direction * player.speed
 	
-	animation.switch_direction(player.velocity)
+	player.switch_direction(player.velocity)

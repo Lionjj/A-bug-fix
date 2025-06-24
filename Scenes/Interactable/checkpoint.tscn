@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://5mm4ltm5jn3f"]
+[gd_scene load_steps=25 format=3 uid="uid://5mm4ltm5jn3f"]
 
 [ext_resource type="Script" uid="uid://dudg7nd2tdt0j" path="res://Scripts/Interactable/checkpoint.gd" id="1_2ecfr"]
 [ext_resource type="Texture2D" uid="uid://d4c1m1x05jqtp" path="res://Assets/OS/checkpoint/nextlevel_1_01.png" id="1_lc2ix"]
@@ -17,6 +17,8 @@
 [ext_resource type="Texture2D" uid="uid://qdwwfu2t6iic" path="res://Assets/OS/checkpoint/nextlevel_1_14.png" id="14_0gm6u"]
 [ext_resource type="Texture2D" uid="uid://bpifmv70babba" path="res://Assets/OS/checkpoint/nextlevel_1_15.png" id="15_5pd2h"]
 [ext_resource type="Texture2D" uid="uid://he38kfpusffc" path="res://Assets/OS/checkpoint/nextlevel_1_16.png" id="16_px81i"]
+[ext_resource type="AudioStream" uid="uid://bc0spemhiwxpj" path="res://Assets/Sound/error-message-182475.mp3" id="18_g4src"]
+[ext_resource type="Shader" uid="uid://d1fuhpbbg5t8x" path="res://Shaders/glow.gdshader" id="19_jg43b"]
 
 [sub_resource type="Animation" id="Animation_suo28"]
 length = 0.001
@@ -32,11 +34,23 @@ tracks/0/keys = {
 "update": 1,
 "values": [ExtResource("1_lc2ix")]
 }
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AudioStreamPlayer2D:stream_paused")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
 
 [sub_resource type="Animation" id="Animation_7utco"]
 resource_name = "activated"
 loop_mode = 1
-step = 0.0625
+step = 0.5
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -49,12 +63,44 @@ tracks/0/keys = {
 "update": 1,
 "values": [ExtResource("1_lc2ix"), ExtResource("2_2ecfr"), ExtResource("3_g4src"), ExtResource("4_jg43b"), ExtResource("5_wpjgl"), ExtResource("6_4ahrn"), ExtResource("7_na1eu"), ExtResource("8_mxud1"), ExtResource("9_d35f8"), ExtResource("10_818u1"), ExtResource("11_0eg0c"), ExtResource("12_ys5nf"), ExtResource("13_njfm2"), ExtResource("14_0gm6u"), ExtResource("15_5pd2h"), ExtResource("16_px81i")]
 }
+tracks/1/type = "audio"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AudioStreamPlayer2D")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"clips": [{
+"end_offset": 3.10516,
+"start_offset": 30.3878,
+"stream": ExtResource("18_g4src")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/1/use_blend = true
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("AudioStreamPlayer2D:stream_paused")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(1),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_vf3gd"]
 _data = {
 &"RESET": SubResource("Animation_suo28"),
 &"activated": SubResource("Animation_7utco")
 }
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wpjgl"]
+shader = ExtResource("19_jg43b")
+shader_parameter/glow_strength = 0.3
+shader_parameter/pulse_speed = 2.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g4src"]
 size = Vector2(34, 38)
@@ -68,6 +114,7 @@ libraries = {
 }
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_wpjgl")
 position = Vector2(1.42109e-14, -19)
 scale = Vector2(1.32407, 1.33621)
 texture = ExtResource("1_lc2ix")
@@ -78,5 +125,8 @@ monitorable = false
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 position = Vector2(-1, -19)
 shape = SubResource("RectangleShape2D_g4src")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+autoplay = true
 
 [connection signal="area_entered" from="Area2D" to="." method="_on_area_2d_area_entered"]

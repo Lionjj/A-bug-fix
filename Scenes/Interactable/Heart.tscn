@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://4g7bbmfsrl2g"]
+[gd_scene load_steps=17 format=3 uid="uid://4g7bbmfsrl2g"]
 
 [ext_resource type="Script" uid="uid://df4hrqdh74jom" path="res://Scripts/Interactable/heart.gd" id="1_krk37"]
 [ext_resource type="Texture2D" uid="uid://c81774fjmxf2m" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_01.png" id="2_41h67"]
@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://b3vcb5ohupulv" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_07.png" id="8_tttvd"]
 [ext_resource type="Texture2D" uid="uid://0youm30scq5r" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_08.png" id="9_ittri"]
 [ext_resource type="Script" uid="uid://ccbjipslxw7xb" path="res://Scripts/Interactable/heart_animation.gd" id="10_4io1a"]
+[ext_resource type="Shader" uid="uid://d1fuhpbbg5t8x" path="res://Shaders/glow.gdshader" id="11_6r806"]
 
 [sub_resource type="Animation" id="Animation_suo28"]
 length = 0.001
@@ -50,6 +51,11 @@ _data = {
 &"idle": SubResource("Animation_7utco")
 }
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rr5xb"]
+shader = ExtResource("11_6r806")
+shader_parameter/glow_strength = 0.3
+shader_parameter/pulse_speed = 2.0
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g4src"]
 size = Vector2(22, 28)
 
@@ -63,6 +69,7 @@ libraries = {
 script = ExtResource("10_4io1a")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_rr5xb")
 position = Vector2(1.42109e-14, -19)
 scale = Vector2(1.32407, 1.33621)
 texture = ExtResource("2_41h67")

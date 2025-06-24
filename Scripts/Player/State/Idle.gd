@@ -42,10 +42,13 @@ func Update(delta: float):
 	
 	if player.hit:
 		Transitioned.emit(self, "Hit")
+	
+	if Input.is_action_just_pressed("dodge") and player.can_dodge:
+		Transitioned.emit(self, "Roll")
 
 func Physics_Update(_delta: float):
 	var direction = Input.get_axis("ui_left", "ui_right")
 	if direction != 0:
 		Transitioned.emit(self, "Run")
 	
-	animation.switch_direction(player.velocity)
+	player.switch_direction(player.velocity)

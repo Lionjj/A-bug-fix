@@ -1,6 +1,7 @@
-[gd_scene load_steps=31 format=3 uid="uid://dypcqw8xjmgou"]
+[gd_scene load_steps=33 format=3 uid="uid://dypcqw8xjmgou"]
 
 [ext_resource type="Texture2D" uid="uid://c81774fjmxf2m" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_01.png" id="1_30rnx"]
+[ext_resource type="Shader" uid="uid://d1fuhpbbg5t8x" path="res://Shaders/glow.gdshader" id="1_jxc4a"]
 [ext_resource type="Texture2D" uid="uid://2m6qwthmfrd" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_02.png" id="2_jxc4a"]
 [ext_resource type="Texture2D" uid="uid://cty7qawwi2u6n" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_03.png" id="3_qktbx"]
 [ext_resource type="Texture2D" uid="uid://cg2ew3msunxmx" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_04.png" id="4_jk5po"]
@@ -25,6 +26,11 @@
 [ext_resource type="Texture2D" uid="uid://cakqodxh3hec7" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_08.png" id="23_nx584"]
 [ext_resource type="Texture2D" uid="uid://bhkwe8y6tt12v" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_09.png" id="24_248yk"]
 [ext_resource type="Texture2D" uid="uid://c06pjowk3xu32" path="res://Assets/OS/ShieldsUI/Break/Shield_Break_10.png" id="25_iu5ag"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qktbx"]
+shader = ExtResource("1_jxc4a")
+shader_parameter/glow_strength = 0.3
+shader_parameter/pulse_speed = 2.0
 
 [sub_resource type="Animation" id="Animation_l7al2"]
 length = 0.001
@@ -105,6 +111,7 @@ layout_mode = 3
 anchors_preset = 0
 
 [node name="Heart1" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_qktbx")
 layout_mode = 0
 offset_right = 32.0
 offset_bottom = 31.0

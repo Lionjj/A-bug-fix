@@ -16,6 +16,9 @@ func Update(_delta):
 	
 	if player.hit:
 		Transitioned.emit(self, "Hit")
+	
+	if player.wall_check.is_colliding():
+		Transitioned.emit(self, "Slide")
 
 func Physics_Update(delta):
 	# Movimento orizzontale in aria
@@ -34,3 +37,5 @@ func Physics_Update(delta):
 	
 	if player.position.y >= 600:
 		Transitioned.emit(self, "Death")
+	
+	player.switch_direction(player.velocity)

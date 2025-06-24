@@ -1,36 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://demrp3b7cbg6q"]
+[gd_scene load_steps=10 format=3 uid="uid://demrp3b7cbg6q"]
 
 [ext_resource type="Script" uid="uid://cf38phr0ceujs" path="res://Scripts/Core/notification.gd" id="1_10afb"]
 [ext_resource type="Texture2D" uid="uid://bfiu8c484c5ql" path="res://Assets/OS/WindowsModal/TutoriaBG.png" id="1_db016"]
 [ext_resource type="Texture2D" uid="uid://2dqvrkgwyvqr" path="res://Assets/OS/WindowsModal/CloseButton.png" id="2_8au3v"]
 [ext_resource type="Texture2D" uid="uid://churjf33vvyp1" path="res://Assets/OS/WindowsModal/Allert.png" id="3_e6inp"]
-
-[sub_resource type="Animation" id="Animation_e6inp"]
-resource_name = "show"
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:scale")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.533333, 1),
-"transitions": PackedFloat32Array(1, 0.378929, 1),
-"update": 0,
-"values": [Vector2(0, 0), Vector2(0.5, 0), Vector2(1, 1)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath(".:modulate")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0.0333333, 0.966667),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Color(0.00392157, 0.00392157, 0.00392157, 0), Color(1, 1, 1, 1)]
-}
+[ext_resource type="AudioStream" uid="uid://bc0spemhiwxpj" path="res://Assets/Sound/error-message-182475.mp3" id="5_xcvam"]
 
 [sub_resource type="Animation" id="Animation_10afb"]
 length = 0.001
@@ -58,6 +32,48 @@ tracks/1/keys = {
 "update": 0,
 "values": [Color(1, 1, 1, 1)]
 }
+
+[sub_resource type="Animation" id="Animation_e6inp"]
+resource_name = "show"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.533333, 1),
+"transitions": PackedFloat32Array(1, 0.378929, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0.5, 0), Vector2(1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.0333333, 0.966667),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.00392157, 0.00392157, 0.00392157, 0), Color(1, 1, 1, 1)]
+}
+tracks/2/type = "audio"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("AudioStreamPlayer2D")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"clips": [{
+"end_offset": 7.41783,
+"start_offset": 25.7661,
+"stream": ExtResource("5_xcvam")
+}],
+"times": PackedFloat32Array(0.233333)
+}
+tracks/2/use_blend = true
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_10afb"]
 _data = {
@@ -120,5 +136,7 @@ collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 shape = SubResource("SegmentShape2D_10afb")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

@@ -1,10 +1,21 @@
-[gd_scene load_steps=3 format=3 uid="uid://ddfjla4185h6o"]
+[gd_scene load_steps=5 format=3 uid="uid://ddfjla4185h6o"]
 
 [ext_resource type="Script" uid="uid://dm3ex5ffhximd" path="res://Scripts/Object/Cloud.gd" id="1_arssq"]
 [ext_resource type="Texture2D" uid="uid://bfexl35j2td6d" path="res://Assets/OS/Environments/Clouds/Cloud01.png" id="2_3ijmi"]
+[ext_resource type="Shader" uid="uid://b7pvic12xyr73" path="res://Shaders/Cloud.gdshader" id="2_5h6bk"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ildbp"]
+shader = ExtResource("2_5h6bk")
+shader_parameter/wave_strength_y = 1.0
+shader_parameter/wave_strength_x = 0.5
+shader_parameter/wave_speed = 2.0
+shader_parameter/pixel_snap = 1.0
 
 [node name="Cloud" type="Node2D"]
 script = ExtResource("1_arssq")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_ildbp")
 texture = ExtResource("2_3ijmi")
+vframes = 3
+frame = 2

@@ -2,16 +2,18 @@ extends State
 class_name JumpState
 
 @export var player: CharacterBody2D
-@export var animation : AnimationPlayer
-@export var jump_velocity: float = -400.0
+@export var anim: AnimationPlayer
 
 
 func Enter():
-	player.velocity.y = jump_velocity
-	animation.play("jump")
+	player.velocity.y = player.jump_velocity
+	anim.play("jump")
 		
 func Update(_delta):
 	# Passa a Fall se inizia a cadere
+	if player.wall_check.is_colliding():
+		Transitioned.emit(self, "Slide")
+	
 	if player.velocity.y > 0:
 		Transitioned.emit(self, "Fall")
 	
@@ -31,3 +33,5 @@ func Physics_Update(delta):
 		player.velocity.y += player.gravity * (player.low_jump_multiplier - 1.0) * delta
 	else:
 		player.velocity.y += player.gravity * delta
+	
+	player.switch_direction(player.velocity)
