@@ -1,8 +1,11 @@
 extends Node2D
 class_name InteracatbleHeart
-@onready var player = $"../Player"
+
+@export var amount: int = 1     
 
 func _on_area_2d_area_entered(area: Area2D) -> void:
-	if area.get_parent() is Player and player.heal(1):
-		self.queue_free()
+	var paretn = area.get_parent()
+	if paretn is Player && paretn.heal(amount):
+		queue_free()
+	
 		

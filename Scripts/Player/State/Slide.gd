@@ -15,6 +15,12 @@ func Update(_delta: float):
 		Transitioned.emit(self, "Idle")
 	elif not _is_touching_wall():
 		Transitioned.emit(self, "Fall")
+		
+		# Se preme il lato opposto → si stacca
+	if Input.is_action_pressed("ui_left") and player.direction == 1:
+		Transitioned.emit(self, "Fall")
+	elif Input.is_action_pressed("ui_right") and player.direction == -1:
+		Transitioned.emit(self, "Fall")
 
 	# Salto dal muro
 	if Input.is_action_just_pressed("jump"):

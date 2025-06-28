@@ -2,7 +2,8 @@ extends State
 class_name WalkState
 
 @export var enemy: Enemy
-@export var ray: RayCast2D
+@export var ray_ground: RayCast2D
+@export var ray_wall: RayCast2D
 @export var speed: float = 35
 @export var anim: AnimationPlayer
 
@@ -22,6 +23,9 @@ func Update(delta):
 	var global_direction = player.global_position - enemy.global_position
 	if  global_direction.length() < 120:
 		Transitioned.emit(self, "Follow")
+	
+	if enemy.current_hp <= 0:
+		Transitioned.emit(self, "Death")
 
 func Physics_Update(delta):
 	if enemy:
@@ -32,7 +36,8 @@ func Physics_Update(delta):
 	else:
 		enemy.velocity.y += enemy.gravity * delta
 
-	if not ray.is_colliding() and enemy.is_on_floor():
-		#enemy.scale.x = abs(enemy.scale.x) * -1
-		#Transitioned.emit(self, "IdleState")
+	if not ray_ground.is_colliding() and enemy.is_on_floor():
+		Transitioned.emit(self, "ChangeDirection")
+	
+	if ray_wall.is_colliding() and enemy.is_on_floor():
 		Transitioned.emit(self, "ChangeDirection")

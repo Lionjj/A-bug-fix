@@ -62,6 +62,6 @@ position = Vector2(-1.19209e-07, -5.96046e-08)
 scale = Vector2(0.625, 0.625)
 sprite_frames = SubResource("SpriteFrames_32cwx")
 autoplay = "default"
-frame_progress = 0.139653
+frame_progress = 0.808751
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

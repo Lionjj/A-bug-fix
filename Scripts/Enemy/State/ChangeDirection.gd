@@ -15,3 +15,7 @@ func Enter():
 	if enemy.hit:
 		return
 	Transitioned.emit(self, "Idle")
+
+func Update(delta):
+	if enemy.current_hp <= 0:
+		Transitioned.emit(self, "Death")

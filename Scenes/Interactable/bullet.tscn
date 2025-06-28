@@ -1,0 +1,29 @@
+[gd_scene load_steps=6 format=3 uid="uid://qkd04lei1w6i"]
+
+[ext_resource type="Texture2D" uid="uid://bur4dys6fania" path="res://Assets/OS/Enemies/0.png" id="1_xjght"]
+[ext_resource type="Script" uid="uid://ic3a1ihhjjfo" path="res://Scripts/Interactable/bullet.gd" id="1_ycag2"]
+[ext_resource type="Shader" uid="uid://jy5b71jgk24c" path="res://Shaders/Trap.gdshader" id="2_6afsh"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_odot3"]
+shader = ExtResource("2_6afsh")
+shader_parameter/strength = 0.02
+shader_parameter/frequency = 100.0
+shader_parameter/speed = 4.0
+shader_parameter/danger_flash_speed = 5.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_oduel"]
+radius = 6.0
+
+[node name="Bullet" type="Area2D"]
+collision_layer = 3
+collision_mask = 5
+script = ExtResource("1_ycag2")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_odot3")
+texture = ExtResource("1_xjght")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_oduel")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

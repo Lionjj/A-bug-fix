@@ -622,4 +622,5 @@ target_position = Vector2(11, 0)
 wait_time = 0.2
 one_shot = true
 
+[connection signal="body_entered" from="AttackArea" to="StateMachinePlayer/Combo1" method="_on_attack_area_body_entered"]
 [connection signal="timeout" from="WallCheckTimer" to="." method="_on_wall_check_timer_timeout"]

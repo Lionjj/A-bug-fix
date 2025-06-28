@@ -1,0 +1,35 @@
+[gd_scene load_steps=4 format=3 uid="uid://h75rs3ngole6"]
+
+[ext_resource type="Texture2D" uid="uid://cqn0x45w66my8" path="res://Assets/OS/texture-di-rumore-tv.png" id="2_nhlmt"]
+
+[sub_resource type="Shader" id="Shader_j51y5"]
+code = "shader_type canvas_item;
+
+uniform float dissolve_amount : hint_range(0.0, 1.0) = 0.0;
+uniform sampler2D noise_texture : source_color, repeat_enable;
+
+void fragment() {
+    vec4 tex_color = texture(TEXTURE, UV);
+    vec4 noise = texture(noise_texture, UV);
+
+    if (noise.r < dissolve_amount) {
+        discard;
+    }
+
+    COLOR = tex_color;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nhlmt"]
+shader = SubResource("Shader_j51y5")
+shader_parameter/dissolve_amount = 0.0
+
+[node name="DeathEffect" type="Node2D"]
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+texture_filter = 1
+texture_repeat = 2
+material = SubResource("ShaderMaterial_nhlmt")
+emitting = false
+texture = ExtResource("2_nhlmt")
+one_shot = true

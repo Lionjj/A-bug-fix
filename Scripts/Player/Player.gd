@@ -30,6 +30,7 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
 @export var movement_enabled = false
 @export var max_hp = 3
+@export var invulnerability_duration := 0.8 
 var current_hp
 
 var dead = false
@@ -94,3 +95,34 @@ func disable_wall_check_temporarily():
 
 func _on_wall_check_timer_timeout() -> void:
 	wall_check.enabled = true
+
+func start_invulnerability():
+	invincible = true
+	var flash_timer := Timer.new()
+	flash_timer.wait_time = invulnerability_duration
+	flash_timer.one_shot = true
+	flash_timer.connect("timeout", _on_invulnerability_end)
+	add_child(flash_timer)
+	flash_timer.start()
+	
+	# Effetto lampeggiante
+	blink_during_invulnerability()
+
+func _on_invulnerability_end():
+	invincible = false
+	$Sprite2D.visible = true
+
+func blink_during_invulnerability():
+	var blink_timer := Timer.new()
+	blink_timer.wait_time = 0.1
+	blink_timer.one_shot = false
+	blink_timer.connect("timeout", func():
+		$Sprite2D.visible = not $Sprite2D.visible
+	)
+	add_child(blink_timer)
+	blink_timer.start()
+	
+	await get_tree().create_timer(invulnerability_duration).timeout
+	blink_timer.stop()
+	blink_timer.queue_free()
+	$Sprite2D.visible = true
