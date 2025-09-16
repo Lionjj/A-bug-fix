@@ -11,13 +11,18 @@ config_version=5
 [application]
 
 config/name="A bug fix"
-run/main_scene="uid://doyiqcdrwlcai"
+run/main_scene="uid://uv51pfwkxt2f"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
 GameManager="*res://Scripts/Core/GameManager.gd"
+CombatMechanic="*res://Scripts/Core/CombatMechanic.gd"
+InteractionManager="*res://Scenes/Interactable/InterazionArea/InteractionManager.tscn"
+DialogManager="*res://Scripts/Core/DialogManager.gd"
+EventBus="*res://Scripts/Quest/EventBus.gd"
+ObjectiveManager="*res://Scripts/Core/ObjectiveManager.gd"
 
 [display]
 
@@ -71,6 +76,16 @@ jump={
 dodge={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194325,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
+parry={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":81,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
+interact={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":69,"physical_keycode":0,"key_label":0,"unicode":101,"location":0,"echo":false,"script":null)
 ]
 }
 

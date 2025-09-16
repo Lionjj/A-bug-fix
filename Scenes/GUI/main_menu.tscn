@@ -1,0 +1,139 @@
+[gd_scene load_steps=12 format=3 uid="uid://uv51pfwkxt2f"]
+
+[ext_resource type="Texture2D" uid="uid://cy8xkpeqtbku7" path="res://Assets/OS/WindowsModal/menu.png" id="1_gv7mq"]
+[ext_resource type="Script" uid="uid://ddow253iw7c8p" path="res://Scripts/Core/main_menu.gd" id="1_twpvi"]
+[ext_resource type="FontFile" uid="uid://bw5i31g4qhsm" path="res://Assets/superstar_memesbruh03.ttf" id="3_1phqa"]
+[ext_resource type="Texture2D" uid="uid://blqb887lw1yq" path="res://Assets/OS/WindowsModal/Start.png" id="3_twpvi"]
+[ext_resource type="Texture2D" uid="uid://3mk6swax772q" path="res://Assets/OS/WindowsModal/option.png" id="4_1phqa"]
+[ext_resource type="Texture2D" uid="uid://bwen0n1v4yl5y" path="res://Assets/OS/WindowsModal/Logout.png" id="5_s14jb"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sar4h"]
+texture = ExtResource("1_gv7mq")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_khfnj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mjh0x"]
+bg_color = Color(0.163624, 0.263558, 0.547063, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+border_blend = true
+corner_radius_top_left = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_twpvi"]
+bg_color = Color(0.0814982, 0.145098, 0.326862, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+border_blend = true
+corner_radius_top_left = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_khfnj"]
+bg_color = Color(0.211765, 0.329412, 0.658824, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+border_blend = true
+corner_radius_top_left = 8
+corner_radius_bottom_left = 8
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_twpvi")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_sar4h")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.6
+anchor_top = 0.276
+anchor_right = 0.898
+anchor_bottom = 0.671
+offset_top = 39.28
+offset_bottom = 38.88
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 64
+
+[node name="Button" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 7
+mouse_default_cursor_shape = 2
+theme_override_fonts/font = ExtResource("3_1phqa")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/focus = SubResource("StyleBoxEmpty_khfnj")
+theme_override_styles/hover = SubResource("StyleBoxFlat_mjh0x")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_twpvi")
+theme_override_styles/normal = SubResource("StyleBoxFlat_khfnj")
+text = "START GAME"
+icon = ExtResource("3_twpvi")
+icon_alignment = 2
+
+[node name="Button2" type="Button" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 7
+mouse_default_cursor_shape = 2
+theme_override_fonts/font = ExtResource("3_1phqa")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/focus = SubResource("StyleBoxEmpty_khfnj")
+theme_override_styles/hover = SubResource("StyleBoxFlat_mjh0x")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_twpvi")
+theme_override_styles/normal = SubResource("StyleBoxFlat_khfnj")
+text = "OPTION"
+icon = ExtResource("4_1phqa")
+icon_alignment = 2
+
+[node name="Button3" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 7
+mouse_default_cursor_shape = 2
+theme_override_fonts/font = ExtResource("3_1phqa")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/focus = SubResource("StyleBoxEmpty_khfnj")
+theme_override_styles/hover = SubResource("StyleBoxFlat_mjh0x")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_twpvi")
+theme_override_styles/normal = SubResource("StyleBoxFlat_khfnj")
+text = "EXIT"
+icon = ExtResource("5_s14jb")
+icon_alignment = 2
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -164.0
+offset_right = 164.0
+offset_bottom = 109.0
+grow_horizontal = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 5
+theme_override_fonts/font = ExtResource("3_1phqa")
+theme_override_font_sizes/font_size = 48
+text = "A BUG FIX"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="VBoxContainer/Button" to="." method="_on_start_pressed"]
+[connection signal="pressed" from="VBoxContainer/Button2" to="." method="_on_settings_pressed"]
+[connection signal="pressed" from="VBoxContainer/Button3" to="." method="_on_exit_pressed"]

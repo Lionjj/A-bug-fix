@@ -4,6 +4,7 @@ class_name WalkState
 @export var enemy: Enemy
 @export var ray_ground: RayCast2D
 @export var ray_wall: RayCast2D
+@export var ray_player: RayCast2D
 @export var speed: float = 35
 @export var anim: AnimationPlayer
 
@@ -20,8 +21,7 @@ func Update(delta):
 	if enemy.hit:
 		Transitioned.emit(self, "Hit")
 	
-	var global_direction = player.global_position - enemy.global_position
-	if  global_direction.length() < 120:
+	if ray_player.is_colliding() or enemy.get_following():
 		Transitioned.emit(self, "Follow")
 	
 	if enemy.current_hp <= 0:

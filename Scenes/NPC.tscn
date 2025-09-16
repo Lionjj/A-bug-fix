@@ -1,0 +1,81 @@
+[gd_scene load_steps=23 format=3 uid="uid://dc5x0gqk03o3f"]
+
+[ext_resource type="Script" uid="uid://dmxnfo14wrb0m" path="res://Scripts/Interactable/npc.gd" id="1_al2uj"]
+[ext_resource type="Texture2D" uid="uid://dijemtrv5dfuy" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_01.png" id="1_tdvfm"]
+[ext_resource type="Texture2D" uid="uid://7ioowfc7ceix" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_02.png" id="2_evxu1"]
+[ext_resource type="Texture2D" uid="uid://c22wmr2qv65j1" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_03.png" id="3_al2uj"]
+[ext_resource type="Texture2D" uid="uid://ch7aqdi50m78k" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_04.png" id="4_4yurw"]
+[ext_resource type="Texture2D" uid="uid://cdmgberisc0sk" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_05.png" id="5_r0hpd"]
+[ext_resource type="Texture2D" uid="uid://cnddtb7ha6e4k" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_06.png" id="6_br8wg"]
+[ext_resource type="Texture2D" uid="uid://vi34host8b68" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_07.png" id="7_ujl3c"]
+[ext_resource type="Texture2D" uid="uid://c1khnomsism2c" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_08.png" id="8_4uclg"]
+[ext_resource type="Texture2D" uid="uid://x3ae4tl0meqr" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_09.png" id="9_uyalf"]
+[ext_resource type="Texture2D" uid="uid://cyx0qay3afyb" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_10.png" id="10_iugeh"]
+[ext_resource type="Texture2D" uid="uid://dxvt87nf1xheb" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_11.png" id="11_66cnq"]
+[ext_resource type="Texture2D" uid="uid://bsubdr76hmg2p" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_12.png" id="12_ued6t"]
+[ext_resource type="Texture2D" uid="uid://1e7lq5hun6q" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_13.png" id="13_qjey3"]
+[ext_resource type="Texture2D" uid="uid://n2nrndantqmb" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_14.png" id="14_ycd7r"]
+[ext_resource type="Texture2D" uid="uid://c0bvudh35gqmg" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_15.png" id="15_thmox"]
+[ext_resource type="Texture2D" uid="uid://be7rnmsxs8k1a" path="res://Assets/OS/NPC01/Idle/NPC01_Idle_16.png" id="16_njf7h"]
+[ext_resource type="PackedScene" uid="uid://bsyrhds73a3m7" path="res://Scenes/Interactable/InterazionArea/interaction_area.tscn" id="18_4yurw"]
+
+[sub_resource type="Animation" id="Animation_jau0d"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_tdvfm")]
+}
+
+[sub_resource type="Animation" id="Animation_qelja"]
+resource_name = "idel"
+loop_mode = 1
+step = 0.0625
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0625, 0.125, 0.1875, 0.25, 0.3125, 0.375, 0.4375, 0.5, 0.5625, 0.625, 0.6875, 0.75, 0.8125, 0.875, 0.9375),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_tdvfm"), ExtResource("2_evxu1"), ExtResource("3_al2uj"), ExtResource("4_4yurw"), ExtResource("5_r0hpd"), ExtResource("6_br8wg"), ExtResource("7_ujl3c"), ExtResource("8_4uclg"), ExtResource("9_uyalf"), ExtResource("10_iugeh"), ExtResource("11_66cnq"), ExtResource("12_ued6t"), ExtResource("13_qjey3"), ExtResource("14_ycd7r"), ExtResource("15_thmox"), ExtResource("16_njf7h")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_u7cny"]
+_data = {
+&"RESET": SubResource("Animation_jau0d"),
+&"idel": SubResource("Animation_qelja")
+}
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fo5tq"]
+radius = 85.0
+height = 170.0
+
+[node name="Npc" type="Node2D"]
+script = ExtResource("1_al2uj")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_tdvfm")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_u7cny")
+}
+autoplay = "idel"
+
+[node name="InteractionArea" parent="." instance=ExtResource("18_4yurw")]
+action_name = "parlare"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+position = Vector2(-1, 6)
+shape = SubResource("CapsuleShape2D_fo5tq")

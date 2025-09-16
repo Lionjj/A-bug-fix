@@ -14,6 +14,7 @@ func Enter():
 	await get_tree().create_timer(0.01).timeout
 	if enemy.hit:
 		return
+		
 	Transitioned.emit(self, "Idle")
 
 func Update(delta):

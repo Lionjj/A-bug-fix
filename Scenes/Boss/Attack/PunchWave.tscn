@@ -1,0 +1,120 @@
+[gd_scene load_steps=7 format=3 uid="uid://ctp3f8okxeegk"]
+
+[ext_resource type="Script" uid="uid://drwkq7eg5dljh" path="res://Scripts/Boss/Attack/punch_wave.gd" id="1_7hsxl"]
+[ext_resource type="Texture2D" uid="uid://xg5w8vkokgx3" path="res://Assets/OS/Enemies/Boss/wave.png" id="1_tfqrt"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ykgrq"]
+size = Vector2(20.0698, 17.1532)
+
+[sub_resource type="Animation" id="Animation_1dci8"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:hframes")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [2]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:vframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [2]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2D:frame")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_1j3jd"]
+resource_name = "attack"
+length = 0.3
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:hframes")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [2]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:vframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [2]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2D:frame")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [0, 1, 2]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_oc4cq"]
+_data = {
+&"RESET": SubResource("Animation_1dci8"),
+&"attack": SubResource("Animation_1j3jd")
+}
+
+[node name="SlamWave" type="Area2D"]
+collision_mask = 5
+script = ExtResource("1_7hsxl")
+damage = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_tfqrt")
+hframes = 2
+vframes = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(2.85481, 0.795964)
+skew = 0.977384
+shape = SubResource("RectangleShape2D_ykgrq")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_oc4cq")
+}
+
+[node name="RayCast2D" type="RayCast2D" parent="."]
+position = Vector2(10, 4)
+target_position = Vector2(0, 10)
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

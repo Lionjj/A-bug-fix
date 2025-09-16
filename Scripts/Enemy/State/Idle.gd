@@ -9,6 +9,7 @@ var timer := 0.0
 
 func Enter():
 	anim.play("idle")
+	$"../../AttackArea2D/CollisionShape2D".disabled = true
 	
 func Update(delta):
 	Transitioned.emit(self, "Walk")

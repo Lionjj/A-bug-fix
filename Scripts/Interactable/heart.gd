@@ -4,8 +4,9 @@ class_name InteracatbleHeart
 @export var amount: int = 1     
 
 func _on_area_2d_area_entered(area: Area2D) -> void:
-	var paretn = area.get_parent()
-	if paretn is Player && paretn.heal(amount):
+	var parent = area.get_parent()
+	if parent is Player && parent.heal(amount):
+		$AudioStreamPlayer2D.play()
 		queue_free()
 	
 		

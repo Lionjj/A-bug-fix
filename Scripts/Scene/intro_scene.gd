@@ -44,7 +44,7 @@ func _ready() -> void:
 	anim_notification.play("show")
 	
 	await  get_tree().create_timer(3.0).timeout
-	get_tree().change_scene_to_file("res://Scenes/WorldScenes/Main.tscn")
+	get_tree().change_scene_to_file("res://Scenes/WorldScenes/Livello0.tscn")
 	
 	
 	

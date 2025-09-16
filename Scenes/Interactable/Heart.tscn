@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://4g7bbmfsrl2g"]
+[gd_scene load_steps=18 format=3 uid="uid://4g7bbmfsrl2g"]
 
 [ext_resource type="Script" uid="uid://df4hrqdh74jom" path="res://Scripts/Interactable/heart.gd" id="1_krk37"]
 [ext_resource type="Texture2D" uid="uid://c81774fjmxf2m" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_01.png" id="2_41h67"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://0youm30scq5r" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_08.png" id="9_ittri"]
 [ext_resource type="Script" uid="uid://ccbjipslxw7xb" path="res://Scripts/Interactable/heart_animation.gd" id="10_4io1a"]
 [ext_resource type="Shader" uid="uid://d1fuhpbbg5t8x" path="res://Shaders/glow.gdshader" id="11_6r806"]
+[ext_resource type="AudioStream" uid="uid://bvv7robc2d43v" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/MAGAngl_BUFF-Simple Heal_HY_PC-004.wav" id="12_rr5xb"]
 
 [sub_resource type="Animation" id="Animation_suo28"]
 length = 0.001
@@ -80,5 +81,8 @@ monitorable = false
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 position = Vector2(1, -19)
 shape = SubResource("RectangleShape2D_g4src")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("12_rr5xb")
 
 [connection signal="area_entered" from="Area2D" to="." method="_on_area_2d_area_entered"]

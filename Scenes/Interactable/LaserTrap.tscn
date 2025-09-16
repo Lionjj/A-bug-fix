@@ -1,0 +1,115 @@
+[gd_scene load_steps=16 format=3 uid="uid://bipi3sk65wrkm"]
+
+[ext_resource type="Shader" uid="uid://jy5b71jgk24c" path="res://Shaders/Trap.gdshader" id="2_p711s"]
+[ext_resource type="Texture2D" uid="uid://cqpyvwlue3e8d" path="res://Assets/OS/Environments/LaserTrap.png" id="3_hvxqn"]
+
+[sub_resource type="GDScript" id="GDScript_u8uif"]
+script/source = "extends Area2D
+
+@export var damage: int = 1
+
+func _on_body_entered(body: Node2D) -> void:
+	if body.is_in_group(\"Player\"):
+		if not body.get_invicible():
+			CombatMechanic.applay_knockback(body, global_position, 1200, .08)
+		body.take_damage(damage)
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vm7tw"]
+size = Vector2(5.33333, 14.6667)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8rf1a"]
+shader = ExtResource("2_p711s")
+shader_parameter/strength = 0.005
+shader_parameter/frequency = 100.0
+shader_parameter/speed = 4.0
+shader_parameter/danger_flash_speed = 5.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p711s"]
+atlas = ExtResource("3_hvxqn")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3rj68"]
+atlas = ExtResource("3_hvxqn")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1fypy"]
+atlas = ExtResource("3_hvxqn")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l5ow8"]
+atlas = ExtResource("3_hvxqn")
+region = Rect2(0, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l3e6i"]
+atlas = ExtResource("3_hvxqn")
+region = Rect2(32, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_eibss"]
+atlas = ExtResource("3_hvxqn")
+region = Rect2(64, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4w5h0"]
+atlas = ExtResource("3_hvxqn")
+region = Rect2(0, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xn5v6"]
+atlas = ExtResource("3_hvxqn")
+region = Rect2(32, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u0p1u"]
+atlas = ExtResource("3_hvxqn")
+region = Rect2(64, 64, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_32cwx"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p711s")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3rj68")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1fypy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l5ow8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l3e6i")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_eibss")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4w5h0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xn5v6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u0p1u")
+}],
+"loop": true,
+"name": &"default",
+"speed": 8.0
+}]
+
+[node name="LaserTrap" type="Area2D"]
+scale = Vector2(3, 3)
+collision_mask = 4
+script = SubResource("GDScript_u8uif")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-1.19209e-07, 2.38419e-07)
+shape = SubResource("RectangleShape2D_vm7tw")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_8rf1a")
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_32cwx")
+autoplay = "default"
+frame_progress = 0.546271
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

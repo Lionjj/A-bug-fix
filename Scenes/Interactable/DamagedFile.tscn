@@ -1,0 +1,196 @@
+[gd_scene load_steps=14 format=3 uid="uid://5m8u3dw7twym"]
+
+[ext_resource type="Texture2D" uid="uid://cqxjf64f3wt83" path="res://Assets/OS/Environments/FileToRepair.png" id="1_ky65c"]
+[ext_resource type="Script" uid="uid://ccr8llmwchkt5" path="res://Scripts/Interactable/damaged_file.gd" id="1_xhlp5"]
+[ext_resource type="Texture2D" uid="uid://col4skng2sewk" path="res://Assets/OS/Environments/FileRepaired.png" id="2_d7h85"]
+[ext_resource type="Texture2D" uid="uid://nuatxvjs7uo4" path="res://Assets/OS/Environments/ReparingFile.png" id="4_ps1b3"]
+[ext_resource type="FontFile" uid="uid://bw5i31g4qhsm" path="res://Assets/superstar_memesbruh03.ttf" id="5_ps1b3"]
+[ext_resource type="AudioStream" uid="uid://da4888rfbowj0" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/DSGNTonl_SKILL RELEASE-High Tech Spell_HY_PC-001.wav" id="6_ps1b3"]
+
+[sub_resource type="Animation" id="Animation_ps1b3"]
+resource_name = "IdleClear"
+length = 0.35
+loop_mode = 2
+step = 0.08
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0769231, 0.153846, 0.230769, 0.307692),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_d7h85")]
+}
+
+[sub_resource type="Animation" id="Animation_xhlp5"]
+resource_name = "IdleCorrupted"
+length = 0.2
+loop_mode = 2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0333333, 0.0666667, 0.1, 0.133333),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_ky65c")]
+}
+
+[sub_resource type="Animation" id="Animation_vnkyd"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_ky65c")]
+}
+
+[sub_resource type="Animation" id="Animation_poino"]
+resource_name = "Reparing"
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.1, 0.3, 0.5, 0.7, 0.9),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_ps1b3")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_slutj"]
+_data = {
+&"IdleClear": SubResource("Animation_ps1b3"),
+&"IdleCorrupted": SubResource("Animation_xhlp5"),
+&"RESET": SubResource("Animation_vnkyd"),
+&"Reparing": SubResource("Animation_poino")
+}
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_poino"]
+size = Vector2(20, 29)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xhlp5"]
+bg_color = Color(0.447059, 0.788235, 0.643137, 1)
+
+[node name="DamagedFile" type="Area2D"]
+script = ExtResource("1_xhlp5")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(2, 2)
+texture = ExtResource("1_ky65c")
+hframes = 2
+vframes = 3
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_slutj")
+}
+autoplay = "IdleCorrupted"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -0.5)
+shape = SubResource("RectangleShape2D_poino")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+z_index = 10
+offset_left = -20.0
+offset_top = -53.0
+offset_right = 20.0
+offset_bottom = -21.0
+
+[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 6
+theme_override_styles/fill = SubResource("StyleBoxFlat_xhlp5")
+show_percentage = false
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_ps1b3")
+theme_override_font_sizes/font_size = 16
+text = "[E]"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+z_index = 10
+offset_left = -20.0
+offset_top = 17.0
+offset_right = 20.0
+offset_bottom = 49.0
+
+[node name="Label2" type="Label" parent="VBoxContainer2"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_ps1b3")
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("6_ps1b3")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

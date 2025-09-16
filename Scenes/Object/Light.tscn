@@ -1,0 +1,52 @@
+[gd_scene load_steps=4 format=3 uid="uid://d2w3rgrkmcw16"]
+
+[ext_resource type="Texture2D" uid="uid://bnwmgwl8bxq4e" path="res://Assets/OS/Environments/UpperCable.png" id="1_ckkcc"]
+
+[sub_resource type="Gradient" id="Gradient_ckkcc"]
+offsets = PackedFloat32Array(0, 0.643836)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_6h8oh"]
+gradient = SubResource("Gradient_ckkcc")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[node name="Light" type="Node2D"]
+z_index = -5
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(-43, 45)
+color = Color(0.447059, 0.788235, 0.647059, 1)
+range_z_max = -1
+texture = SubResource("GradientTexture2D_6h8oh")
+texture_scale = 1.49
+
+[node name="PointLight2D5" type="PointLight2D" parent="."]
+position = Vector2(-43, 45)
+color = Color(0.447059, 0.788235, 0.647059, 1)
+range_z_max = -1
+texture = SubResource("GradientTexture2D_6h8oh")
+
+[node name="PointLight2D2" type="PointLight2D" parent="."]
+position = Vector2(5, 12)
+color = Color(0.447059, 0.788235, 0.647059, 1)
+range_z_max = -1
+texture = SubResource("GradientTexture2D_6h8oh")
+
+[node name="PointLight2D3" type="PointLight2D" parent="."]
+position = Vector2(29, 6)
+scale = Vector2(0.671875, 0.734375)
+color = Color(0.447059, 0.788235, 0.647059, 1)
+range_z_max = -1
+texture = SubResource("GradientTexture2D_6h8oh")
+
+[node name="PointLight2D4" type="PointLight2D" parent="."]
+position = Vector2(47, 54)
+scale = Vector2(1.29688, 1.34375)
+color = Color(0.447059, 0.788235, 0.647059, 1)
+range_z_max = -1
+texture = SubResource("GradientTexture2D_6h8oh")
+texture_scale = 1.9
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_ckkcc")

@@ -19,6 +19,9 @@ func Update(_delta):
 	
 	if player.wall_check.is_colliding():
 		Transitioned.emit(self, "Slide")
+	
+	if Input.is_action_just_pressed("dodge") and player.can_dodge:
+		Transitioned.emit(self, "Dush")
 
 func Physics_Update(delta):
 	# Movimento orizzontale in aria

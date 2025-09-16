@@ -1,0 +1,75 @@
+[gd_scene load_steps=8 format=3 uid="uid://bley1yqx4c462"]
+
+[ext_resource type="Script" uid="uid://c0kh0bfd0pcr8" path="res://Scripts/Scene/error_window.gd" id="1_hjxij"]
+[ext_resource type="FontFile" uid="uid://bw5i31g4qhsm" path="res://Assets/superstar_memesbruh03.ttf" id="3_3glqe"]
+[ext_resource type="Texture2D" uid="uid://bfiu8c484c5ql" path="res://Assets/OS/WindowsModal/TutoriaBG.png" id="3_dvwax"]
+[ext_resource type="Texture2D" uid="uid://2dqvrkgwyvqr" path="res://Assets/OS/WindowsModal/CloseButton.png" id="4_3glqe"]
+[ext_resource type="Texture2D" uid="uid://0amf8uft7mkk" path="res://Assets/OS/WindowsModal/Allert.png" id="5_5ywim"]
+[ext_resource type="AudioStream" uid="uid://bc0spemhiwxpj" path="res://Assets/Sound/error-message-182475.mp3" id="6_3glqe"]
+
+[sub_resource type="Theme" id="Theme_5clir"]
+
+[node name="ErrorWindow" type="Panel"]
+theme = SubResource("Theme_5clir")
+script = ExtResource("1_hjxij")
+
+[node name="NinePatchRect" type="NinePatchRect" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = -14.0
+offset_right = 331.0
+offset_bottom = 123.0
+grow_horizontal = 0
+grow_vertical = 0
+texture = ExtResource("3_dvwax")
+patch_margin_left = 10
+patch_margin_top = 15
+patch_margin_right = 10
+patch_margin_bottom = 10
+
+[node name="Title" type="Label" parent="NinePatchRect"]
+layout_mode = 0
+offset_left = 33.0
+offset_top = 17.0
+offset_right = 307.0
+offset_bottom = 53.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_3glqe")
+theme_override_font_sizes/font_size = 30
+
+[node name="Body" type="Label" parent="NinePatchRect"]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 49.0
+offset_right = 309.0
+offset_bottom = 125.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_3glqe")
+theme_override_font_sizes/font_size = 24
+
+[node name="Xbtn" type="TextureRect" parent="NinePatchRect"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -26.0
+offset_top = -8.0
+offset_right = 6.0
+offset_bottom = 24.0
+grow_horizontal = 0
+texture = ExtResource("4_3glqe")
+
+[node name="AlertIcon" type="TextureRect" parent="NinePatchRect"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_top = 27.0
+offset_right = 34.0
+offset_bottom = 70.0
+texture = ExtResource("5_5ywim")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("6_3glqe")

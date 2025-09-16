@@ -10,7 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://c13mofgr5k6ia" path="res://Assets/OS/WindowsModal/exeicona.png" id="6_41kxk"]
 [ext_resource type="Texture2D" uid="uid://2dqvrkgwyvqr" path="res://Assets/OS/WindowsModal/CloseButton.png" id="8_rpyjo"]
 [ext_resource type="PackedScene" uid="uid://demrp3b7cbg6q" path="res://Scenes/GUI/notification.tscn" id="9_c4drt"]
-[ext_resource type="FontFile" uid="uid://lsaffwvohr8o" path="res://Assets/OS/VT323-Regular.ttf" id="10_7h34c"]
+[ext_resource type="FontFile" uid="uid://bw5i31g4qhsm" path="res://Assets/superstar_memesbruh03.ttf" id="10_i5w0n"]
 
 [sub_resource type="Animation" id="Animation_me210"]
 length = 0.001
@@ -396,6 +396,7 @@ offset_bottom = 171.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("10_i5w0n")
 theme_override_font_sizes/font_size = 32
 text = "Explorer
 "
@@ -411,6 +412,7 @@ offset_bottom = 441.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("10_i5w0n")
 theme_override_font_sizes/font_size = 16
 text = "Cartella 1
 
@@ -427,6 +429,7 @@ offset_bottom = 493.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("10_i5w0n")
 theme_override_font_sizes/font_size = 16
 text = "Cartella 2"
 
@@ -441,6 +444,7 @@ offset_bottom = 593.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("10_i5w0n")
 theme_override_font_sizes/font_size = 16
 text = "a_bug_fix.exe
 "
@@ -452,23 +456,16 @@ offset_left = 510.0
 offset_top = 306.0
 offset_right = 895.0
 offset_bottom = 405.0
+text = "Malware rilevato: Defender attivato;
 
-[node name="Label" type="Label" parent="Notification"]
-layout_mode = 0
-offset_left = 35.0
-offset_top = 26.0
-offset_right = 343.0
-offset_bottom = 80.0
-theme_override_colors/font_color = Color(1, 0, 0, 1)
-theme_override_fonts/font = ExtResource("10_7h34c")
-theme_override_font_sizes/font_size = 16
-text = "0x000000FE
-(0x000000008, 0x000000006, 0x000000009, 0x0x847075CC)
-Malware rilevato: Defendere attivato;"
+Error: 0x000000FE
+(0x000000008, 0x000000006, 0x000000009,
+ 0x0x847075CC)"
 
 [node name="ColorRect" type="ColorRect" parent="."]
 z_index = 10
 layout_mode = 0
+offset_top = -7.0
 offset_right = 1288.0
-offset_bottom = 726.0
+offset_bottom = 719.0
 color = Color(0, 0, 0, 1)

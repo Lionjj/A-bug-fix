@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://q6gcl7vq45ev"]
+
+[ext_resource type="FontFile" uid="uid://bw5i31g4qhsm" path="res://Assets/superstar_memesbruh03.ttf" id="1_gefqs"]
+[ext_resource type="Script" uid="uid://co6734uve2gjs" path="res://Scripts/Core/interaction_manager.gd" id="1_wbdhr"]
+
+[node name="InteractionManager" type="Node2D"]
+script = ExtResource("1_wbdhr")
+
+[node name="Label" type="Label" parent="."]
+z_index = 20
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -52.5
+offset_right = 52.5
+offset_bottom = 23.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("1_gefqs")
+text = "[E] to interact"
+horizontal_alignment = 1
+vertical_alignment = 1

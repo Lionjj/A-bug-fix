@@ -1,6 +1,7 @@
-[gd_scene load_steps=85 format=3 uid="uid://da022k4xm8n21"]
+[gd_scene load_steps=98 format=3 uid="uid://da022k4xm8n21"]
 
 [ext_resource type="Script" uid="uid://r8oh7mm7whcy" path="res://Scripts/Enemy/Enemy.gd" id="1_d22ah"]
+[ext_resource type="Texture2D" uid="uid://bh8dp30byoy07" path="res://Assets/OS/Enemies/Enemy01/Stun/Enemy01_Stun_07.png" id="2_qweun"]
 [ext_resource type="Texture2D" uid="uid://boybb0fm0j2cr" path="res://Assets/OS/Enemies/Enemy01/Attack/Enemy01_Attack_01.png" id="2_uo6ff"]
 [ext_resource type="Texture2D" uid="uid://bs3y0x21c1njr" path="res://Assets/OS/Enemies/1.png" id="3_j0yej"]
 [ext_resource type="Texture2D" uid="uid://bur4dys6fania" path="res://Assets/OS/Enemies/0.png" id="4_p6x2l"]
@@ -25,6 +26,7 @@
 [ext_resource type="Texture2D" uid="uid://dt3uqpvwr5mlx" path="res://Assets/OS/Enemies/Enemy01/Attack/Enemy01_Attack_20.png" id="23_ro2ei"]
 [ext_resource type="Texture2D" uid="uid://c72q14merbsen" path="res://Assets/OS/Enemies/Enemy01/Attack/Enemy01_Attack_21.png" id="24_e4ui7"]
 [ext_resource type="Texture2D" uid="uid://cwjy8gtncap5g" path="res://Assets/OS/Enemies/Enemy01/Death/Death_01.png" id="25_1yqw5"]
+[ext_resource type="AudioStream" uid="uid://efkufwic6r5c" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/DSGNMisc_MELEE-Bit Sword_HY_PC-005.wav" id="25_5xorn"]
 [ext_resource type="Texture2D" uid="uid://hhkfosyaqrrv" path="res://Assets/OS/Enemies/Enemy01/Death/Death_02.png" id="26_txaxn"]
 [ext_resource type="Texture2D" uid="uid://d33lq7lwmhgxr" path="res://Assets/OS/Enemies/Enemy01/Death/Death_03.png" id="27_oomdy"]
 [ext_resource type="Texture2D" uid="uid://i623baflcmse" path="res://Assets/OS/Enemies/Enemy01/Death/Death_04.png" id="28_4rvjy"]
@@ -50,6 +52,7 @@
 [ext_resource type="Texture2D" uid="uid://gaakttthxe8d" path="res://Assets/OS/Enemies/Enemy01/Hit/Enemy01_Hit_07.png" id="48_5w87q"]
 [ext_resource type="Texture2D" uid="uid://dplxyquv8jvd0" path="res://Assets/OS/Enemies/Enemy01/Hit/Enemy01_Hit_08.png" id="49_a1hjw"]
 [ext_resource type="Texture2D" uid="uid://dhfjmv2v3ay42" path="res://Assets/OS/Enemies/Enemy01/Hit/Enemy01_Hit_09.png" id="50_s436k"]
+[ext_resource type="AudioStream" uid="uid://dlljxhr2m6q0k" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/FGHTImpt_MELEE-Swish Hit_HY_PC-003.wav" id="51_g8g2d"]
 [ext_resource type="Texture2D" uid="uid://dcv0qjkw5i5u5" path="res://Assets/OS/Enemies/Enemy01/Idle/Enemy01_Idle_01.png" id="51_s012n"]
 [ext_resource type="Texture2D" uid="uid://my2erusjgcsc" path="res://Assets/OS/Enemies/Enemy01/Idle/Enemy01_Idle_02.png" id="52_ffrdf"]
 [ext_resource type="Texture2D" uid="uid://cal8abc1lbq45" path="res://Assets/OS/Enemies/Enemy01/Idle/Enemy01_Idle_03.png" id="53_57k07"]
@@ -68,12 +71,20 @@
 [ext_resource type="Texture2D" uid="uid://dmyahswbdugo4" path="res://Assets/OS/Enemies/Enemy01/Run/Enemy01_Run_08.png" id="66_6em2e"]
 [ext_resource type="Script" uid="uid://c5tw83sty7fpl" path="res://Scripts/StateMachine/StateMachine.gd" id="67_2y5ab"]
 [ext_resource type="Script" uid="uid://dxbsiud5psequ" path="res://Scripts/Enemy/State/Idle.gd" id="68_ngljs"]
+[ext_resource type="Texture2D" uid="uid://dk18qm7a5nu2t" path="res://Assets/OS/Enemies/Enemy01/Stun/Enemy01_Stun_01.png" id="69_aj7hg"]
 [ext_resource type="Script" uid="uid://bfcd3sia5fijs" path="res://Scripts/Enemy/State/Walk.gd" id="69_qmn41"]
+[ext_resource type="Texture2D" uid="uid://hhsxedkdcum6" path="res://Assets/OS/Enemies/Enemy01/Stun/Enemy01_Stun_02.png" id="70_g8g2d"]
 [ext_resource type="Script" uid="uid://hwwcici1p10h" path="res://Scripts/Enemy/State/Follow.gd" id="70_kyl8a"]
+[ext_resource type="Texture2D" uid="uid://dg16mccfp8j1b" path="res://Assets/OS/Enemies/Enemy01/Stun/Enemy01_Stun_03.png" id="71_5xorn"]
 [ext_resource type="Script" uid="uid://bifxustdqeq71" path="res://Scripts/Enemy/State/ChangeDirection.gd" id="71_u2txa"]
+[ext_resource type="Texture2D" uid="uid://2icw5g6twbo7" path="res://Assets/OS/Enemies/Enemy01/Stun/Enemy01_Stun_04.png" id="72_dfkmu"]
 [ext_resource type="Script" uid="uid://dqx8b8fe2btk2" path="res://Scripts/Enemy/State/Attack.gd" id="72_svca3"]
 [ext_resource type="Script" uid="uid://ceg6j0exxdfxm" path="res://Scripts/Enemy/State/Hit.gd" id="73_dspn0"]
+[ext_resource type="Texture2D" uid="uid://cjcsf8o2bahim" path="res://Assets/OS/Enemies/Enemy01/Stun/Enemy01_Stun_05.png" id="73_qulpv"]
+[ext_resource type="Texture2D" uid="uid://g18jrh4isyre" path="res://Assets/OS/Enemies/Enemy01/Stun/Enemy01_Stun_06.png" id="74_engkm"]
 [ext_resource type="Script" uid="uid://dk73lwk6dtdhb" path="res://Scripts/Enemy/State/Death.gd" id="74_qnop3"]
+[ext_resource type="AudioStream" uid="uid://cai1um1eccoqq" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/DSGNMisc_MELEE-Sword Deflect_HY_PC-001.wav" id="75_g8g2d"]
+[ext_resource type="Script" uid="uid://cum2exxgjdoou" path="res://Scripts/Enemy/State/Stun.gd" id="83_aj7hg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kpr8r"]
 size = Vector2(17, 33)
@@ -117,6 +128,18 @@ tracks/2/keys = {
 "update": 1,
 "values": [true]
 }
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("AttackArea2D/CollisionShape2D:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(4, -14)]
+}
 
 [sub_resource type="Animation" id="Animation_358lc"]
 resource_name = "attack"
@@ -152,13 +175,40 @@ tracks/2/path = NodePath("StateMachine/Attack")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0.714286),
+"times": PackedFloat32Array(0.619048),
 "transitions": PackedFloat32Array(1),
 "values": [{
 "args": [],
-"method": &"check_attack_hits"
+"method": &"charge"
 }]
 }
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("AttackArea2D/CollisionShape2D:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.52204, 0.620036),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(4, -14), Vector2(25, -14)]
+}
+tracks/4/type = "audio"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("AudioStreamPlayer2D")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("25_5xorn")
+}],
+"times": PackedFloat32Array(0.0952381)
+}
+tracks/4/use_blend = true
 
 [sub_resource type="Animation" id="Animation_1exfc"]
 resource_name = "die"
@@ -231,6 +281,21 @@ tracks/1/keys = {
 "update": 1,
 "values": [Vector2(5, -23)]
 }
+tracks/2/type = "audio"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("AudioStreamPlayer2D")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("51_g8g2d")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/2/use_blend = true
 
 [sub_resource type="Animation" id="Animation_wovta"]
 resource_name = "idle"
@@ -261,6 +326,50 @@ tracks/1/keys = {
 "update": 1,
 "values": [Vector2(5, -23)]
 }
+
+[sub_resource type="Animation" id="Animation_slxit"]
+resource_name = "stun"
+length = 0.8
+step = 0.11
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.111111, 0.222222, 0.333333, 0.444444, 0.555556, 0.666667),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("69_aj7hg"), ExtResource("70_g8g2d"), ExtResource("71_5xorn"), ExtResource("72_dfkmu"), ExtResource("73_qulpv"), ExtResource("74_engkm"), ExtResource("2_qweun")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AttackArea2D/CollisionShape2D:disabled")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "audio"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("AudioStreamPlayer2D")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("75_g8g2d")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/2/use_blend = true
 
 [sub_resource type="Animation" id="Animation_mo1ky"]
 resource_name = "walk"
@@ -299,6 +408,7 @@ _data = {
 &"die": SubResource("Animation_1exfc"),
 &"hit": SubResource("Animation_kpr8r"),
 &"idle": SubResource("Animation_wovta"),
+&"stun": SubResource("Animation_slxit"),
 &"walk": SubResource("Animation_mo1ky")
 }
 
@@ -308,6 +418,24 @@ height = 40.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_318ex"]
 size = Vector2(33, 9)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_uo6ff"]
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(8, 4, 1)
+emission_shape = 3
+emission_box_extents = Vector3(1, 1, 1)
+inherit_velocity_ratio = 25.0
+direction = Vector3(-1, -0.3, 0)
+spread = 50.0
+initial_velocity_min = 250.0
+initial_velocity_max = 350.0
+angular_velocity_min = -4.00002
+angular_velocity_max = 3.99998
+gravity = Vector3(0, 490, 0)
+damping_min = 0.1
+damping_max = 0.3
+scale_min = 0.7
+scale_max = 1.3
 
 [node name="Minion" type="CharacterBody2D" groups=["Enemies"]]
 collision_layer = 2
@@ -320,7 +448,7 @@ shape = SubResource("RectangleShape2D_kpr8r")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(5, -23)
-texture = ExtResource("42_u0n58")
+texture = ExtResource("50_s436k")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
@@ -338,18 +466,18 @@ shape = SubResource("CapsuleShape2D_1exfc")
 position = Vector2(15, -14)
 target_position = Vector2(0, 16)
 
-[node name="AttackArea2D" type="Area2D" parent="."]
+[node name="AttackArea2D" type="Area2D" parent="." groups=["Parriable"]]
 collision_layer = 2
 collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea2D"]
-position = Vector2(24.5, -13.5)
+position = Vector2(4, -14)
 shape = SubResource("RectangleShape2D_318ex")
 disabled = true
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
 script = ExtResource("67_2y5ab")
-initial_state = NodePath("Follow")
+initial_state = NodePath("Idle")
 
 [node name="Idle" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
 script = ExtResource("68_ngljs")
@@ -357,17 +485,19 @@ enemy = NodePath("../..")
 anim = NodePath("../../AnimationPlayer")
 metadata/_custom_type_script = "uid://d3orvcit73mdl"
 
-[node name="Walk" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "ray_ground", "ray_wall", "anim")]
+[node name="Walk" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "ray_ground", "ray_wall", "ray_player", "anim")]
 script = ExtResource("69_qmn41")
 enemy = NodePath("../..")
 ray_ground = NodePath("../../GroudRayCast2D")
 ray_wall = NodePath("../../WallRayCast2D")
+ray_player = NodePath("../../PlayerRayCast2D")
 anim = NodePath("../../AnimationPlayer")
 metadata/_custom_type_script = "uid://bfcd3sia5fijs"
 
-[node name="Follow" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy")]
+[node name="Follow" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "ray_ground")]
 script = ExtResource("70_kyl8a")
 enemy = NodePath("../..")
+ray_ground = NodePath("../../GroudRayCast2D")
 metadata/_custom_type_script = "uid://chd6cpemsaxpi"
 
 [node name="ChangeDirection" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy")]
@@ -375,10 +505,11 @@ script = ExtResource("71_u2txa")
 enemy = NodePath("../..")
 metadata/_custom_type_script = "uid://chd6cpemsaxpi"
 
-[node name="Attack" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim", "attack_area")]
+[node name="Attack" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim", "ray_ground", "attack_area")]
 script = ExtResource("72_svca3")
 enemy = NodePath("../..")
 anim = NodePath("../../AnimationPlayer")
+ray_ground = NodePath("../../GroudRayCast2D")
 attack_area = NodePath("../../AttackArea2D")
 metadata/_custom_type_script = "uid://chd6cpemsaxpi"
 
@@ -393,6 +524,12 @@ script = ExtResource("74_qnop3")
 enemy = NodePath("../..")
 anim = NodePath("../../AnimationPlayer")
 metadata/_custom_type_script = "uid://chd6cpemsaxpi"
+
+[node name="Stun" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
+script = ExtResource("83_aj7hg")
+enemy = NodePath("../..")
+anim = NodePath("../../AnimationPlayer")
+metadata/_custom_type_script = "uid://cum2exxgjdoou"
 
 [node name="HealtContainer" type="HBoxContainer" parent="."]
 anchors_preset = 5
@@ -420,3 +557,22 @@ texture = ExtResource("3_j0yej")
 [node name="WallRayCast2D" type="RayCast2D" parent="."]
 position = Vector2(0, -17)
 target_position = Vector2(27, 0)
+
+[node name="Bit0Particles" type="GPUParticles2D" parent="."]
+z_index = 5
+emitting = false
+texture = ExtResource("4_p6x2l")
+one_shot = true
+explosiveness = 1.0
+randomness = 0.2
+process_material = SubResource("ParticleProcessMaterial_uo6ff")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+
+[node name="PlayerRayCast2D" type="RayCast2D" parent="."]
+position = Vector2(0, -16)
+target_position = Vector2(160, 0)
+collision_mask = 4
+
+[connection signal="area_entered" from="AttackArea2D" to="StateMachine/Attack" method="_on_attack_area_2d_area_entered"]
+[connection signal="body_entered" from="AttackArea2D" to="StateMachine/Attack" method="_on_attack_area_2d_body_entered"]

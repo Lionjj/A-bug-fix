@@ -1,11 +1,26 @@
-[gd_scene load_steps=2 format=3 uid="uid://4bihs36486qi"]
+[gd_scene load_steps=3 format=3 uid="uid://4bihs36486qi"]
 
 [ext_resource type="Script" uid="uid://c4j0gw8v470sj" path="res://Scripts/Core/hud_player.gd" id="1_8oa5u"]
+[ext_resource type="FontFile" uid="uid://bw5i31g4qhsm" path="res://Assets/superstar_memesbruh03.ttf" id="2_aix77"]
 
 [node name="HudPlayer" type="CanvasLayer"]
 script = ExtResource("1_8oa5u")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+scale = Vector2(1.5, 1.5)
 theme_override_constants/separation = 25
+
+[node name="ObjectiveLabel" type="Label" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 28.0
+grow_horizontal = 0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_aix77")
+theme_override_font_sizes/font_size = 24
+vertical_alignment = 1

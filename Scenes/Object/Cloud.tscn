@@ -10,6 +10,11 @@ shader_parameter/wave_strength_y = 1.0
 shader_parameter/wave_strength_x = 0.5
 shader_parameter/wave_speed = 2.0
 shader_parameter/pixel_snap = 1.0
+shader_parameter/seed = 0.0
+shader_parameter/veil_random_min = 0.85
+shader_parameter/veil_noise_strength = 0.12
+shader_parameter/veil_noise_scale = 4.0
+shader_parameter/veil_noise_speed = 0.0
 
 [node name="Cloud" type="Node2D"]
 script = ExtResource("1_arssq")
@@ -17,5 +22,3 @@ script = ExtResource("1_arssq")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_ildbp")
 texture = ExtResource("2_3ijmi")
-vframes = 3
-frame = 2

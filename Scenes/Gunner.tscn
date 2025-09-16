@@ -1,4 +1,4 @@
-[gd_scene load_steps=69 format=3 uid="uid://d0hqdlx2fy43e"]
+[gd_scene load_steps=75 format=3 uid="uid://d0hqdlx2fy43e"]
 
 [ext_resource type="Texture2D" uid="uid://c6ld80dynlt3k" path="res://Assets/OS/Enemies/Enemy02/Idle/Enemy02_Idle_01.png" id="1_in0ob"]
 [ext_resource type="Script" uid="uid://clulu80wxd4xq" path="res://Scripts/Gunner/Gunner.gd" id="1_yldk7"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://cug83jobmf202" path="res://Assets/OS/Enemies/Enemy02/Idle/Enemy02_Idle_08.png" id="8_igax4"]
 [ext_resource type="Texture2D" uid="uid://moflx7g57cfa" path="res://Assets/OS/Enemies/Enemy02/Hit/Enemy02_Hit_01.png" id="9_igax4"]
 [ext_resource type="Texture2D" uid="uid://dl7s82fwfki71" path="res://Assets/OS/Enemies/Enemy02/Hit/Enemy02_Hit_02.png" id="10_g5ntq"]
+[ext_resource type="AudioStream" uid="uid://dowfagxcodkqf" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/FGHTImpt_MELEE-Swish Hit_HY_PC-001.wav" id="10_vt88l"]
 [ext_resource type="Texture2D" uid="uid://l48dhbhe2pt1" path="res://Assets/OS/Enemies/Enemy02/Hit/Enemy02_Hit_03.png" id="11_1033v"]
 [ext_resource type="Texture2D" uid="uid://cwegqvaqv2csi" path="res://Assets/OS/Enemies/Enemy02/Hit/Enemy02_Hit_04.png" id="12_o3cnf"]
 [ext_resource type="Texture2D" uid="uid://cpblwmwhbvshn" path="res://Assets/OS/Enemies/Enemy02/Hit/Enemy02_Hit_05.png" id="13_02wfp"]
@@ -36,6 +37,7 @@
 [ext_resource type="Texture2D" uid="uid://cr4wtao58dd8o" path="res://Assets/OS/Enemies/Enemy02/Shoot/Enemy02_Shoot_12.png" id="33_0jwi3"]
 [ext_resource type="Texture2D" uid="uid://dfkkdilwrx785" path="res://Assets/OS/Enemies/Enemy02/Shoot/Enemy02_Shoot_13.png" id="34_vt88l"]
 [ext_resource type="Texture2D" uid="uid://ds3frqi2mc7j4" path="res://Assets/OS/Enemies/Enemy02/Shoot/Enemy02_Shoot_14.png" id="35_c4lh3"]
+[ext_resource type="AudioStream" uid="uid://2xe6xceaakpf" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/DSGNTonl_SKILL RELEASE-Ricochet 2_HY_PC-006.wav" id="36_c4lh3"]
 [ext_resource type="Texture2D" uid="uid://2g55m3t77s8c" path="res://Assets/OS/Enemies/Enemy02/Shoot/Enemy02_Shoot_15.png" id="36_u0fui"]
 [ext_resource type="Texture2D" uid="uid://1u5kjf8ggl1o" path="res://Assets/OS/Enemies/Enemy02/Shoot/Enemy02_Shoot_16.png" id="37_1o5y6"]
 [ext_resource type="Texture2D" uid="uid://cbdd67kwjo0uk" path="res://Assets/OS/Enemies/Enemy02/Reload/Enemy02_Reload_01.png" id="38_y76d8"]
@@ -51,12 +53,14 @@
 [ext_resource type="Texture2D" uid="uid://bi1i7828as6ik" path="res://Assets/OS/Enemies/Enemy02/Reload/Enemy02_Reload_11.png" id="48_6qsvy"]
 [ext_resource type="Texture2D" uid="uid://b4dcpmpu3y4gj" path="res://Assets/OS/Enemies/Enemy02/Reload/Enemy02_Reload_12.png" id="49_gjr5i"]
 [ext_resource type="Script" uid="uid://c5tw83sty7fpl" path="res://Scripts/StateMachine/StateMachine.gd" id="51_y8fs1"]
+[ext_resource type="AudioStream" uid="uid://bvn22ncress4g" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/DSGNMisc_PROJECTILE-Laser Shot_HY_PC-006.wav" id="52_0jwi3"]
 [ext_resource type="Script" uid="uid://bdr8a5ebj3quv" path="res://Scripts/Gunner/State/Idle.gd" id="52_jugon"]
 [ext_resource type="Texture2D" uid="uid://bs3y0x21c1njr" path="res://Assets/OS/Enemies/1.png" id="52_xkyhj"]
 [ext_resource type="Script" uid="uid://b5ep1bq53t83s" path="res://Scripts/Gunner/State/Shoot.gd" id="53_xin10"]
 [ext_resource type="PackedScene" uid="uid://qkd04lei1w6i" path="res://Scenes/Interactable/bullet.tscn" id="54_67u6s"]
 [ext_resource type="Script" uid="uid://ceg6j0exxdfxm" path="res://Scripts/Enemy/State/Hit.gd" id="55_l673m"]
 [ext_resource type="Script" uid="uid://dk73lwk6dtdhb" path="res://Scripts/Enemy/State/Death.gd" id="57_spg2l"]
+[ext_resource type="Texture2D" uid="uid://bur4dys6fania" path="res://Assets/OS/Enemies/0.png" id="58_spg2l"]
 
 [sub_resource type="Shader" id="Shader_j51y5"]
 code = "shader_type canvas_item;
@@ -111,6 +115,21 @@ tracks/0/keys = {
 "update": 1,
 "values": [ExtResource("9_igax4"), ExtResource("10_g5ntq"), ExtResource("11_1033v"), ExtResource("12_o3cnf"), ExtResource("13_02wfp"), ExtResource("14_10ijn"), ExtResource("15_ioa71")]
 }
+tracks/1/type = "audio"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AudioStreamPlayer2D")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("10_vt88l")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/1/use_blend = true
 
 [sub_resource type="Animation" id="Animation_mwao7"]
 resource_name = "idle"
@@ -162,6 +181,21 @@ tracks/0/keys = {
 "update": 1,
 "values": [ExtResource("38_y76d8"), ExtResource("39_1y4a2"), ExtResource("40_5ptvr"), ExtResource("41_qxwvu"), ExtResource("42_4bwmx"), ExtResource("43_26l6m"), ExtResource("44_m2ogo"), ExtResource("45_dmsee"), ExtResource("46_6qd7c"), ExtResource("47_tdopg"), ExtResource("48_6qsvy"), ExtResource("49_gjr5i")]
 }
+tracks/1/type = "audio"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AudioStreamPlayer2D")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("36_c4lh3")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/1/use_blend = true
 
 [sub_resource type="Animation" id="Animation_nryh5"]
 resource_name = "shoot"
@@ -192,6 +226,21 @@ tracks/1/keys = {
 "method": &"init_bullet"
 }]
 }
+tracks/2/type = "audio"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("AudioStreamPlayer2D")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("52_0jwi3")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/2/use_blend = true
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_lk2r2"]
 _data = {
@@ -209,6 +258,27 @@ size = Vector2(20, 47)
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_l673m"]
 radius = 12.0
 height = 46.0
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ddvi2"]
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(8, 4, 1)
+emission_shape = 3
+emission_box_extents = Vector3(1, 1, 1)
+inherit_velocity_ratio = 25.0
+direction = Vector3(-1, -0.3, 0)
+spread = 50.0
+initial_velocity_min = 250.0
+initial_velocity_max = 350.0
+angular_velocity_min = -4.00002
+angular_velocity_max = 3.99998
+gravity = Vector3(0, 490, 0)
+damping_min = 0.1
+damping_max = 0.3
+scale_min = 0.7
+scale_max = 1.3
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vt88l"]
+radius = 166.003
 
 [node name="Gunner" type="CharacterBody2D" groups=["Enemies"]]
 collision_layer = 2
@@ -240,11 +310,12 @@ enemy = NodePath("../..")
 anim = NodePath("../../AnimationPlayer")
 metadata/_custom_type_script = "uid://bdr8a5ebj3quv"
 
-[node name="Shoot" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
+[node name="Shoot" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim", "marker")]
 script = ExtResource("53_xin10")
 enemy = NodePath("../..")
 anim = NodePath("../../AnimationPlayer")
 bullet_scene = ExtResource("54_67u6s")
+marker = NodePath("../../GunPoint")
 metadata/_custom_type_script = "uid://b5ep1bq53t83s"
 
 [node name="Hit" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
@@ -279,10 +350,30 @@ layout_mode = 2
 texture = ExtResource("52_xkyhj")
 
 [node name="GunPoint" type="Marker2D" parent="."]
-position = Vector2(23, -18)
+position = Vector2(0, -32)
 
 [node name="Hitbox" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
 position = Vector2(0, -23)
 shape = SubResource("CapsuleShape2D_l673m")
+
+[node name="Bit0Particles" type="GPUParticles2D" parent="."]
+z_index = 5
+emitting = false
+texture = ExtResource("58_spg2l")
+one_shot = true
+explosiveness = 1.0
+randomness = 0.2
+process_material = SubResource("ParticleProcessMaterial_ddvi2")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+
+[node name="Sight" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sight"]
+position = Vector2(0, -23)
+shape = SubResource("CircleShape2D_vt88l")
+
+[connection signal="body_entered" from="Sight" to="StateMachine/Idle" method="_on_sight_body_entered"]
+[connection signal="body_exited" from="Sight" to="StateMachine/Idle" method="_on_sight_body_exited"]

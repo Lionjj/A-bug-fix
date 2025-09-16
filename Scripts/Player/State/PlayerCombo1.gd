@@ -9,7 +9,8 @@ class_name PlayerCombo1
 @export var allow_air_movement := true
 @export var allow_jump_movement := true
 @export var attacking := false
-@export var damage := 1
+
+
 
 var direction := 1
 
@@ -17,11 +18,15 @@ func Enter():
 	if player.velocity.y < 0:
 		player.velocity.y *= 0.2  # o 0.1 → smorza la salita
 	
+	var attack_id = player.set_damage("light")
 	attacking = true
+	
+	emit_signal("attack_windup", Time.get_ticks_msec()/1000.0, attack_id)
 	animation_player.play("attack1")
-	await get_tree().process_frame
-	check_attack_hits()
+	GameManager.play_one_shot(player.audio["attack1"], 1.0, 0.12, -2.0) 
 	await animation_player.animation_finished
+	emit_signal("attack_swing", attack_id)
+	
 	attacking = false
 	Transitioned.emit(self, "Idle")
 
@@ -39,9 +44,3 @@ func Physics_Update(delta):
 		player.velocity.y += player.gravity * suspend_gravity_factor * delta
 	else:
 		player.velocity.y = 0
-
-func check_attack_hits():
-	var overlapping = attack_area.get_overlapping_areas()
-	for area in overlapping:
-		if area.get_parent().is_in_group("Enemies"):
-			area.get_parent().take_damage(damage)

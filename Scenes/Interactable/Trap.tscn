@@ -1,0 +1,74 @@
+[gd_scene load_steps=12 format=3 uid="uid://bye3umlv0tvel"]
+
+[ext_resource type="Script" uid="uid://b233cjyeww0yy" path="res://Scripts/Object/trap.gd" id="1_jj4yl"]
+[ext_resource type="Shader" uid="uid://jy5b71jgk24c" path="res://Shaders/Trap.gdshader" id="2_4ekhd"]
+[ext_resource type="Texture2D" uid="uid://dqy8qqwdi1hly" path="res://Assets/OS/Environments/Trap.png" id="4_oj6sr"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vm7tw"]
+size = Vector2(16, 16)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8rf1a"]
+shader = ExtResource("2_4ekhd")
+shader_parameter/strength = 0.005
+shader_parameter/frequency = 100.0
+shader_parameter/speed = 4.0
+shader_parameter/danger_flash_speed = 5.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c66wi"]
+atlas = ExtResource("4_oj6sr")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2g6ih"]
+atlas = ExtResource("4_oj6sr")
+region = Rect2(0, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d1d1h"]
+atlas = ExtResource("4_oj6sr")
+region = Rect2(32, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a68wr"]
+atlas = ExtResource("4_oj6sr")
+region = Rect2(0, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ccxr4"]
+atlas = ExtResource("4_oj6sr")
+region = Rect2(32, 64, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_32cwx"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c66wi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2g6ih")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_d1d1h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a68wr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ccxr4")
+}],
+"loop": true,
+"name": &"default",
+"speed": 8.0
+}]
+
+[node name="Trap" type="Area2D"]
+collision_mask = 4
+script = ExtResource("1_jj4yl")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_vm7tw")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_8rf1a")
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_32cwx")
+autoplay = "default"
+frame_progress = 0.0110612
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

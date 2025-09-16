@@ -38,7 +38,10 @@ func Update(delta: float):
 		Transitioned.emit(self, "Hit")
 
 	if Input.is_action_just_pressed("dodge") and player.can_dodge:
-		Transitioned.emit(self, "Roll")
+		Transitioned.emit(self, "Dush")
+	
+	if Input.is_action_just_pressed("parry"):
+		Transitioned.emit(self, "Parry")
 		
 func Physics_Update(delta: float):
 	var direction = Input.get_axis("ui_left", "ui_right")

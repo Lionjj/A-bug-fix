@@ -8,6 +8,7 @@ class_name PlayerHit
 func Enter():
 	player.velocity = Vector2.ZERO
 	anim.play("hit")
+	GameManager.play_one_shot(player.audio["hit"], 1.0, 0.12, -2.0) 
 	await anim.animation_finished
 	
 	hud.lose_heart()

@@ -21,9 +21,11 @@ script = ExtResource("1_ycag2")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_odot3")
+scale = Vector2(2, 2)
 texture = ExtResource("1_xjght")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 1)
 shape = SubResource("CircleShape2D_oduel")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

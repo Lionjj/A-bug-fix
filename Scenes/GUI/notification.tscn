@@ -1,10 +1,10 @@
 [gd_scene load_steps=10 format=3 uid="uid://demrp3b7cbg6q"]
 
 [ext_resource type="Script" uid="uid://cf38phr0ceujs" path="res://Scripts/Core/notification.gd" id="1_10afb"]
-[ext_resource type="Texture2D" uid="uid://bfiu8c484c5ql" path="res://Assets/OS/WindowsModal/TutoriaBG.png" id="1_db016"]
-[ext_resource type="Texture2D" uid="uid://2dqvrkgwyvqr" path="res://Assets/OS/WindowsModal/CloseButton.png" id="2_8au3v"]
-[ext_resource type="Texture2D" uid="uid://churjf33vvyp1" path="res://Assets/OS/WindowsModal/Allert.png" id="3_e6inp"]
+[ext_resource type="Texture2D" uid="uid://bc3dljw1jqmb6" path="res://Assets/OS/WindowsModal/tuttorial.png" id="2_ov1ld"]
 [ext_resource type="AudioStream" uid="uid://bc0spemhiwxpj" path="res://Assets/Sound/error-message-182475.mp3" id="5_xcvam"]
+[ext_resource type="FontFile" uid="uid://bw5i31g4qhsm" path="res://Assets/superstar_memesbruh03.ttf" id="5_xmkn5"]
+[ext_resource type="Script" uid="uid://bhv23l6olpj8j" path="res://Scripts/Core/tutorial.gd" id="6_ov1ld"]
 
 [sub_resource type="Animation" id="Animation_10afb"]
 length = 0.001
@@ -84,47 +84,33 @@ _data = {
 [sub_resource type="SegmentShape2D" id="SegmentShape2D_10afb"]
 a = Vector2(1, 213)
 
-[node name="Notification" type="Panel"]
-offset_left = -155.0
-offset_top = -42.0
-offset_right = 146.0
-offset_bottom = 57.0
+[node name="Notification" type="MarginContainer"]
+offset_right = 127.0
+offset_bottom = 99.0
 script = ExtResource("1_10afb")
 
 [node name="NinePatchRect" type="NinePatchRect" parent="."]
-layout_mode = 1
-anchors_preset = -1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_bottom = -1.0
-grow_horizontal = 0
-grow_vertical = 0
-texture = ExtResource("1_db016")
-patch_margin_left = 10
-patch_margin_top = 15
-patch_margin_right = 10
-patch_margin_bottom = 10
+layout_mode = 2
+texture = ExtResource("2_ov1ld")
+patch_margin_left = 8
+patch_margin_top = 8
+patch_margin_right = 8
+patch_margin_bottom = 8
 
-[node name="Xbtn" type="TextureRect" parent="NinePatchRect"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -26.0
-offset_top = -8.0
-offset_right = 6.0
-offset_bottom = 24.0
-grow_horizontal = 0
-texture = ExtResource("2_8au3v")
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
-[node name="AlertIcon" type="TextureRect" parent="NinePatchRect"]
-layout_mode = 1
-anchors_preset = -1
-offset_left = 2.0
-offset_top = 27.0
-offset_right = 34.0
-offset_bottom = 70.0
-texture = ExtResource("3_e6inp")
+[node name="Label" type="Label" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("5_xmkn5")
+vertical_alignment = 2
+script = ExtResource("6_ov1ld")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
@@ -139,4 +125,5 @@ shape = SubResource("SegmentShape2D_10afb")
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 
+[connection signal="action_sender" from="." to="MarginContainer/Label" method="_on_notification_action_sender"]
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
