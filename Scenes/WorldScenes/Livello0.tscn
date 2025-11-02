@@ -469,15 +469,4 @@ metadata/_edit_use_anchors_ = true
 position = Vector2(941, 362)
 dialogue_lines = Array[String](["Ehi, aspetta un frame!", "Finalmente sei arrivato...", "Siamo stati instradati fin qui per raggiungere il processore", "Dobbiamo raggiungerlo prima degli altri porcessi o altrimenti...", "Non potremo più compiere il nostro obiettivo.", "Sto continuando ad ascoltare eventuali processi ostili....", "Sembra che la zona sia sicura", "Ma comunque resterò in ascolto di eventuali eventi", "Procedi pure io ti seguirò."])
 
-[connection signal="body_entered" from="TileMap_Foreground/LaserTrap" to="TileMap_Foreground/LaserTrap" method="_on_body_entered"]
-[connection signal="body_entered" from="TileMap_Foreground/@Area2D@21992" to="TileMap_Foreground/@Area2D@21992" method="_on_body_entered"]
-[connection signal="body_entered" from="TileMap_Foreground/@Area2D@21993" to="TileMap_Foreground/@Area2D@21993" method="_on_body_entered"]
-[connection signal="body_entered" from="TileMap_Foreground/@Area2D@21994" to="TileMap_Foreground/@Area2D@21994" method="_on_body_entered"]
-[connection signal="body_entered" from="TileMap_Foreground/Trap" to="TileMap_Foreground/Trap" method="_on_body_entered"]
-[connection signal="body_entered" from="TileMap_Foreground/@Area2D@21995" to="TileMap_Foreground/@Area2D@21995" method="_on_body_entered"]
-[connection signal="body_entered" from="TileMap_Foreground/@Area2D@21996" to="TileMap_Foreground/@Area2D@21996" method="_on_body_entered"]
-[connection signal="body_entered" from="TileMap_Foreground/@Area2D@21997" to="TileMap_Foreground/@Area2D@21997" method="_on_body_entered"]
-[connection signal="body_entered" from="TileMap_Foreground/@Area2D@21998" to="TileMap_Foreground/@Area2D@21998" method="_on_body_entered"]
-[connection signal="body_entered" from="TileMap_Foreground/@Area2D@21999" to="TileMap_Foreground/@Area2D@21999" method="_on_body_entered"]
-[connection signal="body_entered" from="TileMap_Foreground/@Area2D@22000" to="TileMap_Foreground/@Area2D@22000" method="_on_body_entered"]
 [connection signal="change_scene" from="Livello1" to="." method="_on_livello_1_change_scene"]

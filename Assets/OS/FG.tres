@@ -295,5 +295,5 @@ scenes/13/scene = ExtResource("9_4q4me")
 
 [resource]
 physics_layer_0/collision_layer = 1
-sources/5 = SubResource("TileSetAtlasSource_4drdq")
 sources/6 = SubResource("TileSetScenesCollectionSource_ooiq6")
+sources/5 = SubResource("TileSetAtlasSource_4drdq")

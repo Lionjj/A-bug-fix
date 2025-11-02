@@ -23,6 +23,7 @@ InteractionManager="*res://Scenes/Interactable/InterazionArea/InteractionManager
 DialogManager="*res://Scripts/Core/DialogManager.gd"
 EventBus="*res://Scripts/Quest/EventBus.gd"
 ObjectiveManager="*res://Scripts/Core/ObjectiveManager.gd"
+Rng="*res://PCG/util/RNG.gd"
 
 [display]
 

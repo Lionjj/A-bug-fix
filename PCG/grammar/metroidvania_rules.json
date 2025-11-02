@@ -1,0 +1,24 @@
+{
+  "rules": [
+	{
+	  "match": {"kind":"HUB"},
+	  "expand_nodes": [
+		{"id":"A","kind":"CHALLENGE"},
+		{"id":"K","kind":"KEY_ROOM","grants":["GRAPPLE"]},
+		{"id":"C","kind":"CHALLENGE","requires":["GRAPPLE"]},
+		{"id":"SV","kind":"SAVE"}
+	  ],
+	  "expand_edges": [["A","K"],["K","C"],["C","SV"]],
+	  "attach": "out"
+	},
+	{
+	  "match": {"kind":"CHALLENGE"},
+	  "expand_nodes": [
+		{"id":"M","kind":"CHALLENGE"},
+		{"id":"R","kind":"SIDE","optional":true}
+	  ],
+	  "expand_edges": [["M","R"]],
+	  "attach": "M"
+	}
+  ]
+}
