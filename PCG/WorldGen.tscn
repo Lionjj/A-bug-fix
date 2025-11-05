@@ -6,8 +6,8 @@
 [node name="WorldGen" type="Node2D"]
 script = ExtResource("1_4w8jr")
 budget_nodes = 24
-seed = 2
+seed = 11
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(0.2, 0.2)
+zoom = Vector2(0.5, 0.5)
 script = ExtResource("2_qjsvq")

@@ -409,35 +409,6 @@ func pick_template_with_requirements(
 	
 
 # -------- Helpers di filtro --------
-#func _candidates_for(node_data, abil_here: Array) -> Array[PackedScene]:
-	## Partenza: tutti i template noti
-	#var pool: Array[PackedScene] = templates.duplicate()
-#
-	## Se hai una mappa per "kind", usa quella:
-	## var k := ""
-	## if node_data is Dictionary:
-	##     k = String(node_data.get("kind",""))
-	## elif node_data.has_method("kind"):
-	##     k = String(node_data.kind)
-	## if templates_by_kind.has(k):
-	##     pool = templates_by_kind[k]
-#
-	## Filtro per abilità richieste dal template (se non possiedi quell'abilità, scarta)
-	#var out: Array[PackedScene] = []
-	#for p in pool:
-		#var meta := _peek_meta(p)
-		#if meta == null:
-			#continue
-		#var ok := true
-		## meta.requires: Array[Abilities.Ability]
-		#for need in meta.requires:
-			#if not abil_here.has(need):
-				#ok = false
-				#break
-		#if ok:
-			#out.append(p)
-	#return out
-
 func _candidates_for(node_data, abil_here: Array) -> Array[PackedScene]:
 	# Partenza: tutti i template noti
 	var pool: Dictionary[String, PackedScene] = room_scenes.duplicate()
@@ -458,8 +429,6 @@ func _candidates_for(node_data, abil_here: Array) -> Array[PackedScene]:
 			out.append(pool.get(key))
 	return out
 
-
-
 func _satisfies(conn: Dictionary, req: Dictionary) -> bool:
 	for d in ["N","E","S","W"]:
 		if bool(req.get(d, false)) and not bool(conn.get(d, false)):
@@ -474,7 +443,6 @@ func _relaxed_satisfies(conn: Dictionary, req: Dictionary) -> bool:
 	if need_v and not (bool(conn.get("N",false)) or bool(conn.get("S",false))):
 		return false
 	return true
-
 
 # -------- Lettura “leggera” dei meta dai PackedScene --------
 func _peek_meta(p: PackedScene) -> RoomTemplateMeta:

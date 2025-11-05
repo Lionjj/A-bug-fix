@@ -43,18 +43,21 @@ func build():
 		var v := bool(c.get("V", true))
 		conns[id] = {"N": v, "E": h, "S": v, "W": h}
 
-	# DEBUG (facoltativo)
+	# ==== DEBUG ====
 	for id in caps.keys():
 		print(id, " -> H:", caps[id]["H"], " V:", caps[id]["V"], "  |  N/E/S/W:", conns[id])
 		
 	prints("Start:", G.start_id, "neighbors:", G.neighbors(String(G.start_id)))
 	for v in G.neighbors(String(G.start_id)):
 		prints("S->", v, "caps", caps[v], "conns", conns[v])
-
-	# 5) Piazzamento su griglia (PASSA anche conns!)
+ 	# ==== FINE DEBUG ====
+	
+	# 5) Piazzamento su griglia 
 	var positions : Dictionary = placer.place(G, rng, caps, conns)
 	
 	var cell_tiles: Vector2i = assembler.max_room_size_tiles()
+	
+	#cell_tiles += Vector2i(16, 16)
 
 	# 6) Istanziazione stanze rispettando i connettori RICHIESTI dai vicini
 	for id in positions.keys():

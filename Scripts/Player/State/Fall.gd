@@ -38,7 +38,7 @@ func Physics_Update(delta):
 	else:
 		player.velocity.y = 0
 	
-	if player.position.y >= 600:
-		Transitioned.emit(self, "Death")
+	#if player.position.y >= 600:
+		#Transitioned.emit(self, "Death")
 	
 	player.switch_direction(player.velocity)
