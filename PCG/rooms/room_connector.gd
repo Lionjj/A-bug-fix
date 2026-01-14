@@ -1,26 +1,22 @@
-# RoomConnector.gd
+## Modulo contenente le informazioni dei conettori che collegano due stanze.
+##
+## La logica che permette di aprire i varchi è contenuta in [CorridorBuilder], la convenzione vuole
+## che questi marker vanno posizionati alle [b]estremità esterne[/b] delle stanze.
 extends Marker2D
 class_name RoomConnector
 
-@export_enum("N","E","S","W") var axis: String = "E"
-
-# Offset per aprire varchi larghi (in TILE)
+## Specifica il numero di tile verso l'alto da lasciare libere per creare un varco che si apre 
+## verticalmente vedi anche [member offset_down]
 @export var offset_up: int = 0
+
+## Specifica il numero di tile verso il basso da lasciare libere per creare un varco che si apre 
+## verticalmente vedi anche [member offset_up]
 @export var offset_down: int = 0
+
+## Specifica il numero di tile verso sinistra da lasciare libere per creare un varco che si apre 
+## orizzontalmente vedi anche [member offset_right]
 @export var offset_left: int = 0
+
+## Specifica il numero di tile verso destra da lasciare libere per creare un varco che si apre 
+## orizzontalmente vedi anche [member offset_left]
 @export var offset_right: int = 0
-
-# Spessore corridoio (in tile)
-@export var thickness: int = 1
-
-# Estetica: angoli/cappucci quando non poggia a pavimento/soffitto
-@export var clearance_top: int = 0
-@export var clearance_bottom: int = 0
-
-# Piano di uscita relativo al marker (in tile; 0 = livello marker)
-@export var vertical_offset_from_marker: int = 0
-
-const TILE := 16
-func tile_pos() -> Vector2i:
-	var p := global_position.snapped(Vector2(TILE, TILE))
-	return Vector2i(int(p.x)/TILE, int(p.y)/TILE)

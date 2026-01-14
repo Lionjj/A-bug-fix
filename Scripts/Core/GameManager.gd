@@ -13,15 +13,6 @@ var file_num : int :
 
 signal enemy_count_change(new_count: int)
 
-#func _ready() -> void:
-		#EventBus.game_event.connect(
-			#func(ev: StringName, payload):
-				#if ev == &"level_entered":
-					#file_num = 0
-		#)
-		#await EventBus.game_event
-
-
 func respawn_player():
 	if current_checkpoint != null:
 		player.position = current_checkpoint.global_position

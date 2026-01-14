@@ -40,6 +40,7 @@ func Update(_delta: float):
 
 func Physics_Update(_delta: float):
 	player.velocity.y = velocity_y
+	var col = player.wall_check.get_collider()
 
 func _wall_jump():
 	var dir = -player.direction  # ritorna -1 se a destra, +1 se a sinistra

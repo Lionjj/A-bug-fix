@@ -11,10 +11,10 @@ func Enter():
 	GameManager.play_one_shot(player.audio["jump"], 1.0, 0.12, -2.0) 
 		
 func Update(_delta):
-	# Passa a Fall se inizia a cadere
 	if player.wall_check.is_colliding() and player.velocity.y > 0:
 		Transitioned.emit(self, "Slide")
 	
+	# Passa a Fall se inizia a cadere
 	if player.velocity.y > 0:
 		Transitioned.emit(self, "Fall")
 	

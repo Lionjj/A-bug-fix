@@ -1,0 +1,122 @@
+[gd_scene load_steps=12 format=3 uid="uid://c110js54dgci7"]
+
+[ext_resource type="Script" uid="uid://c0xsyt48jixdt" path="res://Scenes/Interactable/door.gd" id="1_4ky8e"]
+[ext_resource type="PackedScene" uid="uid://bsyrhds73a3m7" path="res://Scenes/Interactable/InterazionArea/interaction_area.tscn" id="1_iwjvu"]
+[ext_resource type="Shader" uid="uid://ctwnnfek3ya4i" path="res://Scenes/Interactable/DoorBlock.gdshader" id="3_2s30x"]
+[ext_resource type="Texture2D" uid="uid://8cp7nhhxucfg" path="res://Assets/OS/lock.png" id="3_4ky8e"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_i4kte"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_duap1"]
+shader = ExtResource("3_2s30x")
+shader_parameter/base_color = Color(0.06, 0.1, 0.14, 1)
+shader_parameter/border_color = Color(0.22, 0.9, 0.88, 1)
+shader_parameter/circuit_color = Color(0.552941, 0.772549, 0.658824, 1)
+shader_parameter/data_color = Color(1, 0.78, 0.88, 1)
+shader_parameter/gate_size = Vector2(16, 16)
+shader_parameter/tiles = Vector2(1, 1)
+shader_parameter/border_px = 4.0
+shader_parameter/pattern_scale = 16.0
+shader_parameter/data_speed = 1.2
+shader_parameter/glow = 1.5
+shader_parameter/background_alpha = 0.85
+shader_parameter/active = 1.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2s30x"]
+size = Vector2(16, 16)
+
+[sub_resource type="Animation" id="Animation_2s30x"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Lock:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_duap1"]
+resource_name = "lock"
+length = 2.0
+step = 0.1176
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Lock:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.111111, 0.222222, 0.333333, 0.444444, 0.555556, 0.666667, 0.777778, 0.888889, 1, 1.11111, 1.22222, 1.33333, 1.44444, 1.55556, 1.66667, 1.77778),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+}
+
+[sub_resource type="Animation" id="Animation_4ky8e"]
+resource_name = "unlock"
+length = 2.0
+step = 0.1176
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Lock:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1176, 0.2352, 0.3528, 0.4704, 0.588, 0.7056, 0.8232, 0.9408, 1.0584, 1.176, 1.2936, 1.4112, 1.5288, 1.6464, 1.764, 1.8816),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_2s30x"]
+_data = {
+&"RESET": SubResource("Animation_2s30x"),
+&"lock": SubResource("Animation_duap1"),
+&"unlock": SubResource("Animation_4ky8e")
+}
+
+[node name="Door" type="StaticBody2D"]
+physics_material_override = SubResource("PhysicsMaterial_i4kte")
+script = ExtResource("1_4ky8e")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_duap1")
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 32.0
+offset_top = 21.0
+offset_right = 48.0
+offset_bottom = 37.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(40, 29)
+shape = SubResource("RectangleShape2D_2s30x")
+disabled = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_2s30x")
+}
+
+[node name="Lock" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("3_4ky8e")
+hframes = 4
+vframes = 5
+
+[node name="InteractionArea" parent="." instance=ExtResource("1_iwjvu")]
+
+[node name="InteractionShape" type="CollisionShape2D" parent="InteractionArea"]
+disabled = true

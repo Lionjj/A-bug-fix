@@ -1,0 +1,355 @@
+[gd_scene load_steps=12 format=4 uid="uid://b2qokk4dgkxsq"]
+
+[ext_resource type="Script" uid="uid://xkfcel7ikpaq" path="res://addons/wfc/utils/bitmatrix.gd" id="2_2pucv"]
+[ext_resource type="Script" uid="uid://bub0ho214qih6" path="res://addons/wfc/problems/2d/rules_2d.gd" id="3_nc3dq"]
+[ext_resource type="Script" uid="uid://dm5in58pqc257" path="res://addons/wfc/solver/solver_settings.gd" id="4_et6ip"]
+[ext_resource type="Script" uid="uid://bnqimgi4cjcba" path="res://addons/wfc/problems/2d/preconditions/precondition_2d_platformer_settings.gd" id="5_0fs8s"]
+[ext_resource type="Script" uid="uid://bccf6yw2yls3k" path="res://addons/wfc/runners/runner_multithreaded_settings.gd" id="6_r8fcw"]
+
+[sub_resource type="GDScript" id="GDScript_sq3cg"]
+script/source = "extends Node2D
+
+func _ready():
+	$generator.start()
+	$sample.hide()
+	$negative_sample.hide()
+	$target.show()
+"
+
+[sub_resource type="GDScript" id="GDScript_g7ymr"]
+script/source = "class_name WFC2DGenerator
+## Generates content of a map (TileMap or GridMap) using WFC algorithm.
+extends Node
+
+## A map that will be filled using WFC algorithm.
+@export_node_path(\"TileMap\", \"GridMap\", \"TileMapLayer\", \"WFC2DLayeredMap\")
+var target: NodePath
+
+## Rect of a map that will be filled.
+## [br]
+## Interpretation of this rect may depend on [WFCMapper2D] used.
+## E.g. [WFCGridMapMapper2D] may use different planes with different offsets.
+@export
+var rect: Rect2i
+
+## Rules that will be used.
+## [br]
+## If not specified, default rules will be created.
+@export
+@export_category(\"Rules\")
+var rules: WFCRules2D = WFCRules2D.new()
+
+## A mapper factory to use to create mappers.
+##
+## Leave default value to use default factory that will create mappers for all known map node types.
+@export
+var mapper_factory: WFC2DMapperFactory = WFC2DMapperFactory.new()
+
+## A sample map to learn rules from.
+@export_node_path(\"TileMap\", \"GridMap\", \"TileMapLayer\", \"WFC2DLayeredMap\")
+var positive_sample: NodePath
+
+## A negative samples map.
+@export_node_path(\"TileMap\", \"GridMap\", \"TileMapLayer\", \"WFC2DLayeredMap\")
+var negative_sample: NodePath
+
+## Settings for a [WFCSolver].
+@export
+var solver_settings: WFCSolverSettings = WFCSolverSettings.new()
+
+## What preconditions ([WFC2DPrecondition]) will be used.
+## [br]
+## If not set, a [WFC2DPreconditionReadExistingSettings] will be created and thus WFC will read
+## existing tiles from [member target] map.
+## If that's not necessary - set a [WFC2DPrecondition2DNullSettings] here.
+@export
+var precondition: WFC2DPrecondition2DNullSettings
+
+## Settings for multithreaded solver runner.
+## [br]
+## Relevant iff [member use_multithreading] is [code]true[/code].
+@export
+@export_category(\"Runner\")
+var multithreaded_runner_settings: WFCMultithreadedRunnerSettings = WFCMultithreadedRunnerSettings.new()
+
+## Settings for main thread solver runner.
+## [br]
+## Relevant iff [member use_multithreading] is [code]false[/code].
+@export
+var main_thread_runner_settings: WFCMainThreadRunnerSettings = WFCMainThreadRunnerSettings.new()
+
+## If enabled, solver(s) will run on separate thread(s).
+## Otherwise, there will be only one solver running on main thread, bit by bit every frame.
+## [br]
+## It's preferrable to use separate thread(s) in almost all cases.
+## However, in some cases WFC may fail and/or produce invalid results when running in multiple
+## threads.
+## In such cases, it may make sense to still use multithreading but set
+## [member WFCMultithreadedRunnerSettings.max_threads] in [member multithreaded_runner_settings] to
+## [code]1[/code].
+@export
+var use_multithreading: bool = true
+
+## If enabled, the generator will start WFC as soon as it is ready (i.e. literally in
+## [method Node._ready]).
+@export
+@export_category(\"Behavior\")
+var start_on_ready: bool = false
+
+## If enabled, current generation state will be rendered to [member target] map every frame while
+## generation is in progress.
+## [br]
+## This is mostly useful for demos.
+## In real game the map most likely won't be visible before it is generated completely, so updating
+## it every frame is a waste of resources.
+## [br]
+## Even if this flag is disabled, generator [b]will[/b] render some intermediate results when
+## running in multithreaded mode.
+@export
+var render_intermediate_results: bool = false
+
+## If enabled, some debug information about rules will be printed to console.
+@export
+@export_category(\"Debug mode\")
+var print_rules: bool = false
+
+## Emited when the generator starts generating map.
+signal started
+
+## Emitted when generation is completed.
+signal done
+
+var _runner: WFCSolverRunner = null
+
+func _create_runner() -> WFCSolverRunner:
+	if use_multithreading:
+		var res: WFCMultithreadedSolverRunner = WFCMultithreadedSolverRunner.new()
+
+		if multithreaded_runner_settings != null:
+			res.runner_settings = multithreaded_runner_settings
+
+		res.solver_settings = solver_settings
+		return res
+	else:
+		var res: WFCMainThreadSolverRunner = WFCMainThreadSolverRunner.new()
+
+		if main_thread_runner_settings != null:
+			res.runner_settings = main_thread_runner_settings
+
+		res.solver_settings = solver_settings
+		return res
+
+## Creates a mapper for given [param map] node.
+## [br]
+## Called when mapper is not provided in [member rules].
+func _create_mapper(map: Node) -> WFCMapper2D:
+	var mapper := mapper_factory.create_mapper_for(map)
+
+	if mapper == null:
+		var script: Script = map.get_script()
+		push_error(\"Unsupported map node type: %s (%s)\" % [
+			map.get_class(),
+			 \"No script\" if script == null else (
+				script.get_global_name() if not script.get_global_name().is_empty() else script.resource_path
+			)])
+		@warning_ignore(\"assert_always_false\")
+		assert(false)
+
+	return mapper
+
+func _create_precondition(problem_settings: WFC2DProblem.WFC2DProblemSettings, map: Node) -> WFC2DPrecondition:
+	var settings: WFC2DPrecondition2DNullSettings = self.precondition
+
+	if settings == null:
+		settings = WFC2DPreconditionReadExistingSettings.new()
+
+	var parameters: WFC2DPrecondition2DNullSettings.CreationParameters = WFC2DPrecondition2DNullSettings.CreationParameters.new()
+
+	parameters.target_node = map
+	parameters.problem_settings = problem_settings
+	parameters.generator_node = self
+
+	return settings.create_precondition(parameters)
+
+func _create_problem(
+	settings: WFC2DProblem.WFC2DProblemSettings,
+	map: Node,
+	precondition: WFC2DPrecondition
+) -> WFC2DProblem:
+	return WFC2DProblem.new(settings, map, precondition)
+
+func _exit_tree():
+	if _runner != null:
+		_runner.interrupt()
+		_runner = null
+
+## Starts generation.
+## [br]
+## Should be called at most once.
+## [br]
+## Should not be called manually when [member start_on_ready] is [code]true[/code].
+func start():
+	assert(_runner == null)
+	assert(target != null)
+	assert(rect.has_area())
+
+	var target_node: Node = get_node(target)
+	assert(target_node != null)
+
+	if not rules.is_ready():
+		assert(positive_sample != null)
+
+		var positive_sample_node: Node = get_node(positive_sample)
+		assert(positive_sample_node != null)
+
+		if rules == null:
+			rules = WFCRules2D.new()
+		else:
+			rules = rules.duplicate(false) as WFCRules2D
+
+			assert(rules != null)
+
+		if rules.mapper == null:
+			rules.mapper = _create_mapper(target_node)
+		if not rules.mapper.is_ready():
+			rules.mapper.learn_from(positive_sample_node)
+		rules.learn_from(positive_sample_node)
+
+		if rules.complete_matrices and negative_sample != null and not negative_sample.is_empty():
+			var negative_sample_node: Node = get_node(negative_sample)
+
+			if negative_sample_node != null:
+				rules.learn_negative_from(negative_sample_node)
+
+		if print_rules and OS.is_debug_build():
+			print_debug('Rules learned:\\n', rules.format())
+
+			print_debug('Influence range: ', rules.get_influence_range())
+
+	var problem_settings: WFC2DProblem.WFC2DProblemSettings = WFC2DProblem.WFC2DProblemSettings.new()
+
+	problem_settings.rules = rules
+	problem_settings.rect = rect
+
+	var precondition: WFC2DPrecondition = _create_precondition(problem_settings, target_node)
+
+	started.emit()
+
+	# TODO: Call this in separate thread if long-running generators will be used to generate preconditions
+	precondition.prepare()
+
+	var problem: WFC2DProblem = _create_problem(problem_settings, target_node, precondition)
+
+	_runner = _create_runner()
+
+	_runner.start(problem)
+
+	_runner.all_solved.connect(func(): done.emit())
+	_runner.sub_problem_solved.connect(_on_solved)
+	_runner.partial_solution.connect(_on_partial_solution)
+
+func _on_solved(problem: WFC2DProblem, state: WFCSolverState):
+	if state != null:
+		problem.render_state_to_map(state)
+
+func _on_partial_solution(problem: WFC2DProblem, state: WFCSolverState):
+	if not render_intermediate_results:
+		return
+
+	_on_solved(problem, state)
+
+func _ready():
+	if start_on_ready:
+		start()
+
+func _process(_delta):
+	if _runner != null and _runner.is_running():
+		_runner.update()
+
+## Returns generation progress.
+## [br]
+## Returned value is in range between [code]0.0[/code] and [code]1.0[/code] (both inclusive).
+## Just like in [method WFCSolverRunner.get_progress].
+## [br]
+## Returns [code]0.0[/code] if generation was not yet started.
+func get_progress() -> float:
+	if _runner == null:
+		return 0
+
+	return _runner.get_progress()
+
+## Returns [code]true[/code] iff any solver is currently running.
+func is_running() -> bool:
+	if _runner == null:
+		return false
+
+	return _runner.is_running()
+
+## Resets this generator to it's initial state.
+## [br]
+## Stops any running solver(s), if any.
+func reset():
+	if _runner != null:
+		if _runner.is_running():
+			_runner.interrupt()
+		_runner = null
+"
+
+[sub_resource type="Resource" id="Resource_50ak6"]
+script = ExtResource("3_nc3dq")
+complete_matrices = false
+axes = Array[Vector2i]([Vector2i(0, 1), Vector2i(1, 0)])
+axis_matrices = Array[ExtResource("2_2pucv")]([])
+probabilities = []
+probabilities_enabled = true
+edge_condition_meta_name = "wfc_edge"
+
+[sub_resource type="Resource" id="Resource_trx14"]
+script = ExtResource("4_et6ip")
+allow_backtracking = true
+require_backtracking = false
+backtracking_limit = -1
+sparse_history_start = 10
+sparse_history_interval = 10
+force_ac3 = true
+
+[sub_resource type="Resource" id="Resource_ks6ly"]
+script = ExtResource("5_0fs8s")
+level_path = NodePath("../level")
+platform_class = "wfc_platform"
+air_class = "wfc_air"
+classes_map = NodePath("")
+
+[sub_resource type="Resource" id="Resource_qupgo"]
+script = ExtResource("6_r8fcw")
+max_threads = 1
+
+[node name="wfc_tilemap" type="Node2D"]
+script = SubResource("GDScript_sq3cg")
+
+[node name="generator" type="Node" parent="."]
+script = SubResource("GDScript_g7ymr")
+target = NodePath("../target")
+rect = Rect2i(0, 0, 64, 64)
+rules = SubResource("Resource_50ak6")
+positive_sample = NodePath("../sample")
+negative_sample = NodePath("../negative_sample")
+solver_settings = SubResource("Resource_trx14")
+precondition = SubResource("Resource_ks6ly")
+multithreaded_runner_settings = SubResource("Resource_qupgo")
+render_intermediate_results = true
+
+[node name="sample" type="TileMap" parent="."]
+format = 2
+layer_0/tile_data = PackedInt32Array(131074, 65536, 1, 131075, 196608, 1, 131076, 196608, 1, 131077, 196608, 1, 131078, 327680, 1, 196610, 65536, 3, 196612, 196608, 3, 196614, 327680, 3, 196611, 196608, 3, 196613, 196608, 3, 262146, 65536, 3, 262147, 196608, 3, 262148, 196608, 3, 262149, 196608, 3, 262150, 327680, 3, 65540, 1376256, 18, 65538, 1376256, 18, 65539, 1376256, 18, 65541, 1376256, 18, 65542, 1376256, 18, 131083, 983040, 14, 131084, 1114112, 14, 131085, 1114112, 14, 131086, 1114112, 14, 131087, 1245184, 14, 65537, 1376256, 18, 65543, 1376256, 18, 131079, 1376256, 18, 196615, 1376256, 18, 262151, 1376256, 18, 131073, 1376256, 18, 196609, 1376256, 18, 262145, 1376256, 18, 1, 1376256, 18, 2, 1376256, 18, 3, 1376256, 18, 4, 1376256, 18, 5, 1376256, 18, 6, 1376256, 18, 7, 1376256, 18, 196618, 1376256, 18, 131082, 1376256, 18, 65546, 1376256, 18, 65547, 1376256, 18, 65548, 1376256, 18, 65549, 1376256, 18, 65550, 1376256, 18, 65551, 1376256, 18, 65552, 1376256, 18, 131088, 1376256, 18, 196624, 1376256, 18, 196623, 1376256, 18, 196622, 1376256, 18, 196621, 1376256, 18, 196620, 1376256, 18, 196619, 1376256, 18, 458755, 196608, 3, 458756, 196608, 3, 458757, 196608, 3, 458758, 196608, 3, 458759, 196608, 3, 524295, 196608, 3, 589831, 196608, 3, 589830, 196608, 3, 589829, 196608, 3, 589828, 196608, 3, 589827, 196608, 3, 524291, 196608, 3, 524292, 327680, 7, 524293, 196608, 3, 524294, 458752, 7, 655363, 196608, 3, 655364, 196608, 3, 655365, 196608, 3, 655366, 196608, 3, 655367, 196608, 3, 720903, 196608, 3, 786439, 196608, 3, 786438, 196608, 3, 786437, 196608, 3, 786436, 196608, 3, 786435, 196608, 3, 720899, 196608, 3, 720900, 196608, 3, 720901, 196608, 3, 720902, 196608, 3, 327681, 327680, 1, 327682, 196608, 3, 327683, 196608, 3, 327684, 196608, 3, 327685, 196608, 3, 327686, 196608, 3, 327687, 65536, 1, 327680, 196608, 1, 393215, 65536, 1, 327678, 327680, 3, 393214, 196608, 3, 262144, 1376256, 18, 327679, 1376256, 18, 393218, 196608, 3, 393217, 196608, 3, 393216, 196608, 3, 458751, 196608, 3, 458750, 196608, 3, 393223, 196608, 3, 393222, 196608, 3, 393221, 196608, 3, 393220, 196608, 3, 393219, 196608, 3, 983044, 196608, 1, 983045, 1376256, 18, 917509, 1376256, 18, 917508, 1376256, 18, 917507, 1376256, 18, 983043, 1376256, 18, -65517, 1376256, 18, 19, 1376256, 18, 65555, 1376256, 18, -65516, 1376256, 18, 20, 983040, 14, 65556, 1376256, 18, -65515, 1376256, 18, 65557, 1376256, 18, -65514, 1376256, 18, 65558, 1376256, 18, -65513, 1376256, 18, 65559, 1376256, 18, -65512, 1376256, 18, 65560, 1376256, 18, -65511, 1376256, 18, 25, 1245184, 14, 65561, 1376256, 18, 21, 1245184, 14, 22, 1376256, 18, 23, 983040, 14, 24, 1114112, 14, 65562, 1376256, 18, 26, 1376256, 18, -65510, 1376256, 18, 27, 1114112, 14, 65563, 1376256, 18, 65564, 1376256, 18, 28, 1376256, 18, -65508, 1376256, 18, -65509, 1376256, 18, 1310725, 65536, 5, 1310727, 196608, 5, 1310729, 327680, 5, 1310726, 196608, 5, 1310728, 196608, 5, 1245189, 65536, 3, 1245191, 196608, 3, 1245193, 327680, 3, 1245190, 196608, 3, 1245192, 196608, 3, 1245188, 1376256, 18, 1310724, 1376256, 18, 1376260, 1376256, 18, 1376261, 1376256, 18, 1376262, 1376256, 18, 1376263, 1376256, 18, 1376264, 1376256, 18, 1376265, 1376256, 18, 1376266, 1376256, 18, 1310730, 1376256, 18, 1245194, 1376256, 18, 65568, 196608, 1, 32, 65536, 7, 31, 1376256, 18, -65505, 1376256, 18, -65504, 1376256, 18, -65503, 1376256, 18, 33, 1376256, 18)
+
+[node name="negative_sample" type="TileMap" parent="."]
+format = 2
+layer_0/tile_data = PackedInt32Array(524299, 65536, 3, 458763, 983040, 14, 327695, 65536, 1, 327697, 196608, 1, 327699, 327680, 1, 458767, 65536, 3, 458769, 196608, 3, 458771, 327680, 3, 393231, 1376256, 18, 524303, 1376256, 18, 458768, 1376256, 18, 393233, 1376256, 18, 458770, 1376256, 18, 393235, 1376256, 18, 524307, 1376256, 18, 524305, 1376256, 18, 327705, 1376256, 18, 327704, 65536, 1, 327706, 327680, 1)
+
+[node name="level" type="TileMapLayer" parent="."]
+tile_map_data = PackedByteArray("AAABAAoAAAADAAEAAAABAAsAAAADAAEAAAABAAwAAAADAAEAAAABAA0AAAADAAEAAAABAA4AAAADAAEAAAABAA8AAAADAAEAAAACAAoAAAADAAEAAAACAAsAAAADAAEAAAACAAwAAAADAAEAAAACAA0AAAADAAEAAAACAA4AAAADAAEAAAACAA8AAAADAAEAAAADAAoAAAADAAEAAAADAAsAAAADAAEAAAADAAwAAAADAAEAAAADAA0AAAADAAEAAAADAA4AAAADAAEAAAADAA8AAAADAAEAAAAEAAoAAAADAAEAAAAEAAsAAAADAAEAAAAEAAwAAAADAAEAAAAEAA0AAAADAAEAAAAEAA4AAAADAAEAAAAEAA8AAAADAAEAAAAFAAoAAAADAAEAAAAFAAsAAAADAAEAAAAFAAwAAAADAAEAAAAFAA0AAAADAAEAAAAFAA4AAAADAAEAAAAFAA8AAAADAAEAAAAGAAoAAAADAAEAAAAGAAsAAAADAAEAAAAGAAwAAAADAAEAAAAGAA0AAAADAAEAAAAGAA4AAAADAAEAAAAGAA8AAAADAAEAAAAHAAwAAAADAAEAAAAHAA0AAAADAAEAAAAHAA4AAAADAAEAAAAHAA8AAAADAAEAAAAIAAwAAAADAAEAAAAIAA0AAAADAAEAAAAIAA4AAAADAAEAAAAIAA8AAAADAAEAAAAJAAwAAAADAAEAAAAJAA0AAAADAAEAAAAJAA4AAAADAAEAAAAJAA8AAAADAAEAAAAKAAoAAAADAAEAAAAKAAsAAAADAAEAAAAKAAwAAAADAAEAAAAKAA0AAAADAAEAAAAKAA4AAAADAAEAAAAKAA8AAAADAAEAAAALAAoAAAADAAEAAAALAAsAAAADAAEAAAALAAwAAAADAAEAAAALAA0AAAADAAEAAAALAA4AAAADAAEAAAALAA8AAAADAAEAAAAMAAoAAAADAAEAAAAMAAsAAAADAAEAAAAMAAwAAAADAAEAAAAMAA0AAAADAAEAAAAMAA4AAAADAAEAAAAMAA8AAAADAAEAAAANAAoAAAADAAEAAAANAAsAAAADAAEAAAANAAwAAAADAAEAAAANAA0AAAADAAEAAAANAA4AAAADAAEAAAANAA8AAAADAAEAAAAOAAoAAAADAAEAAAAOAAsAAAADAAEAAAAOAAwAAAADAAEAAAAOAA0AAAADAAEAAAAOAA4AAAADAAEAAAAOAA8AAAADAAEAAAAPAAoAAAADAAEAAAAPAAsAAAADAAEAAAAPAAwAAAADAAEAAAAPAA0AAAADAAEAAAAPAA4AAAADAAEAAAAPAA8AAAADAAEAAAAQAAoAAAADAAEAAAAQAAsAAAADAAEAAAAQAAwAAAADAAEAAAAQAA0AAAADAAEAAAAQAA4AAAADAAEAAAAQAA8AAAADAAEAAAARAAoAAAADAAEAAAARAAsAAAADAAEAAAARAAwAAAADAAEAAAARAA0AAAADAAEAAAARAA4AAAADAAEAAAARAA8AAAADAAEAAAASAAsAAAADAAEAAAASAAwAAAADAAEAAAASAA0AAAADAAEAAAASAA4AAAADAAEAAAASAA8AAAADAAEAAAATAAsAAAADAAEAAAATAAwAAAADAAEAAAATAA0AAAADAAEAAAATAA4AAAADAAEAAAATAA8AAAADAAEAAAAUAAsAAAADAAEAAAAUAAwAAAADAAEAAAAUAA0AAAADAAEAAAAUAA4AAAADAAEAAAAUAA8AAAADAAEAAAAVAAsAAAADAAEAAAAVAAwAAAADAAEAAAAVAA0AAAADAAEAAAAVAA4AAAADAAEAAAAVAA8AAAADAAEAAAAWAAsAAAADAAEAAAAWAAwAAAADAAEAAAAWAA0AAAADAAEAAAAWAA4AAAADAAEAAAAWAA8AAAADAAEAAAAXAAsAAAADAAEAAAAXAAwAAAADAAEAAAAXAA0AAAADAAEAAAAXAA4AAAADAAEAAAAXAA8AAAADAAEAAAAYAAsAAAADAAEAAAAYAAwAAAADAAEAAAAYAA0AAAADAAEAAAAYAA4AAAADAAEAAAAYAA8AAAADAAEAAAAZAAsAAAADAAEAAAAZAAwAAAADAAEAAAAZAA0AAAADAAEAAAAZAA4AAAADAAEAAAAZAA8AAAADAAEAAAAaAAsAAAADAAEAAAAaAAwAAAADAAEAAAAaAA0AAAADAAEAAAAaAA4AAAADAAEAAAAaAA8AAAADAAEAAAAbAAsAAAADAAEAAAAbAAwAAAADAAEAAAAbAA0AAAADAAEAAAAbAA4AAAADAAEAAAAbAA8AAAADAAEAAAAcAAsAAAADAAEAAAAcAAwAAAADAAEAAAAcAA0AAAADAAEAAAAcAA4AAAADAAEAAAAcAA8AAAADAAEAAAAdAAsAAAADAAEAAAAdAAwAAAADAAEAAAAdAA0AAAADAAEAAAAdAA4AAAADAAEAAAAdAA8AAAADAAEAAAAeAAsAAAADAAEAAAAeAAwAAAADAAEAAAAeAA0AAAADAAEAAAAeAA4AAAADAAEAAAAeAA8AAAADAAEAAAAfAAsAAAADAAEAAAAfAAwAAAADAAEAAAAfAA0AAAADAAEAAAAfAA4AAAADAAEAAAAfAA8AAAADAAEAAAAgAAsAAAADAAEAAAAgAAwAAAADAAEAAAAgAA0AAAADAAEAAAAgAA4AAAADAAEAAAAgAA8AAAADAAEAAAAhAAsAAAADAAEAAAAhAAwAAAADAAEAAAAhAA0AAAADAAEAAAAhAA4AAAADAAEAAAAhAA8AAAADAAEAAAAiAAsAAAADAAEAAAAiAAwAAAADAAEAAAAiAA0AAAADAAEAAAAiAA4AAAADAAEAAAAiAA8AAAADAAEAAAAjAAsAAAADAAEAAAAjAAwAAAADAAEAAAAjAA0AAAADAAEAAAAjAA4AAAADAAEAAAAjAA8AAAADAAEAAAAkAAsAAAADAAEAAAAkAAwAAAADAAEAAAAkAA0AAAADAAEAAAAkAA4AAAADAAEAAAAkAA8AAAADAAEAAAAlAAsAAAADAAEAAAAlAAwAAAADAAEAAAAlAA0AAAADAAEAAAAlAA4AAAADAAEAAAAlAA8AAAADAAEAAAAmAAsAAAADAAEAAAAmAAwAAAADAAEAAAAmAA0AAAADAAEAAAAmAA4AAAADAAEAAAAmAA8AAAADAAEAAAAnAAsAAAADAAEAAAAnAAwAAAADAAEAAAAnAA0AAAADAAEAAAAnAA4AAAADAAEAAAAnAA8AAAADAAEAAAAeAAkAAAADAAEAAAAeAAoAAAADAAEAAAAfAAkAAAADAAEAAAAfAAoAAAADAAEAAAAgAAkAAAADAAEAAAAgAAoAAAADAAEAAAAhAAkAAAADAAEAAAAhAAoAAAADAAEAAAAiAAkAAAADAAEAAAAiAAoAAAADAAEAAAAjAAkAAAADAAEAAAAjAAoAAAADAAEAAAAkAAkAAAADAAEAAAAkAAoAAAADAAEAAAAlAAkAAAADAAEAAAAlAAoAAAADAAEAAAAmAAkAAAADAAEAAAAmAAoAAAADAAEAAAAnAAkAAAADAAEAAAAnAAoAAAADAAEAAAAZAAgAAAADAAEAAAAaAAgAAAADAAEAAAAbAAgAAAADAAEAAAATAAcAAAADAAEAAAAUAAcAAAADAAEAAAAVAAcAAAADAAEAAAAWAAcAAAADAAEAAAA=")
+
+[node name="target" type="TileMap" parent="."]
+visible = false
+format = 2

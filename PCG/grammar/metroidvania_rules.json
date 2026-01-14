@@ -1,24 +1,139 @@
 {
-  "rules": [
+	"rules": [
+
 	{
-	  "match": {"kind":"HUB"},
-	  "expand_nodes": [
-		{"id":"A","kind":"CHALLENGE"},
-		{"id":"K","kind":"KEY_ROOM","grants":["GRAPPLE"]},
-		{"id":"C","kind":"CHALLENGE","requires":["GRAPPLE"]},
-		{"id":"SV","kind":"SAVE"}
-	  ],
-	  "expand_edges": [["A","K"],["K","C"],["C","SV"]],
-	  "attach": "out"
+		"match": { "kind": "HUB" },
+		"expand_nodes": [
+			{ 
+				"id": "A$",  
+				"kind": "ARENA",
+				"items" : [
+					{
+						"id": "HEART",
+						"name" : "Heart",
+						"priority" : "Optional",
+						"spawn_rate" : 0.4, 
+						"max_quantity" : 3
+					}
+				],
+				"enemies": {
+					"budget_mult": 1.2,
+					"waves": 4, 
+					"combat_type": "WAVES"
+				}
+			},
+	  	],
+	  	
+		"expand_edges": [
+	  	],
+
+	"attach": [
+		{"id": "A$", "lock": "FREE", "back_lock": "ENEMIES_CLEARED"}
+	],
+	},
+		
+	{
+		"match": { "kind": "ARENA" },
+		"expand_nodes": [
+			{ 
+				"id": "R$", 
+				"kind": "SIDE",
+				"items" : [
+					{
+						"id": "HEART",
+						"name" : "Heart",
+						"priority" : "Optional",
+						"spawn_rate" : 0.7, 
+						"max_quantity" : 2
+					}
+				]
+			},
+			{ 
+				"id": "K$", 
+				"kind": "KEY_ROOM",
+				"items" : [
+					{
+						"id": "KEY",
+						"name" : "Key",
+						"priority" : "Mandatory",
+						"spawn_rate" : 1, 
+						"max_quantity" : 1
+					}, 
+					{
+						"id": "HEART",
+						"name" : "Heart",
+						"priority" : "Optional",
+						"spawn_rate" : 1, 
+						"max_quantity" : 1
+					}
+				],
+				"enemies": {
+					"budget_mult": 1.3,
+					"waves": 2, 
+					"combat_type": "WAVES"
+				}
+			},
+			{ 
+				"id": "C$", 
+				"kind": "CHALLENGE",
+				"items" : [
+					{
+						"id": "HEART",
+						"name" : "Heart",
+						"priority" : "Optional",
+						"spawn_rate" : 0.2, 
+						"max_quantity" : 3
+					}
+				],
+				"enemies": {
+					"budget_mult": 1.5,
+					"waves": 3, 
+					"combat_type": "WAVES"
+				}
+			}
+	  	],
+	  	
+		"expand_edges": [
+			{"from": "K$", "to": "C$", "lock": "ENEMIES_CLEARED", "back_lock": "ENEMIES_CLEARED"}
+		],
+
+		"attach": [
+			{"id": "K$", "lock": "ENEMIES_CLEARED", "back_lock": "ENEMIES_CLEARED"},
+			{"id": "C$", "lock": "ENEMIES_CLEARED", "back_lock": "ENEMIES_CLEARED"},
+			{"id": "R$", "lock": "ENEMIES_CLEARED", "back_lock": "FREE"}
+		],
 	},
 	{
-	  "match": {"kind":"CHALLENGE"},
-	  "expand_nodes": [
-		{"id":"M","kind":"CHALLENGE"},
-		{"id":"R","kind":"SIDE","optional":true}
-	  ],
-	  "expand_edges": [["M","R"]],
-	  "attach": "M"
-	}
-  ]
+		"match": { "kind": "CHALLENGE" },
+		"expand_nodes": [
+			{
+				"id": "SV$", 
+				"kind": "SAVE",
+				"items" : [
+					{
+						"id": "HEART",
+						"name" : "Heart",
+						"priority" : "Optional",
+						"spawn_rate" : 1, 
+						"max_quantity" : 3
+					}
+				],
+				"enemies": {
+					"budget_mult": 1.0,
+					"waves": 1, 
+					"combat_type": "WAVES"
+				}
+			},
+			{"id": "H$",  "kind": "HUB",},
+	  	],
+	  	
+		"expand_edges": [
+	  	],
+
+		"attach": [
+			{"id": "SV$", "lock": "KEY", "back_lock": "FREE"},
+			{"id": "H$", "lock": "ENEMIES_CLEARED", "back_lock": "FREE"}
+		],
+	},
+	]
 }

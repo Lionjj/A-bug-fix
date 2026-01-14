@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=4 uid="uid://cxko7451hku7i"]
+[gd_scene load_steps=26 format=4 uid="uid://cxko7451hku7i"]
 
 [ext_resource type="TileSet" uid="uid://dv34hsfm0sfmx" path="res://Assets/OS/FG.tres" id="1_0n2ss"]
 [ext_resource type="Script" uid="uid://dvqftyh4ruo7j" path="res://Scripts/Scene/livelli.gd" id="1_qixm3"]
@@ -15,6 +15,8 @@
 [ext_resource type="Texture2D" uid="uid://bx83iyb5swmuw" path="res://Assets/OS/Environments/Hardware_moon.png" id="12_hxm88"]
 [ext_resource type="Texture2D" uid="uid://bxhteqdkdrgwy" path="res://Assets/OS/Environments/GiantSword/GiantSword_01.png" id="13_6gro5"]
 [ext_resource type="Texture2D" uid="uid://dj83upk7upl4l" path="res://Assets/OS/Background.png" id="15_hxm88"]
+[ext_resource type="PackedScene" uid="uid://b3qjste5bjucc" path="res://Scenes/Player.tscn" id="17_2wcli"]
+[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="17_qfnhw"]
 [ext_resource type="PackedScene" uid="uid://dc5x0gqk03o3f" path="res://Scenes/NPC.tscn" id="18_qfnhw"]
 
 [sub_resource type="Resource" id="Resource_qfnhw"]
@@ -347,5 +349,19 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0)
 metadata/_edit_use_anchors_ = true
+
+[node name="Camera2D" type="Camera2D" parent="."]
+physics_interpolation_mode = 1
+position = Vector2(888, -676)
+zoom = Vector2(2, 2)
+editor_draw_limits = true
+
+[node name="PhantomCameraHost" type="Node" parent="Camera2D"]
+process_priority = 300
+process_physics_priority = 300
+script = ExtResource("17_qfnhw")
+
+[node name="Player" parent="." instance=ExtResource("17_2wcli")]
+position = Vector2(888, -676)
 
 [connection signal="enter_scene" from="." to="WorldAnimation" method="_on_livello_1_enter_scene"]

@@ -115,7 +115,7 @@ libraries = {
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_wpjgl")
-position = Vector2(1.42109e-14, -19)
+position = Vector2(0, -8)
 scale = Vector2(1.32407, 1.33621)
 texture = ExtResource("1_lc2ix")
 
@@ -123,7 +123,7 @@ texture = ExtResource("1_lc2ix")
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
-position = Vector2(-1, -19)
+position = Vector2(0, -8)
 shape = SubResource("RectangleShape2D_g4src")
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]

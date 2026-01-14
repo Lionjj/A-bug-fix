@@ -15,6 +15,7 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 @onready var wall_check = $WallCheck
 @onready var wall_check_timer = $WallCheckTimer
 @onready var shader = sprite.material
+@onready var ground_collision_2d: CollisionShape2D = $GroundCollision2D
 
 # ----------- SFX -----------
 @export var audio: Dictionary[StringName, AudioStream]
@@ -48,7 +49,7 @@ var attacks ={
 
 # ----------- States -----------
 @export var invincible: bool = false
-@export var wall_check_enabled: bool
+@export var wall_check_enabled: bool = true
 var dead = false
 var hit = false
 var can_dodge = true

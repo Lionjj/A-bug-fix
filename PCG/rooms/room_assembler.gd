@@ -1,7 +1,7 @@
 extends Node
 class_name RoomAssembler
 
-@export var vertical_ratio: float = 0.6  # 35% di nodi verticali
+@export var vertical_ratio: float = 0.35  # 35% di nodi verticali
 
 const PATH : String = "res://PCG/rooms/tmpl"
 const KIND_RULES :Dictionary= {
@@ -25,6 +25,8 @@ var room_scenes : Dictionary[String, PackedScene]
 var _meta_cache: Dictionary = {} 		# PackedScene -> meta dict
 var _used_counts := {}					# kind_str -> count
 var _last_kinds: Array[String] = []		# sliding window per diversità
+var _banned_templates: Dictionary[String, bool] = {}	#contiene le stanze che sono bannate (es. per togliere la stanza start dopo la prima inserzione)
+
 
 
 
@@ -32,6 +34,18 @@ func _init() -> void:
 	room_scenes = dir_contents(PATH)
 
 # =============== helpers base ===============
+func _ban_template(p: PackedScene) -> void:
+	for k in room_scenes.keys():
+		if room_scenes[k] == p:
+			_banned_templates[k] = true
+			return
+
+func _finalize_choice(node_data, chosen: PackedScene) -> PackedScene:
+	# se è lo START, usa questo template una volta sola e poi bannalo
+	if "kind" in node_data and String(node_data.kind) == "START":
+		_ban_template(chosen)
+	return chosen
+	
 func _get_meta(ps: PackedScene) -> Dictionary:
 	if _meta_cache.has(ps): 
 		return _meta_cache[ps]
@@ -93,7 +107,18 @@ func _kind_ok(meta: Dictionary, node_kind: String) -> bool:
 		# nessun tag richiesto presente: non ok
 		return false
 	return true
-	
+
+func _tags_match(node_kind: String, tags: Array) -> bool:
+	if not KIND_RULES.has(node_kind):
+		return false
+	var rule: Dictionary = KIND_RULES[node_kind]
+	if not rule.has("require_tags_any"):
+		return false
+	for t in rule["require_tags_any"]:
+		if tags.has(t):
+			return true
+	return false
+
 func _needed_connectors(node_id: String, positions: Dictionary) -> Array:
 	var base: Vector2i = positions[node_id]
 	var need: Array[String] = []
@@ -164,12 +189,12 @@ func _align_all_tilemap_layers(room: Node2D) -> void:
 	# Alcuni addon TileMapLayer non ereditano il transform: settiamo la position a mano
 	var stack := [room]
 	while stack.size() > 0:
-		var n :Node2D= stack.pop_back()
-		for c in n.get_children():
-			stack.append(c)
+		var n : Node = stack.pop_back()
+		
+		for c in n.get_children(): stack.append(c)
 		var l := n as TileMapLayer
-		if l:
-			l.position = room.position
+		
+		if l: l.position = room.position
 
 # Ritorna se esiste almeno un template compatibile col nodo/abilità che consenta H (W+E) e/o V (N+S)
 func node_axes_caps(node: MissionNode, abilities: Array[Abilities.Ability]) -> Dictionary:
@@ -191,13 +216,46 @@ func node_axes_caps(node: MissionNode, abilities: Array[Abilities.Ability]) -> D
 	# esempio: LONG_GAP tipicamente -> {H:true, V:false}; VERTICAL_SHAFT -> {H:false, V:true}; ARENA -> {H:true,V:true}
 	return {"H":can_H, "V":can_V}
 
+func _get_room_conn_x_size(meta: RoomTemplateMeta) -> int:
+	var out: int = 0
+	var openingE: int = 0
+	var openingW: int = 0
+	
+	var connE: RoomTemplateMeta = meta.get_node_or_null("E")
+	var connW: RoomTemplateMeta = meta.get_node_or_null("W")
+
+	if connE: openingE += (connE.offset_up + connE.offset_down)
+	if connW: openingW += (connW.offset_up + connW.offset_down)
+	
+	out += max(openingE, openingW)
+	return out
+
+func _get_room_conn_y_size(meta: RoomTemplateMeta) -> int:
+	var out: int = 0
+	var openingN: int = 0
+	var openingS: int = 0
+	
+	var connN: RoomTemplateMeta = meta.get_node_or_null("N")
+	var connS: RoomTemplateMeta = meta.get_node_or_null("S")
+
+	if connN: openingN += (connN.offset_up + connN.offset_down)
+	if connS: openingS += (connS.offset_up + connS.offset_down)
+	
+	out += max(openingN, openingS)
+	return out
+	
 # RoomAssembler.gd
-func max_room_size_tiles() -> Vector2i:
+func max_room_size_tiles(rooms:Dictionary[String, PackedScene] = room_scenes) -> Vector2i:
 	var w := 0
 	var h := 0
-	for key in room_scenes.keys():
-		var m := _peek_meta(room_scenes.get(key))
+	var min_offset_x := 0
+	var min_offset_y := 0
+	for key in rooms.keys():
+		var m := _peek_meta(rooms.get(key))
 		if m == null: continue
+		
+		min_offset_x = max(min_offset_x, _get_room_conn_x_size(m))
+		min_offset_y = max(min_offset_y, _get_room_conn_y_size(m))
 		w = max(w, m.size_tiles.x)
 		h = max(h, m.size_tiles.y)
 	return Vector2i(w, h)
@@ -299,12 +357,11 @@ func instantiate_room(
 		grid_pos: Vector2i,
 		tile_size := Vector2i(16,16),
 		grid_cell_tiles := Vector2i(80,48)  # <<< cella canonica
-) -> Node2D:
-	var room := packed.instantiate() as Node2D
+) -> RoomTemplateMeta:
+	var room := packed.instantiate() as RoomTemplateMeta
 
 	# leggi size_tiles dal meta della stanza
-	var meta := room as RoomTemplateMeta
-	var sz := meta.size_tiles if meta else grid_cell_tiles
+	var sz := room.size_tiles if room else grid_cell_tiles
 
 	# offset per centrare la stanza dentro la cella
 	var off_tiles := Vector2(
@@ -321,8 +378,8 @@ func instantiate_room(
 	) + off_px
 
 	_align_all_tilemap_layers(room)
+	
 	return room
-
 
 # Rileva se un meta è H-only, V-only, Omni
 func _axes_kind_from_meta(meta: Dictionary) -> String:
@@ -337,10 +394,13 @@ func _axes_kind_from_meta(meta: Dictionary) -> String:
 func caps_decide_for_node(node: MissionNode, abilities: Array[Abilities.Ability], rng: RandomNumberGenerator) -> Dictionary:
 	var hasH := false
 	var hasV := false
+	
 	for key in room_scenes.keys():
 		var meta := _get_meta(room_scenes[key])
 		if meta.is_empty(): continue
+		
 		if not _abilities_ok(meta["requires"], node.requires, abilities): continue
+		
 		var c: Dictionary = meta["connectors"]
 		hasH = hasH or (c.get("W", false) and c.get("E", false))
 		hasV = hasV or (c.get("N", false) and c.get("S", false))
@@ -367,71 +427,143 @@ func caps_available_for_graph(G: MissionGraph, abilities: Array[Abilities.Abilit
 
 # -------- API nuova: scelta template con connettori richiesti --------
 func pick_template_with_requirements(
-		node_data,                      # il dato/nodo del grafo (puoi leggerci "kind", "difficulty", ecc.)
-		abil_here: Array,               # abilità possedute dal player
-		positions: Dictionary,          # non usato qui, ma tienilo per compatibilità
+		node_data,                      # MissionNode o simile (deve avere .kind e .requires)
+		abil_here: Array,
+		positions: Dictionary,
 		rng: RandomNumberGenerator,
 		req: Dictionary                 # {"N":bool,"E":bool,"S":bool,"W":bool}
 ) -> PackedScene:
 	var candidates := _candidates_for(node_data, abil_here)
+	if candidates.is_empty():
+		push_warning("RoomAssembler: nessun candidato dopo il filtro abilità.")
+		return null
 
-	# 1) filtro stretto: il template deve avere tutti i lati richiesti
-	var exact: Array[PackedScene] = []
+	# prendiamo il kind del nodo dal dato
+	var node_kind := ""
+	if "kind" in node_data:
+		node_kind = String(node_data.kind)
+
+	# allow_kinds da KIND_RULES, se esistono (es. HUB -> ARENA)
+	var rule: Dictionary = KIND_RULES.get(node_kind, {})
+	var allow_kinds: Array = []
+	if rule.has("allow_kinds"):
+		allow_kinds = rule["allow_kinds"]
+
+	# ---------- 1) MATCH ESATTO CON REQ ----------
+	var exact_kind: Array[PackedScene] = []
+	var exact_tags: Array[PackedScene] = []
+	var exact_any:  Array[PackedScene] = []
+
 	for p in candidates:
 		var meta := _peek_meta(p)
-		if meta == null: 
+		if meta == null:
 			continue
-		if _satisfies(meta.connectors, req):
-			exact.append(p)
+		if not _satisfies(meta.connectors, req):
+			continue
 
-	if exact.size() > 0:
-		return exact[rng.randi() % exact.size()]
+		var meta_kind: String = String(meta.kind)
+		var tags_arr: Array = meta.tags
 
-	# 2) fallback "rilassato": basti asse coerente (H = E|W, V = N|S)
-	var relaxed: Array[PackedScene] = []
+		var strong_match := (meta_kind == node_kind) or allow_kinds.has(meta_kind)
+		var tag_match := _tags_match(node_kind, tags_arr)
+
+		if strong_match:
+			exact_kind.append(p)
+		elif tag_match:
+			exact_tags.append(p)
+		else:
+			exact_any.append(p)
+
+	# priorità: kind -> tag -> any
+	if exact_kind.size() > 0:
+		var chosen = exact_kind[rng.randi() % exact_kind.size()]
+		return _finalize_choice(node_data, chosen)
+	if exact_tags.size() > 0:
+		var chosen = exact_tags[rng.randi() % exact_tags.size()]
+		return _finalize_choice(node_data, chosen)
+	if exact_any.size() > 0:
+		var chosen = exact_any[rng.randi() % exact_any.size()]
+		return _finalize_choice(node_data, chosen)
+
+	# ---------- 2) FALLBACK RELAXED (asse coerente) ----------
+	var relax_kind: Array[PackedScene] = []
+	var relax_tags: Array[PackedScene] = []
+	var relax_any:  Array[PackedScene] = []
+#
 	for p in candidates:
 		var meta := _peek_meta(p)
-		if meta == null: 
+		if meta == null:
 			continue
-		if _relaxed_satisfies(meta.connectors, req):
-			relaxed.append(p)
+		if not _relaxed_satisfies(meta.connectors, req):
+			continue
 
-	if relaxed.size() > 0:
-		return relaxed[rng.randi() % relaxed.size()]
+		var meta_kind: String = String(meta.kind)
+		var tags_arr: Array = meta.tags
 
-	# 3) ultimo fallback: qualunque candidato
+		var strong_match := (meta_kind == node_kind) or allow_kinds.has(meta_kind)
+		var tag_match := _tags_match(node_kind, tags_arr)
+
+		if strong_match:
+			relax_kind.append(p)
+		elif tag_match:
+			relax_tags.append(p)
+		else:
+			relax_any.append(p)
+
+	if relax_kind.size() > 0:
+		var chosen = relax_kind[rng.randi() % relax_kind.size()]
+		return _finalize_choice(node_data, chosen)
+	if relax_tags.size() > 0:
+		var chosen = relax_tags[rng.randi() % relax_tags.size()]
+		return _finalize_choice(node_data, chosen)
+	if relax_any.size() > 0:
+		var chosen = relax_any[rng.randi() % relax_any.size()]
+		return _finalize_choice(node_data, chosen)
+
+	# ---------- 3) ULTIMO FALLBACK: QUALSIASI CANDIDATO ----------
 	if candidates.size() > 0:
-		return candidates[rng.randi() % candidates.size()]
+		var chosen = candidates[rng.randi() % candidates.size()]
+		return _finalize_choice(node_data, chosen)
 
-	# 4) disastro: non c'è nulla nel catalogo → evita crash
 	push_warning("RoomAssembler: nessun candidate template disponibile; usa un placeholder.")
 	return null
-	
+
 
 # -------- Helpers di filtro --------
 func _candidates_for(node_data, abil_here: Array) -> Array[PackedScene]:
-	# Partenza: tutti i template noti
 	var pool: Dictionary[String, PackedScene] = room_scenes.duplicate()
-
 	var out: Array[PackedScene] = []
+
 	for key in pool.keys():
+		# se è bannato, salta
+		if _banned_templates.get(key, false):
+			continue
+
 		var meta := _peek_meta(pool.get(key))
-		
-		if meta == null: continue
-		
-		var ok :bool= true
-		# meta.requires: Array[Abilities.Ability]
+		if meta == null:
+			continue
+
+		var ok :bool = true
 		for need in meta.requires:
 			if not abil_here.has(need):
 				ok = false
 				break
+
 		if ok:
 			out.append(pool.get(key))
+
 	return out
 
 func _satisfies(conn: Dictionary, req: Dictionary) -> bool:
-	for d in ["N","E","S","W"]:
-		if bool(req.get(d, false)) and not bool(conn.get(d, false)):
+	var corrisponding : Dictionary = {
+		"N":"S", 
+		"E":"W",
+		"S":"N",
+		"W":"E"
+	}
+	for key in corrisponding.keys():
+		var opposite: String = corrisponding.get(key, false)
+		if bool(req.get(key, false)) and not bool(conn.get(opposite, false)):
 			return false
 	return true
 

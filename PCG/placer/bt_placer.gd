@@ -24,7 +24,7 @@ func place(G: MissionGraph, rng: RandomNumberGenerator, caps: Dictionary, conns:
 	caps_norm = _normalize_caps(caps)
 	conns_norm = _normalize_conns(conns, caps_norm)
 
-	var start := String(G.start_id)
+	var start :String= String(G.start_id)
 	pos[start] = Vector2i(0,0)
 	used[Vector2i(0,0)] = true
 
@@ -34,9 +34,9 @@ func place(G: MissionGraph, rng: RandomNumberGenerator, caps: Dictionary, conns:
 		frontier.append({"u": start, "v": String(v_any)})
 
 	# Sanity: assicurati che almeno un arco abbia mosse legali
-	var any_legal := false
+	var any_legal :bool= false
 	for e in frontier:
-		var u := String(e["u"]); var v := String(e["v"])
+		var u := String(e["u"]); var v :String= String(e["v"])
 		if not pos.has(u) or pos.has(v): continue
 		var leg := _legal_positions_for(u, v, pos[u], rng)
 		if not leg.is_empty():

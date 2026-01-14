@@ -8,8 +8,8 @@
 [ext_resource type="PackedScene" uid="uid://bye3umlv0tvel" path="res://Scenes/Interactable/Trap.tscn" id="5_ckh2g"]
 [ext_resource type="PackedScene" uid="uid://d2w3rgrkmcw16" path="res://Scenes/Object/Light.tscn" id="7_krmf3"]
 [ext_resource type="PackedScene" uid="uid://bipi3sk65wrkm" path="res://Scenes/Interactable/LaserTrap.tscn" id="9_4q4me"]
-[ext_resource type="PackedScene" uid="uid://da022k4xm8n21" path="res://Scenes/Minion.tscn" id="9_5565f"]
-[ext_resource type="PackedScene" uid="uid://d0hqdlx2fy43e" path="res://Scenes/Gunner.tscn" id="10_5wnis"]
+[ext_resource type="PackedScene" uid="uid://da022k4xm8n21" path="res://Scenes/Enemy/Minion.tscn" id="9_5565f"]
+[ext_resource type="PackedScene" uid="uid://d0hqdlx2fy43e" path="res://Scenes/Enemy/Gunner.tscn" id="10_5wnis"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4drdq"]
 texture = ExtResource("1_r6qp2")
@@ -295,5 +295,5 @@ scenes/13/scene = ExtResource("9_4q4me")
 
 [resource]
 physics_layer_0/collision_layer = 1
-sources/6 = SubResource("TileSetScenesCollectionSource_ooiq6")
 sources/5 = SubResource("TileSetAtlasSource_4drdq")
+sources/6 = SubResource("TileSetScenesCollectionSource_ooiq6")

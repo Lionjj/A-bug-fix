@@ -1,0 +1,68 @@
+[gd_scene load_steps=10 format=3 uid="uid://cb2mopjb4k7on"]
+
+[ext_resource type="Script" uid="uid://bxblyips310bm" path="res://Scripts/Interactable/key.gd" id="1_7jdwc"]
+[ext_resource type="Texture2D" uid="uid://bdafifo7a56k7" path="res://Assets/OS/Key/sprite_0.png" id="2_rv5hb"]
+[ext_resource type="Texture2D" uid="uid://bs2nanlp68qh" path="res://Assets/OS/Key/sprite_1.png" id="3_tsiog"]
+[ext_resource type="Texture2D" uid="uid://ds1gmm2a814bn" path="res://Assets/OS/Key/sprite_2.png" id="4_6o1kh"]
+[ext_resource type="Texture2D" uid="uid://2qayytk0p75r" path="res://Assets/OS/Key/sprite_3.png" id="5_a8fok"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_rv5hb"]
+radius = 16.0
+height = 42.0
+
+[sub_resource type="Animation" id="Animation_ec80m"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_rv5hb")]
+}
+
+[sub_resource type="Animation" id="Animation_7jdwc"]
+resource_name = "idle"
+length = 0.6
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("2_rv5hb"), ExtResource("3_tsiog"), ExtResource("2_rv5hb"), ExtResource("4_6o1kh"), ExtResource("5_a8fok")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ec80m"]
+_data = {
+&"RESET": SubResource("Animation_ec80m"),
+&"idle": SubResource("Animation_7jdwc")
+}
+
+[node name="Key" type="Area2D"]
+scale = Vector2(0.5, 0.5)
+script = ExtResource("1_7jdwc")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_rv5hb")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_ec80m")
+}
+autoplay = "idle"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_rv5hb")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

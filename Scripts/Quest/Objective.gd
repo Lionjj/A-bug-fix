@@ -1,13 +1,21 @@
+## Modulo usato per la creazione degli obbiettivi per le [Quest],
 extends Resource
 class_name Objective
 
+## Identificativo univoco dell'obbiettivo.
 @export var id: StringName
+## Descrizione dell'obbiettivo che verrà mostrato al giocatore.
 @export var descrizione := ""
-@export var tipo := "counter"               # "counter" | "flag"
+## Tipo di obbiettivo.
+@export var tipo : String = "counter"               # "counter" | "flag"
+## Nome dell'evento che deve essere intercettato affinché l’obiettivo possa avanzare.
 @export var evento: StringName = &""
-@export var target := 1
-@export var progress := 0
-@export var completato := false
+## Valore da raggiungere per completare l’obiettivo (solo per tipo "counter").
+@export var target : int = 1
+## Avanzamento corrente dell’obiettivo.
+@export var progress : int = 0
+## True se l'obiettivo è stato completato.
+@export var completato : bool = false
 
 # --- BIND DINAMICO (opzionale) ---
 # Esempio: "/root/GameManager:enemy_num"
@@ -19,16 +27,15 @@ class_name Objective
 # Se true, il target segue il **picco** massimo; se false, riassegna ogni volta
 @export var dynamic_track_peak := true
 
-# Objective.gd
 func apply_event(ev: StringName, payload := {}) -> bool:
 	if completato or ev != evento:
 		return false
 
-	var changed := false
+	var changed : bool = false
 
 	match tipo:
 		"counter":
-			var before := progress
+			var before : int = progress
 			progress = min(progress + int(payload.get("amount", 1)), target)
 			if progress != before:
 				changed = true

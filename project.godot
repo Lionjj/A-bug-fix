@@ -24,6 +24,8 @@ DialogManager="*res://Scripts/Core/DialogManager.gd"
 EventBus="*res://Scripts/Quest/EventBus.gd"
 ObjectiveManager="*res://Scripts/Core/ObjectiveManager.gd"
 Rng="*res://PCG/util/RNG.gd"
+PhantomCameraManager="*res://addons/phantom_camera/scripts/managers/phantom_camera_manager.gd"
+PlayerInventory="*res://Scripts/Core/player_inventory.gd"
 
 [display]
 
@@ -33,6 +35,10 @@ window/size/mode=2
 window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="viewport"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/phantom_camera/plugin.cfg", "res://addons/wfc/plugin.cfg")
 
 [input]
 

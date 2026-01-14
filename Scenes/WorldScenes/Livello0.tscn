@@ -324,6 +324,7 @@ repeat_size = Vector2(1440, 0)
 repeat_times = 2
 
 [node name="Sprite2D" type="Sprite2D" parent="FG"]
+visible = false
 z_index = 50
 position = Vector2(2168, 713)
 texture = ExtResource("7_2d5rr")

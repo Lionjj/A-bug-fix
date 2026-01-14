@@ -11,8 +11,8 @@
 [ext_resource type="Shader" uid="uid://csulchvcqbg3b" path="res://Shaders/AggressivGlich.gdshader" id="8_yqbrs"]
 [ext_resource type="PackedScene" uid="uid://bmwjwwstk7p3q" path="res://Scenes/Boss/Attack/Punch.tscn" id="9_4q5b2"]
 [ext_resource type="Texture2D" uid="uid://dufnjycy0u27e" path="res://Assets/OS/Enemies/moon_01.png" id="9_vcbqp"]
-[ext_resource type="Script" uid="uid://dk73lwk6dtdhb" path="res://Scripts/Enemy/State/Death.gd" id="10_n25ns"]
-[ext_resource type="Script" uid="uid://ceg6j0exxdfxm" path="res://Scripts/Enemy/State/Hit.gd" id="11_cib36"]
+[ext_resource type="Script" uid="uid://dk73lwk6dtdhb" path="res://Scripts/Enemy/Minion/State/Death.gd" id="10_n25ns"]
+[ext_resource type="Script" uid="uid://ceg6j0exxdfxm" path="res://Scripts/Enemy/Minion/State/Hit.gd" id="11_cib36"]
 [ext_resource type="AudioStream" uid="uid://dxkjibvhfj36r" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/DSGNSynth_CAST-Mecha Laser Prepare_HY_PC-005.wav" id="14_cib36"]
 [ext_resource type="AudioStream" uid="uid://bodyvewh640yx" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/DSGNMisc_HIT-Laser Electric Zap_HY_PC-001.wav" id="15_rv3uk"]
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=150 format=3 uid="uid://b3qjste5bjucc"]
+[gd_scene load_steps=152 format=3 uid="uid://b3qjste5bjucc"]
 
 [ext_resource type="Shader" uid="uid://cm5o10587hcgl" path="res://Shaders/Player.gdshader" id="1_f6yay"]
 [ext_resource type="Script" uid="uid://bs05aplgu1muh" path="res://Scripts/Player/Player.gd" id="1_omwmj"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://dmnnmh4dnbdun" path="res://Assets/OS/Player/Attack01/Player_Attack01_03.png" id="5_omwmj"]
 [ext_resource type="Texture2D" uid="uid://dxg1i17m1lc2l" path="res://Assets/OS/Player/Attack01/Player_Attack01_04.png" id="6_468ce"]
 [ext_resource type="Texture2D" uid="uid://s1vovr3b2fe0" path="res://Assets/OS/Player/Attack01/Player_Attack01_05.png" id="7_0cfjf"]
+[ext_resource type="AudioStream" uid="uid://dw8lhfph21fnx" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/DSGNMisc_MOVEMENT-Jump Sparkle_HY_PC-004.wav" id="7_k1igm"]
 [ext_resource type="Texture2D" uid="uid://dihk0lk43ef2n" path="res://Assets/OS/Player/Attack01/Player_Attack01_06.png" id="8_gr8h0"]
 [ext_resource type="AudioStream" uid="uid://blg41nd4gue61" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/DSGNMisc_MOVEMENT-Whimsy Chimes_HY_PC-001.wav" id="8_k1igm"]
 [ext_resource type="Texture2D" uid="uid://c2nksd7e1oqyx" path="res://Assets/OS/Player/Attack01/Player_Attack01_07.png" id="9_yqoyr"]
@@ -86,7 +87,6 @@
 [ext_resource type="Script" uid="uid://d2xfjfrasg63i" path="res://Scripts/Player/State/PlayerCombo1.gd" id="79_t16bu"]
 [ext_resource type="Texture2D" uid="uid://bhau3d421ffor" path="res://Assets/OS/Player/Attack03/Player_Attack03_07.png" id="79_wc235"]
 [ext_resource type="Script" uid="uid://d3orvcit73mdl" path="res://Scripts/Player/State/Idle.gd" id="80_4k4at"]
-[ext_resource type="AudioStream" uid="uid://jvarfb23u6e4" path="res://Assets/Sound/Action/jump.mp3" id="80_6m422"]
 [ext_resource type="Texture2D" uid="uid://cwcl2lj5coipo" path="res://Assets/OS/Player/Attack03/Player_Attack03_08.png" id="80_ibc4f"]
 [ext_resource type="Texture2D" uid="uid://daanaq46aydre" path="res://Assets/OS/Player/Attack03/Player_Attack03_09.png" id="81_b4mdf"]
 [ext_resource type="Script" uid="uid://n10lm1cvqkpa" path="res://Scripts/Player/State/Run.gd" id="81_ldyk3"]
@@ -127,6 +127,8 @@
 [ext_resource type="AudioStream" uid="uid://bvv7robc2d43v" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/MAGAngl_BUFF-Simple Heal_HY_PC-004.wav" id="117_gtyc3"]
 [ext_resource type="Script" uid="uid://bjdbd1meacner" path="res://Scripts/Player/State/PlayerCombo2.gd" id="117_k1igm"]
 [ext_resource type="Script" uid="uid://tjlvnocav7r3" path="res://Scripts/Player/State/Parry.gd" id="125_f2r1p"]
+[ext_resource type="Script" uid="uid://bhexx6mj1xv3q" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_2d.gd" id="128_iuj5c"]
+[ext_resource type="Resource" uid="uid://euybd2w0bax" path="res://addons/phantom_camera/examples/resources/tween/player_phantom_camera_2d_tween.tres" id="129_iuj5c"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_52ee3"]
 height = 36.0
@@ -1050,7 +1052,7 @@ audio = Dictionary[StringName, AudioStream]({
 &"dush": ExtResource("110_f2r1p"),
 &"heal": ExtResource("117_gtyc3"),
 &"hit": ExtResource("69_iuj5c"),
-&"jump": ExtResource("80_6m422"),
+&"jump": ExtResource("7_k1igm"),
 &"parry": ExtResource("8_k1igm"),
 &"parry_hit": ExtResource("113_fyqbc")
 })
@@ -1069,9 +1071,11 @@ libraries = {
 }
 
 [node name="Camera2D" type="Camera2D" parent="." groups=["PlayerCamera"]]
+physics_interpolation_mode = 1
 z_index = -1
-zoom = Vector2(1.5, 1.5)
-position_smoothing_enabled = true
+position = Vector2(1, 1)
+enabled = false
+editor_draw_limits = true
 script = ExtResource("96_cqava")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -1190,6 +1194,21 @@ target_position = Vector2(11, 0)
 [node name="WallCheckTimer" type="Timer" parent="."]
 wait_time = 0.2
 one_shot = true
+
+[node name="PlayerPhantomCamera2D" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
+unique_name_in_owner = true
+top_level = true
+script = ExtResource("128_iuj5c")
+priority = 5
+follow_mode = 5
+follow_target = NodePath("..")
+zoom = Vector2(2, 2)
+tween_resource = ExtResource("129_iuj5c")
+tween_on_load = false
+follow_damping = true
+dead_zone_width = 0.3
+dead_zone_height = 0.2
+draw_limits = true
 
 [connection signal="body_entered" from="AttackArea" to="." method="_on_attack_area_body_entered"]
 [connection signal="area_entered" from="ParryArea" to="StateMachinePlayer/Parry" method="_on_parry_area_area_entered"]
