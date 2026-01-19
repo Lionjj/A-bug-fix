@@ -39,7 +39,7 @@ func _compute_items(items: Array[Item]) -> Dictionary[ItemRegistry.ID, int] :
 
 ## La lista di oggetti [param items] viene istanziata nelle posizioni [param positions]
 ## interne delle stanza [param room].
-func istanziate_in_position(positions: Array[Vector2i], items : Dictionary[ItemRegistry.ID, int], room: RoomTemplateMeta) -> void:
+func istanziate_in_position(positions: Array[Vector2i], items : Dictionary[ItemRegistry.ID, int], room: RoomTemplateMeta, room_item_state: RoomItemState) -> void:
 	var pos = positions.duplicate()
 		
 	for i in items.keys():
@@ -55,10 +55,10 @@ func istanziate_in_position(positions: Array[Vector2i], items : Dictionary[ItemR
 			room.add_child(new_item)
 			
 			## Aggiungi l'oggetto alla lista di porte della stanza
-			room.items_references.append(new_item)
+			room_item_state.items_references.append(new_item)
 			## Se per qualsiasi motivo l'oggetto viene eliminata dalla scena, viene eliminato anche il 
 			## suo riferimento alla lista di oggetti.
-			new_item.tree_exited.connect(func(): room.items_references.erase(new_item))
+			new_item.tree_exited.connect(func(): room_item_state.items_references.erase(new_item))
 			
 			count -= 1
 			

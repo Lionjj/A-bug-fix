@@ -1,7 +1,7 @@
 extends State
 class_name EnemyDeath
 
-@export var enemy: CharacterBody2D
+@export var enemy: EnemyEntity
 @export var anim: AnimationPlayer
 
 var bit_fx = preload("res://Scenes/Object/BitParticle.tscn")
@@ -14,11 +14,7 @@ func Enter():
 	bits.global_position = enemy.global_position
 	get_tree().current_scene.add_child(bits)
 	
-	
-#	anim.play("die")
-#	await anim.animation_finished
 	GameManager.decrement_enemy()
 	ObjectiveManager._on_game_event(&"enemy_killed", {"amount": 1})
-	#EventBus.emit_ev(&"enemy_killed", {"amount": 1})
 	
-	enemy.queue_free()
+	enemy.die()

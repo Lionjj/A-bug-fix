@@ -3,13 +3,14 @@ class_name WorldGen
 @export var budget_nodes :int
 @export var seed :int
 @export var player: PackedScene
-@export var run_level: int = 1
+@export var first_checkpoint: PackedScene
+@export var run_level: int = 4
 @onready var generator: WFC2DGenerator = $generator
 var abil_here :Array[Abilities.Ability]= [Abilities.Ability.GRAPPLE, Abilities.Ability.DASH]	# Abilità che il giocatore possiede
 var rng: RandomNumberGenerator
 var spawn_point: Vector2
 var G : MissionGraph
-var rooms: Dictionary[RoomTemplateMeta, bool] = {}
+var rooms: Dictionary[RoomTemplateMeta, RoomState] = {}
 
 var _rooms_waiting: int = 0
 
@@ -74,7 +75,7 @@ func build():
 		
 		room.add_to_group("rooms")
 		
-		rooms[room] = false
+		rooms[room] = RoomState.new()
 		
 		add_child(room)
 		## Spawna gli oggetti in base a cio che è contenuto nei nodi
@@ -207,10 +208,10 @@ func _merge(final: TileMapLayer, src_layer: Array[TileMapLayer]) -> Rect2i:
 	print("Merge rect:", rect)
 	return rect
 
-func spawn_palyer(spwan_point: Vector2):
+func spawn_palyer(spawn_point: Vector2):
 	var player_istance : Player = player.instantiate()
 		
-	player_istance.global_position = spwan_point
+	player_istance.global_position = spawn_point
 	
 	add_child(player_istance)
 	
@@ -218,6 +219,11 @@ func spawn_palyer(spwan_point: Vector2):
 	player_istance.wall_check_enabled = true
 	
 	GameManager.set_player(player_istance)
+
+func spawn_first_checkpoint(spawn_point: Vector2):
+	var checkpoint: Checkpoint = first_checkpoint.instantiate()
+	checkpoint.global_position = spawn_point
+	add_child(checkpoint)
 	
 func get_spawn_point() -> Vector2:
 	var start_room: RoomTemplateMeta = get_tree().get_first_node_in_group("rooms")
@@ -230,6 +236,7 @@ func get_spawn_point() -> Vector2:
 
 func _on_generator_done() -> void:
 	$Final.queue_free()
+	spawn_first_checkpoint(spawn_point)
 	spawn_palyer(spawn_point)
 	await get_tree().process_frame
 	await get_tree().physics_frame

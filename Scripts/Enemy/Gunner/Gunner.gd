@@ -9,7 +9,7 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 @export var low_jump_multiplier: float = 3.5
 @onready var healt_container = $HealtContainer.get_children()
 @onready var gun_point = $GunPoint
-
+@onready var state_machine: StateMachinePlayer = $StateMachine
 
 # Vita del nemico
 @export var max_hp = 3
@@ -18,6 +18,7 @@ var current_hp = 3
 var hit = false
 var dead = false
 var texture_0: CompressedTexture2D
+var texture_1: CompressedTexture2D
 
 # Direzione del nemico
 var direction
@@ -30,6 +31,7 @@ var player: CharacterBody2D
 func _ready() -> void:
 	player = get_player()
 	texture_0 = preload("res://Assets/OS/Enemies/0.png")
+	texture_1 = preload("res://Assets/OS/Enemies/1.png")
 	current_hp = max_hp
 	direction = 1.0
 	
@@ -49,6 +51,8 @@ func _physics_process(delta: float) -> void:
 	applay_gravity(delta)
 	move_and_slide()
 	
+	if not is_instance_valid(player):
+		player = get_tree().get_first_node_in_group("Player")
 	
 	if player != null:
 		if player.global_position.x < global_position.x:
@@ -76,13 +80,22 @@ func get_player() -> CharacterBody2D:
 	return player
 
 func take_damage(damage: int):
-	if dead:
-		return
+	if dead: return
 	
-	healt_container[current_hp - 1].texture = texture_0
+	var index = max(0, current_hp - 1)
+	healt_container[index].texture = texture_0
 	
 	current_hp -= damage
 	hit = true
+
+func reset():
+	current_hp = max_hp
+	dead = false
+	hit = false
+	for i in range(current_hp):
+		healt_container[i].texture = texture_1
+	state_machine.reset_to()
+	show_entity()
 
 func activate_hitbit():
 	$Bit0Particles.visible = true

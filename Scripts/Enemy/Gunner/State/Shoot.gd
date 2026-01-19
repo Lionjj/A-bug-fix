@@ -2,7 +2,7 @@ extends State
 
 class_name GunnerShoot
 
-@export var enemy: CharacterBody2D
+@export var enemy: EnemyEntity
 @export var anim: AnimationPlayer
 @export var bullet_scene: PackedScene
 @export var marker: Marker2D
@@ -16,16 +16,21 @@ func Enter():
 func Update(delta: float):
 	if enemy.hit:
 		Transitioned.emit(self, "Hit")
+	if enemy.current_hp <= 0 or enemy.dead:
+		Transitioned.emit(self, "Death")
 
 func _shoot() -> void:
+	if enemy.dead or not enemy.is_active(): return
 	anim.play("prepare_shoot")
-	await anim.animation_finished
+	await get_tree().create_timer(anim.current_animation_length).timeout
 	
+	if enemy.dead or not enemy.is_active(): return
 	anim.play("shoot")
-	await anim.animation_finished
+	await get_tree().create_timer(anim.current_animation_length).timeout
 	
+	if enemy.dead or not enemy.is_active(): return
 	anim.play("reload")
-	await anim.animation_finished
+	await get_tree().create_timer(anim.current_animation_length).timeout
 
 func init_bullet():
 	var bullet = bullet_scene.instantiate()

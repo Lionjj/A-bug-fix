@@ -7,6 +7,7 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 @export var fall_multiplier: float = 2.5
 @export var low_jump_multiplier: float = 3.5
 @onready var healt_container = $HealtContainer.get_children()
+@onready var state_machine: StateMachinePlayer = $StateMachine
 
 # Vita del nemico
 @export var max_hp = 3
@@ -15,6 +16,7 @@ var current_hp = 3
 var hit = false
 var dead = false
 var texture_0: CompressedTexture2D
+var texture_1: CompressedTexture2D
 
 # Direzione del nemico
 var direction
@@ -31,6 +33,7 @@ func _ready() -> void:
 		$Bit0Particles.process_material = $Bit0Particles.process_material.duplicate()
 
 	texture_0 = preload("res://Assets/OS/Enemies/0.png")
+	texture_1 = preload("res://Assets/OS/Enemies/1.png")
 	player = get_player()
 	current_hp = max_hp
 	direction = 1.0
@@ -38,6 +41,8 @@ func _ready() -> void:
 	GameManager.increment_enemy()
 
 func _physics_process(delta: float) -> void:
+	if not is_active(): return 
+	
 	if knockback_timer > 0.0:
 		velocity = knockback
 		knockback_timer -= delta
@@ -64,14 +69,22 @@ func applay_gravity(delta):
 		velocity.y = 0
 
 func take_damage(damage: int):
-	if dead:
-		return
+	if dead: return
 	
 	var index = max(0, current_hp - 1)
 	healt_container[index].texture = texture_0
 	
 	current_hp -= damage
 	hit = true
+
+func reset():
+	current_hp = max_hp
+	dead = false
+	hit = false
+	for i in range(current_hp):
+		healt_container[i].texture = texture_1
+	state_machine.reset_to()
+	show_entity()
 
 func get_player() -> CharacterBody2D:
 	if player == null:
@@ -101,3 +114,29 @@ func set_following(is_following : bool) -> void:
 
 func get_following() -> bool:
 	return self.is_following 
+
+func _on_deactivated() -> void:
+	var ground_ray: RayCast2D = $GroudRayCast2D
+	ground_ray.enabled = false
+	
+	var player_ray: RayCast2D = $PlayerRayCast2D
+	player_ray.enabled = false
+	
+	var wall_ray_cast: RayCast2D = $WallRayCast2D
+	wall_ray_cast.enabled = false
+	
+	var animation: AnimationPlayer = $AnimationPlayer
+	animation.pause()
+
+func _on_activated() -> void:
+	var ground_ray: RayCast2D = $GroudRayCast2D
+	ground_ray.enabled = true
+	
+	var player_ray: RayCast2D = $PlayerRayCast2D
+	player_ray.enabled = true
+	
+	var wall_ray_cast: RayCast2D = $WallRayCast2D
+	wall_ray_cast.enabled = true
+	
+	var animation: AnimationPlayer = $AnimationPlayer
+	animation.play()

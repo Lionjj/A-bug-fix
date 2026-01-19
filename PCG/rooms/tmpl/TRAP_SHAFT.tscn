@@ -1,30 +1,8 @@
-[gd_scene load_steps=10 format=4 uid="uid://tn5db5vrxhu3"]
+[gd_scene load_steps=4 format=4 uid="uid://tn5db5vrxhu3"]
 
 [ext_resource type="Script" uid="uid://d34bpkuli10v0" path="res://PCG/rooms/room_template_meta.gd" id="1_pke1n"]
 [ext_resource type="TileSet" uid="uid://3b80jy3y0tr" path="res://PCG/dressing/TileGen.tres" id="2_5fhfc"]
-[ext_resource type="Script" uid="uid://dgqt83y0te8h" path="res://PCG/util/EnemySpawner.gd" id="4_33wjd"]
-[ext_resource type="Script" uid="uid://bvmyl4fkq6hnl" path="res://PCG/util/EnemySpawnOption.gd" id="5_v1glf"]
-[ext_resource type="PackedScene" uid="uid://d0hqdlx2fy43e" path="res://Scenes/Enemy/Gunner.tscn" id="6_88rmg"]
-[ext_resource type="PackedScene" uid="uid://da022k4xm8n21" path="res://Scenes/Enemy/Minion.tscn" id="7_wyxpr"]
 [ext_resource type="Script" uid="uid://64c1ttipyhan" path="res://PCG/rooms/room_connector.gd" id="12_b107a"]
-
-[sub_resource type="Resource" id="Resource_a4bfy"]
-script = ExtResource("5_v1glf")
-scene = ExtResource("6_88rmg")
-weight = 0.5
-min_difficulty = 2
-max_difficulty = 99
-extra_wight_per_leve = 0.0
-metadata/_custom_type_script = "uid://bvmyl4fkq6hnl"
-
-[sub_resource type="Resource" id="Resource_ujhgh"]
-script = ExtResource("5_v1glf")
-scene = ExtResource("7_wyxpr")
-weight = 1.0
-min_difficulty = 1
-max_difficulty = 99
-extra_wight_per_leve = 0.0
-metadata/_custom_type_script = "uid://bvmyl4fkq6hnl"
 
 [node name="TrapShaft" type="Node2D"]
 script = ExtResource("1_pke1n")
@@ -77,13 +55,3 @@ metadata/_custom_type_script = "uid://64c1ttipyhan"
 
 [node name="Spawn" type="Marker2D" parent="."]
 position = Vector2(88, 424)
-
-[node name="EnemySpawner" type="Marker2D" parent="."]
-position = Vector2(224, 224)
-script = ExtResource("4_33wjd")
-enemies = Dictionary[StringName, ExtResource("5_v1glf")]({
-&"Gunner": SubResource("Resource_a4bfy"),
-&"Minion": SubResource("Resource_ujhgh")
-})
-max_enemies = 2
-metadata/_custom_type_script = "uid://dgqt83y0te8h"

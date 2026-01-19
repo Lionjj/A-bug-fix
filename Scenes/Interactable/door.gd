@@ -161,30 +161,27 @@ func open_whit_key() -> void:
 	
 	PlayerInventory.consume_item(ItemRegistry.ID.KEY)
 	
-	interaction_area.monitoring = false
-	interaction_area.monitorable = false
-	interaction_shape.set_deferred("disabled", true)
+	disable_interaction()
 	animation_player.play("unlock")
 	
 	await animation_player.animation_finished
 	sprite_lock.visible = false
 	
 	open()
+	disable_interaction()
 
 ## Metodo pubblico usato per "chiudere" la porta.
 func close() -> void:
 	is_open = false
 	
 	# Abilita la collsione con il giocatore
-	# collision_shape_2d.set_deferred("disabled", false)
+	collision_shape_2d.set_deferred("disabled", false)
 	# Abilita la parte estetica
 	color_rect.visible = true
 
 ## Metodo pubblico usato per "chiudere" la porta a chiave.
 func close_whit_key() -> void:
-	interaction_area.monitoring = true
-	interaction_area.monitorable = true
-	interaction_shape.set_deferred("disabled", false)
+	enable_interaction()
 	
 	sprite_lock.visible = true
 	animation_player.play("lock")
@@ -197,6 +194,8 @@ func try_open() -> void:
 	match unlock_type:
 		MissionGraph.LockType.FREE: open() 
 		MissionGraph.LockType.ENEMIES_CLEARED: open() 
+		## TODO: Attualmente nel caso in cui si sta combattendo dei nemici in una stanza, al termne 
+		## del combattimento la chiave, se presente viene consumata automaticamente
 		MissionGraph.LockType.KEY: open_whit_key()
 
 ## Metodo pubblico usato chiudere la porta con qualsiasi tipo di lucchetto.
@@ -215,3 +214,16 @@ func compute_tiles() -> Vector2:
 		tiles_x * TILE_SIZE,
 		tiles_y * TILE_SIZE
 		)
+
+func disable_interaction() -> void:
+	if unlock_type != MissionGraph.LockType.KEY: return
+	interaction_area.monitoring = false
+	interaction_area.monitorable = false
+	interaction_shape.set_deferred("disabled", true)
+
+
+func enable_interaction() -> void:
+	if unlock_type != MissionGraph.LockType.KEY: return
+	interaction_area.monitoring = true
+	interaction_area.monitorable = true
+	interaction_shape.set_deferred("disabled", false)

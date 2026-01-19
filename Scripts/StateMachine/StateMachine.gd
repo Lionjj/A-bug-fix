@@ -37,3 +37,12 @@ func on_child_transition(state: State, new_state_name: String):
 	new_state.Enter()
 	
 	current_state = new_state
+
+func reset_to(new_state_name: String = "Idle") -> void:
+	var new_state: State = states.get(new_state_name.to_lower())
+	if !new_state: return
+	
+	if current_state: current_state.Exit()
+	
+	current_state = new_state
+	current_state.Enter()

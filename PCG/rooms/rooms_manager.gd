@@ -3,7 +3,7 @@
 extends Node
 class_name RoomsManager
 
-var rooms: Dictionary[RoomTemplateMeta, bool] = {}
+var rooms: Dictionary[RoomTemplateMeta, RoomState] = {}
 var room_position: Dictionary[String, Vector2i] = {}
 var position_room: Dictionary[Vector2i, String] = {}
 var player: Player
@@ -12,9 +12,11 @@ var enemies_spawner: EnemiesSpawner
 var G: MissionGraph
 var run_level: int = 1
 
+var _combat_room: RoomTemplateMeta = null
+
 var door_scene : PackedScene = load("res://Scenes/Interactable/Door.tscn") as PackedScene
 
-func _init(_G: MissionGraph, _rooms: Dictionary[RoomTemplateMeta, bool], _room_position: Dictionary[String, Vector2i], _player: Player, _run_level: int) -> void:
+func _init(_G: MissionGraph, _rooms: Dictionary[RoomTemplateMeta, RoomState], _room_position: Dictionary[String, Vector2i], _player: Player, _run_level: int) -> void:
 	G = _G
 	rooms = _rooms
 	room_position = _room_position
@@ -28,6 +30,8 @@ func _init(_G: MissionGraph, _rooms: Dictionary[RoomTemplateMeta, bool], _room_p
 		position_room[value] = k
 
 func _ready() -> void:
+	player.died.connect(_on_player_died)
+	
 	for room in rooms: 
 		
 		room.player_entered.connect(_on_room_player_entered)
@@ -45,38 +49,27 @@ func _process(delta: float) -> void:
 	if player == null: return
 	
 	for room in rooms:
-		#if rooms.get(room): continue
 		room.update_player_presence(player)
 
 ## Funzione che gestisce gli eventi che devono accadere quando un giocatore 
 ## entra in una stanza [param room].
 func _on_room_player_entered(room: RoomTemplateMeta) -> void:
-	
 	print("Player in room:", room.name, " node: ", room.logic_node.id)
-	if rooms.get(room, false): return
+	var state : bool = rooms.get(room, RoomState.new()).done
+	if state: return
 	
-	# Chiudo le porte
-	for d in room.doors: d.try_close()
+	## Chiudo le porte
+	for d in room.doors: 
+		d.try_close()
+		d.disable_interaction()
 	
-	# Inserisco i nemici
+	## Inizia il combattimento
+	_start_room_combat(room)
 	
-	# Inserisco spawno gli oggetti quando i nemici sono stati sconfitti
-	
-	
-	
-	#var spawn_points : Array[Vector2i] = room.item_spawn_points.duplicate()
-	#var items : Dictionary[ItemRegistry.ID, int] = room.items
-	#
-	#if items.is_empty(): return
-	#if spawn_points.is_empty(): return
-	#
-	#spawner.istanziate_in_position(spawn_points, items, room)
-	
-	rooms[room] = true
-
+## Funzione che gestisce gli eventi che devono accadere quando un giocatore 
+## esce da una stanza [param room].
 func _on_room_player_exited(room: RoomTemplateMeta) -> void:
 	pass
-	#rooms[room] = false
 
 ## Aggiunge ai varchi di una stanza [param room] le porte che bloccano 
 ## il passaggio alla stanza successiva.
@@ -133,27 +126,151 @@ func _get_lock_type(node: String, conn: String) -> MissionGraph.LockType:
 
 ## Metodo privato utilizzato per aggiungere gli oggetti all'interno di una stanza [param room].
 func _add_items(room: RoomTemplateMeta) -> void:
+	var item_state: RoomItemState = rooms.get(room).items_state
 	## Carica il catalogo degli oggetti che la stanza conterrà.
-	room.items = items_spawner.get_catalog(room.logic_node)
-	if room.items.is_empty(): return
+	var items: Dictionary[ItemRegistry.ID, int] = items_spawner.get_catalog(room.logic_node)
+	if items.is_empty(): return
 	
 	## Carica le posizioi in cui gli oggetti verranno inseriti.
-	room.item_spawn_points = items_spawner.get_spawn_points(room)
-	if room.item_spawn_points.is_empty(): return
+	var item_spawn_points : Array[Vector2i] = items_spawner.get_spawn_points(room)
+	if item_spawn_points.is_empty(): return
 	
-	items_spawner.istanziate_in_position(room.item_spawn_points, room.items, room)
-
+	items_spawner.istanziate_in_position(item_spawn_points, items, room, item_state)
+	item_state.items = items
+	item_state.item_spawn_points = item_spawn_points
+	item_state.spawned = true
+	
+## Metodo privato utilizzato per inserire i nemici all'interno di una stanza [param room]
 func _add_enemies(room: RoomTemplateMeta)-> void:
-	var budget: int = enemies_spawner._compute_budget(run_level, room)
+	if room.logic_node.enemy_directive.combat_type == EnemyDirective.CombatType.NO_COMBAT: return
+	
+	var enemies_state: RoomEnemyState = rooms.get(room).enemies_state
+	
+	## Calcolo il budget della stanza
+	var budget: int = enemies_spawner.compute_budget(run_level, room)
 	var room_diff: int = room.logic_node.diff
 	
-	var enemies: Array[EnemiesRegistry.ID] = enemies_spawner._chose_enemys(room_diff, run_level, budget)
+	## Scelgo i nemici che devo istanziare 
+	var enemies: Array[EnemiesRegistry.ID] = enemies_spawner.chose_enemys(room_diff, run_level, budget)
+	if enemies.is_empty(): return 
 
+	## Creo le eventuali ondate di nemici 
 	var wave: int = room.logic_node.enemy_directive.waves
-	room.enemies_waves = enemies_spawner._build_wave_plan(budget, wave)
-	if room.enemies_waves.is_empty(): return
+	var wave_plan: Array[int] = enemies_spawner.build_wave_plan(budget, wave)
+	if wave_plan.is_empty(): return
 
-	room.enemy_spawn_points = enemies_spawner._get_spawn_points(room, enemies.size())
-	if room.enemy_spawn_points.is_empty(): return
+	var spawn_points : Array[Vector2i] = enemies_spawner.get_spawn_points(room, enemies.size())
+	if spawn_points.is_empty(): return
 	
+	enemies_spawner.istanziate_in_position(spawn_points, enemies, room, enemies_state)
+	
+	for enemy: EnemyEntity in enemies_state.enemies_references:
+		enemy.died.connect(func(e: EnemyEntity) -> void:
+				_on_enemy_died(room, enemies_state ,e)
+		)
+	
+	enemies_state.queue = enemies
+	enemies_state.wave_plan = wave_plan
+	enemies_state.spawn_points = spawn_points
+	enemies_state.prepared = true
+
+## Metodo privato che fa inizare il combattimento all'interno della stanza [param room].
+func _start_room_combat(room: RoomTemplateMeta) -> void:
+	_combat_room = room
+	var enemies_state: RoomEnemyState = rooms.get(room).enemies_state
+	
+	if !enemies_state.prepared: _add_enemies(room)
+	
+	var need_to_fight: bool = room.logic_node.enemy_directive.combat_type != EnemyDirective.CombatType.NO_COMBAT 
+	var ther_is_enemies: bool = enemies_state.to_eliminate != 0
+	
+	if !need_to_fight or !ther_is_enemies: 
+		for door in room.doors: 
+			door.try_open()
+			door.enable_interaction()
+		return
+	
+	if enemies_state.started:
+		for enemy: EnemyEntity in enemies_state.enemies_alive:
+			enemy.show_entity()
+		return
+	
+	enemies_state.started = true
+	_spawn_wave(room, enemies_state)
+
+## Metodo privato utilizzato per la gestione delle ondate di nemici all'interno della stanza [param room]
+## sfruttando lo stato dei nemici nella stanza [param enemies_state]
+func _spawn_wave(room: RoomTemplateMeta, enemies_state: RoomEnemyState) -> void:
+	if enemies_state.wave_index not in range(enemies_state.wave_plan.size()): return
+	
+	var wave: int = enemies_state.wave_plan[enemies_state.wave_index]
+	
+	for e in range(wave):
+		if enemies_state.enemy_index not in range(enemies_state.enemies_references.size()): return
+		
+		var enemy: EnemyEntity = enemies_state.enemies_references[enemies_state.enemy_index]
+		enemies_state.enemies_alive.append(enemy)
+		
+		var free_slot: int = enemies_spawner.find_free_slot_index(enemies_state.spawn_points, enemies_state.enemies_alive)
+		if free_slot == -1: break
+		
+		enemy.global_position = enemies_state.spawn_points[free_slot]
+		enemy.show_entity()
+		
+		enemies_state.enemy_index += 1
+	
+	enemies_state.wave_index += 1
+		
+## Metodo privato utilizzato per gestire ciò che accande in una stanza [param room], quando un nemico
+## [param enemy] viene sconfitto, aggiornado inoltre lo stato dei nemici nella stanza [param enemies_state].
+func _on_enemy_died(room: RoomTemplateMeta, enemies_state: RoomEnemyState, enemy: EnemyEntity) -> void:
+	if !enemies_state.enemies_alive.has(enemy): return
+	
+	enemies_state.enemies_alive.erase(enemy)
+	enemies_state.to_eliminate -= 1
+	
+	if !enemies_state.enemies_alive.is_empty(): return
+	if enemies_state.to_eliminate == 0: _end_combat(room)
+		
+	_spawn_wave(room, enemies_state)
+
+## Metodo privato che avvia gli eventi che devono accadere quando i nemici in una stanza [param room]
+## sono stati sconfitti.
+func _end_combat(room: RoomTemplateMeta) -> void:
+	## Stanza completata
+	var room_state: RoomState = rooms.get(room)
+	room_state.done = true
+	
+	## Apri le porte
+	for door: Door in room.doors: 
+		door.try_open()
+		door.enable_interaction()
+	
+	## Spawna gli oggetti
+	for item: ItemEntity in room_state.items_state.items_references: item.show_entity()
+	
+	_combat_room = null
+
+## Metodo privato che gestice l'evento di quando un giocatore muore durante un combattimento.
+func _on_player_died() -> void:
+	if _combat_room == null: return 
+	_reset_room(_combat_room)
+
+## Metodo privato che gestice il reset dei nemici nella stanza [param room].
+func _reset_room(room: RoomTemplateMeta) -> void:
+	var enemies_state: RoomEnemyState = rooms.get(room).enemies_state
+	for door: Door in room.doors: door.try_open()
+	_reset_enemies(enemies_state)
+
+## Metodo privsato che resetta lo stato dei nemici [param enemies_state].
+func _reset_enemies(enemies_state: RoomEnemyState) -> void:
+	enemies_state.wave_index = 0
+	enemies_state.enemy_index = 0
+	enemies_state.to_eliminate = enemies_state.enemies_references.size()
+	enemies_state.enemies_alive.clear()
+	enemies_state.started = false
+	
+	for enemy: EnemyEntity in enemies_state.enemies_references:
+		enemy.reset()
+		enemy.hide_entity()
 	

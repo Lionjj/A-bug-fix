@@ -20,6 +20,6 @@ var catalog: NodeCatalogue = NodeCatalogue.new([] as Array[Item]):
 	get: return catalog
 
 ## Direttive logiche usate per gestire lo spawn dei nemici.
-var enemy_directive: EnemyDirective
+var enemy_directive: EnemyDirective = EnemyDirective.new()
 
 func _init(_id:String,_kind:String): id=_id; kind=_kind

@@ -55,6 +55,8 @@ var hit = false
 var can_dodge = true
 var enemy_hit = false
 
+signal died()
+
 func _ready() -> void:
 	GameManager.player = self
 	current_hp = max_hp
@@ -183,3 +185,6 @@ func set_damage(type: String) -> void:
 
 func set_objective(text: String) -> void:
 	$HudPlayer.set_objective(text)
+
+func die() -> void:
+	emit_signal("died")

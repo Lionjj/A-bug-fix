@@ -1,8 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://cjspp24lnt3mx"]
+[gd_scene load_steps=12 format=3 uid="uid://cjspp24lnt3mx"]
 
 [ext_resource type="Script" uid="uid://b1qnfid3rpqrx" path="res://PCG/world_gen.gd" id="1_4w8jr"]
 [ext_resource type="Script" uid="uid://cwx0fq7rrtpkx" path="res://PCG/camera_2d.gd" id="2_qjsvq"]
 [ext_resource type="TileSet" uid="uid://3b80jy3y0tr" path="res://PCG/dressing/TileGen.tres" id="3_byuo8"]
+[ext_resource type="PackedScene" uid="uid://5mm4ltm5jn3f" path="res://Scenes/Interactable/checkpoint.tscn" id="3_lp64l"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="4_al175"]
 [ext_resource type="PackedScene" uid="uid://caisknnmfu6ae" path="res://PCG/dressing/TrainedWFC.tscn" id="4_j7kmj"]
 [ext_resource type="Script" uid="uid://bnqimgi4cjcba" path="res://addons/wfc/problems/2d/preconditions/precondition_2d_platformer_settings.gd" id="5_td2yp"]
@@ -60,6 +61,7 @@ script = ExtResource("1_4w8jr")
 budget_nodes = 13
 seed = 6
 player = ExtResource("7_1w6fu")
+first_checkpoint = ExtResource("3_lp64l")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(1.5, 1.5)

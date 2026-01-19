@@ -17,12 +17,10 @@ const CONNECTOR_NAMES := {"N":"conn_N","E":"conn_E","S":"conn_S","W":"conn_W"}
 
 const PIXEL = 16
 
-
 @export var base_weight: float = 1.0												# “quanto vuole apparire” il template
 @export var tags: Array[String] = []												# es: ["vertical","gap","combat","platforming"]
 
 @onready var collision: TileMapLayer = $Collision
-#@onready var enemy_spawner : EnemySpawner = $EnemySpawner
 
 ## Area usata per verificare quando un giocatore etra in una stanza.
 var bounds: Rect2 = Rect2()
@@ -47,36 +45,16 @@ var logic_node: MissionNode = null :
 ## il loro accesso e la loro gestione.
 var doors: Array[Door] = []
 
-## Dizionario contenente il nome dell'oggetto e la quantità di oggetti che devono 
-## essere istanziati.
-var items : Dictionary[ItemRegistry.ID, int] = {}
-
-## Lista di riferimenti agli oggetti della stanza corrente, variabile di utilità per semplificarne 
-## il loro accesso e la loro gestione.
-var items_references: Array[ItemEntity] = []
-
-var enemies_references: Dictionary = {}
-
-## Numero di nemici per ondata che la stanza deve gestire, il numero di elementi della lista 
-## rappresenta inoltre quante ondate ci sono
-var enemies_waves: Array[int] = []
-
 signal done
 ## Segnale emesso quando un giocatore entra nella stanza.
 signal player_entered(room: RoomTemplateMeta)
 ## Segnale emesso quando un giocatore esce della stanza.
 signal player_exited(room: RoomTemplateMeta)
 
-signal enemies_cleared(room: RoomTemplateMeta)
 
 func _ready() -> void:
 	## Caricare le posizioni interne per lo spawn
 	spawn_points = SmartPlacement.compute_internal_cells(self)
-	
-	#if !enemy_spawner: return
-	#
-	#enemy_spawner.done.connect(func(): emit_signal("done"))
-
 
 func get_spawn_point() -> Marker2D:
 	var spawn: Marker2D = $Spawn

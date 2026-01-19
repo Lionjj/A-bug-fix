@@ -448,7 +448,7 @@ shape = SubResource("RectangleShape2D_kpr8r")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(5, -23)
-texture = ExtResource("50_s436k")
+texture = ExtResource("55_ekg4x")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {

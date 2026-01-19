@@ -23,6 +23,8 @@ func Update(delta):
 		return
 	if enemy.hit:
 		Transitioned.emit(self, "Hit")
+	if enemy.current_hp <= 0 or enemy.dead:
+		Transitioned.emit(self, "Death")
 
 func Physics_Update(delta):
 	timer += delta

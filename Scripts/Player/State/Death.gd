@@ -14,5 +14,6 @@ func Enter():
 	hud.reset_heart()
 	GameManager.respawn_player()
 	Transitioned.emit(self, "Idle")
+	player.die()
 
 	
