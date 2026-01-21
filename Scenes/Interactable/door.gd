@@ -43,7 +43,14 @@ var cardinal: StringName
 var owner_room: RoomTemplateMeta
 
 
-func setup(_owner_room: RoomTemplateMeta, _tiles_x:int, _tiles_y:int, _pos: Vector2, _cardinal: StringName = "N", _unlock_type: MissionGraph.LockType = MissionGraph.LockType.FREE) -> void:
+func setup(
+	_owner_room: RoomTemplateMeta, 
+	_tiles_x:int, 
+	_tiles_y:int, 
+	_pos: Vector2, 
+	_cardinal: StringName = "N", 
+	_unlock_type: MissionGraph.LockType = MissionGraph.LockType.FREE
+) -> void:
 	tiles_x = max(1, _tiles_x)
 	tiles_y = max(1, _tiles_y)
 	pos = _pos
@@ -196,7 +203,7 @@ func try_open() -> void:
 		MissionGraph.LockType.ENEMIES_CLEARED: open() 
 		## TODO: Attualmente nel caso in cui si sta combattendo dei nemici in una stanza, al termne 
 		## del combattimento la chiave, se presente viene consumata automaticamente
-		MissionGraph.LockType.KEY: open_whit_key()
+		#MissionGraph.LockType.KEY: open_whit_key()
 
 ## Metodo pubblico usato chiudere la porta con qualsiasi tipo di lucchetto.
 func try_close() -> void:

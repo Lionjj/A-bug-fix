@@ -10,7 +10,28 @@ class_name SmartPlacement extends Node
 ## Numero di centri che devono essere generati.
 const VORONOI_CENTERS : int = 6
 
-# API
+## Score per influenzare la scelta dei punti per piazzare le trappole: Corridoi
+const SCORE_HALLWAY: float = 3.0
+## Score per influenzare la scelta dei punti per piazzare le trappole: Dead-end
+const SCORE_DEAD_END: float = 2.0
+## Score per influenzare la scelta dei punti per piazzare le trappole: Aree aperte
+const SCORE_OPEN_AREA: float = 0.5
+## Score per influenzare la scelta dei punti per piazzare le trappole: Vicino a muri
+const SCORE_NEAR_WALL: float = 1.0
+
+## Classe di supporto utilizzata per legare le poszioni indiviudate a un valore rappresentsante
+## l'importanza della suddetta poszione.
+## Vedi [method _score_list].
+class PositionScore:
+	var position: Vector2i
+	var score: float
+	
+	func _init(_position: Vector2i = Vector2i.ZERO, _score: float = 0.0) -> void:
+		position = _position
+		score = _score
+
+## API: Dato una lista di posizioni [param all_positions] e un numero di posizioni minime da rispettare
+## [param require_count] utilizza Voronoi per individuare un sottoinsieme di punti utilizzabili.
 static func beautify(all_positions: Array[Vector2i], require_count: int = 1) -> Array[Vector2i]:
 	if all_positions.is_empty():
 		return []
@@ -21,7 +42,6 @@ static func beautify(all_positions: Array[Vector2i], require_count: int = 1) -> 
 	
 	return final_pass
 
-# 1) Trova le posizioni diponibili sul pavimento
 ## Metodo pubblico che presa una [param tilemap]
 ## restituscie un elenco di poszioni che si trovano sul terreno 
 ## oppure un array vuoto.
@@ -43,41 +63,17 @@ static func get_floor_tiles(tilemap: TileMapLayer) -> Array[Vector2i]:
 
 	return floors
 
-# 2) Converte cella → coordinata globale valida per lo spawn
-## Metodo utilizzato per convertire le celle [param cell] locali di [param tilemap]
-## in cordinate globali.
-#static func cell_to_world_position(tilemap: TileMapLayer, cell: Vector2i) -> Vector2:
-	#var local : Vector2 = tilemap.map_to_local(cell)
-	#var global : Vector2 = tilemap.to_global(local)
-	#var tile_size : int = tilemap.tile_set.tile_size.x
-	#return global - Vector2(0, tile_size / 2)  # leggero offset verso l'alto
-
-## Converte una cella TileMap in coordinata world (centro cella)
+## Converte una cella di cordinate [param cell] locali in [param tilemap] in coordinata world (centro cella)
 static func cell_to_world_position(
 	tilemap: TileMapLayer,
-	cell: Vector2i
+	cell: Vector2i,
+	offset: Vector2 = Vector2.ZERO
 ) -> Vector2:
-	return tilemap.to_global(tilemap.map_to_local(cell))
+	var pos: Vector2 = tilemap.to_global(tilemap.map_to_local(cell))
+	return pos + offset
 
-# 3) Trova tutte le posizioni valide
-## Metodo pubblico che restiuscie tutte le posizioni intenre di [param room] e 
+## Metodo pubblico che restiuscie tutte le posizioni interne [param inner_space] della stanza [param room]
 ## che si trovano sul pavimento, se non c'è ne sono restiusice un [Array] vuoto.
-## TODO: se trasnformo inner_space in dictionary aumento la velocità di accesso agli oggetti
-#static func find_positions(room: RoomTemplateMeta, inner_space: Array[Vector2i]) -> Array[Vector2i]:
-	#var tilemap: TileMapLayer = room.collision
-	#if tilemap == null:
-		#push_error("Room has no TileMapLayer named 'Collision'")
-		#return []
-	#var floors : Array[Vector2i] = get_floor_tiles(tilemap)
-	#var world_positions: Array[Vector2i] = []
-#
-	#for c in floors:
-		#var t = c + Vector2i(0, -1)
-		#if !inner_space.has(t): continue
-		#world_positions.append(tile_to_world(tilemap, c) as Vector2i)
-#
-	#return world_positions
-
 static func get_floor_air_cells(room: RoomTemplateMeta, inner_space: Array[Vector2i]) -> Array[Vector2i]:
 	var tilemap: TileMapLayer = room.collision
 	if tilemap == null:
@@ -92,12 +88,11 @@ static func get_floor_air_cells(room: RoomTemplateMeta, inner_space: Array[Vecto
 	
 	for floor_cell: Vector2i in floor_tiles:
 		var air_cell: Vector2i = floor_cell + Vector2i.UP
-		if inner_lookup.has(air_cell): out.append(cell_to_world_position(tilemap, air_cell) as Vector2i)
+		if inner_lookup.has(air_cell): out.append(air_cell)
 	
 	return out
 
-# 4) GENERA CENTRI VORONOI
-## Metodo pubblico genera e restitusice una lista di centoridi utilizzando Voronoi
+## Metodo privato genera e restitusice una lista di centoridi utilizzando Voronoi
 ## a partire da una lista di poszioni: [param all_positions]. 
 static func _generate_centers(all_positions: Array[Vector2i]) -> Array[Vector2i]:
 	var centers : Array[Vector2i] = []
@@ -107,7 +102,8 @@ static func _generate_centers(all_positions: Array[Vector2i]) -> Array[Vector2i]
 		centers.append(all_positions[idx])
 	return centers
 
-# 5) ASSOCIA OGNI POSIZIONE AL CENTER PIÙ VICINO
+## Metodo privato che associa ad aun centroide presente in [param centers] una lista di posizioni
+## [param all_positions].
 static func _compute_regions(all_positions: Array[Vector2i], centers: Array[Vector2i]) -> Dictionary[Vector2i, Array]:
 	var regions : Dictionary[Vector2i, Array] = {}
 	for c in centers:
@@ -127,7 +123,14 @@ static func _compute_regions(all_positions: Array[Vector2i], centers: Array[Vect
 
 	return regions
 
-# 6) PER OGNI REGIONE, PRENDI 1 POSIZIONE vicina al centro
+## Metodo privato usato per selezionare un insieme di punti "esteticamente validi" 
+## distribuiti tra più regioni [param regions].
+##
+## La funzione assegna a ciascuna regione un numero di punti proporzionale
+## alla sua capacità [param total_capacity] (numero di punti disponibili), 
+## garantendo che il totale dei punti selezionati sia esattamente [parma items_count].
+##
+## Viene restituito un insieme di punti selezionati.
 static func _select_beautiful_points(
 	regions: Dictionary[Vector2i, Array],
 	items_count: int,
@@ -136,13 +139,13 @@ static func _select_beautiful_points(
 	var picks: Array[Vector2i] = []
 	var centers: Array[Vector2i] = regions.keys()
 
-	# 1) Calcolo la capacità di ciascuna regione
+	## Calcolo la capacità di ciascuna regione
 	var capacities: Array[int] = []
 	for center in centers:
 		var cap : int = regions[center].size()
 		capacities.append(cap)
 
-	# 2) Primo pass: quota proporzionale base (floor)
+	## Primo pass: quota proporzionale base (floor)
 	var counts: Array[int] = []
 	var remainders: Array = []
 	var assigned : int = 0
@@ -163,7 +166,7 @@ static func _select_beautiful_points(
 
 	var remaining : int = items_count - assigned
 
-	# 3) Secondo pass: assegno +1 alle regioni coi resti più grandi
+	## Secondo pass: assegno +1 alle regioni coi resti più grandi
 	if remaining > 0:
 		remainders.sort_custom(func(a, b):
 			return a["rem"] > b["rem"]  # dal resto più grande al più piccolo
@@ -173,7 +176,7 @@ static func _select_beautiful_points(
 			var i: int = remainders[idx]["i"]
 			counts[i] += 1
 
-	# 4) Seleziono per ogni regione i punti più vicini al centro
+	## Seleziono per ogni regione i punti più vicini al centro
 	for i in range(centers.size()):
 		var n_for_region : int = counts[i]
 		if n_for_region <= 0:
@@ -317,3 +320,171 @@ static func _compute_bounds(internal_cells: Array[Vector2i], tilemap: TileMapLay
 	var top_left_global : Vector2 = tilemap.to_global(top_left_local)
 
 	return Rect2(top_left_global, size_local)
+	
+
+static func _walkable_degree(cell: Vector2i, inner_lookup: Dictionary[Vector2i, bool]) -> int:
+	var out : int = 0
+	if inner_lookup.has(cell + Vector2i.UP): out += 1
+	if inner_lookup.has(cell + Vector2i.DOWN): out += 1
+	if inner_lookup.has(cell + Vector2i.LEFT): out += 1
+	if inner_lookup.has(cell + Vector2i.RIGHT): out += 1
+	return out
+
+static func _is_near_wall(cell: Vector2i, inner_lookup: Dictionary[Vector2i, bool]) -> bool:
+	return (
+		!inner_lookup.has(cell + Vector2i.UP) or
+		!inner_lookup.has(cell + Vector2i.DOWN) or
+		!inner_lookup.has(cell + Vector2i.LEFT) or
+		!inner_lookup.has(cell + Vector2i.RIGHT)
+	)
+
+static func score_list(
+	room: RoomTemplateMeta,
+	candidates: Array[Vector2i], 
+	inner_lookup: Array[Vector2i],
+	require_count: int,
+	min_dist_from_entry: int = 5
+) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	
+	if candidates.is_empty(): return out
+	if inner_lookup.is_empty(): return out
+	
+	var tilemap : TileMapLayer = room.collision
+	var entry: Vector2i = _find_entry_point(tilemap)
+	
+	var scored : Array[PositionScore] = []
+	var lookup: Dictionary[Vector2i, bool] = {}
+	for position in inner_lookup: lookup[position] = true
+	
+	for c in candidates:
+		## fairness: evita subito l'entry
+		if c.distance_to(entry) < min_dist_from_entry: continue
+		
+		var deg : int = _walkable_degree(c, lookup)
+		var near_wall : bool = _is_near_wall(c, lookup)
+
+		## Applicazione dello score
+		var score : float = 0.0
+		match deg:
+			1: score += SCORE_DEAD_END
+			2: score += SCORE_HALLWAY
+			_: score += SCORE_OPEN_AREA
+
+		if near_wall: score += SCORE_NEAR_WALL
+
+		## Applicszione di randomnes
+		score += float(Rng.rng.randf_range(0.0, 0.25))
+
+		scored.append(PositionScore.new(c, score))
+
+	if scored.is_empty(): return out
+	
+	scored.sort_custom(func (a: PositionScore, b: PositionScore): return a.score > b.score)
+	
+	var oversample : int = min(scored.size(), max(require_count * 4, require_count))
+	for i in range(oversample): out.append(scored[i].position)
+	
+	return out
+
+## Calcola le celle in rientranze verticali nei muri dalle celle interne della 
+## stanza [param inner_space].
+static func get_wall_recesses(inner_space: Array[Vector2i]) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	if inner_space.is_empty(): return out
+	
+	var inner: Dictionary[Vector2i, bool] = {}
+	for cell in inner_space: inner[cell] = true
+	
+	for cell in inner_space:
+		if !inner.has(cell): continue
+		
+		var wall_left: bool = !inner.has(cell + Vector2i.LEFT)
+		var wall_right: bool = !inner.has(cell + Vector2i.RIGHT)
+		if !(wall_left or wall_right): continue
+		
+		if !inner.has(cell + Vector2i.DOWN): continue
+		
+		out.append(cell)
+	
+	return out
+
+static func _is_shaft_cell(cell: Vector2i, inner: Dictionary[Vector2i, bool]) -> bool:
+	if !inner.has(cell): return false
+	var left_solid: bool = !inner.has(cell + Vector2i.LEFT)
+	var right_solid: bool = !inner.has(cell + Vector2i.RIGHT)
+	return left_solid and right_solid
+
+static func _shaft_depth_from(cell: Vector2i, inner: Dictionary[Vector2i, bool], max_depth: int = 64) -> int:
+	var depth: int = 0
+	var cur: Vector2i = cell
+	while depth < max_depth and _is_shaft_cell(cur, inner):
+		depth += 1
+		cur += Vector2i.DOWN
+	return depth
+
+static func get_pit_cells_local(
+	inner_space: Array[Vector2i],
+	min_delpth: int = 3,
+	bottom_offset: int = 1
+) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	if inner_space.is_empty(): return out
+	
+	var inner: Dictionary[Vector2i, bool] = {}
+	for cell in inner_space: inner[cell] = true
+	
+	var seen: Dictionary[Vector2i, bool] = {}
+	
+	for cell in inner_space:
+		if seen.has(cell): continue
+		if !_is_shaft_cell(cell, inner): continue
+		
+		var depth: int = _shaft_depth_from(cell, inner)
+		if depth < min_delpth: continue
+		
+		var bottom: Vector2i = cell + Vector2i.DOWN * (depth - 1)
+		var target: Vector2i = bottom - Vector2i.DOWN * bottom_offset
+		if inner.has(target): out.append(target)
+		
+		for d in depth: seen[cell + Vector2i.DOWN * d] = true
+	
+	return out
+
+## Candidati per trappole di platforming: nicchie + pit.
+static func get_trap_candidates_local(
+	room: RoomTemplateMeta,
+	inner_space: Array[Vector2i],
+	pit_weight: float = 0.6, # percentuale desiderata di pit vs niche
+	min_pit_depth: int = 3,
+	pit_bottom_offset: int = 1
+) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	if inner_space.is_empty(): return out
+
+	var pits : Array[Vector2i] = get_pit_cells_local(inner_space, min_pit_depth, pit_bottom_offset)
+	var niches : Array[Vector2i] = get_wall_recesses(inner_space)
+
+	# se una delle due è vuota, ritorna l'altra
+	if pits.is_empty(): return niches
+	if niches.is_empty(): return pits
+
+	# unione semplice evitando duplicati
+	var seen: Dictionary[Vector2i, bool] = {}
+	for p in pits:
+		if seen.has(p): continue
+		#if !seen.has(p):
+		seen[p] = true
+		out.append(p)
+	for n in niches:
+		if seen.has(n): continue
+
+		seen[n] = true
+		out.append(n)
+
+	return out
+
+## TODO: Attualmente inserisco delle funzioni qui che sono necessarie per 
+## verificare che le trappole non vengano poszionate in punti che softloccano
+## il player. Unavolta che il problema è stato risolto occorre creare un nuovo 
+## file coerente con la modularità.

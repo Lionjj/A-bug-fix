@@ -30,17 +30,24 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 @export var low_jump_multiplier: float = 3.5
 @export var jump_buffer_time: float = 0.1  # In secondi
 @export var jump_velocity: float = -400.0
-@export var coyote_time: float = 0.1  # In secondi
+@export var wall_jump_smooth_time := 0.12
+@export var wall_jump_accel := 9000.0  # quanto velocemente raggiunge il target (morbidezza)
+@export var coyote_time: float = 0.15  # In secondi
 
 var knockback:Vector2 = Vector2.ZERO
 var knockback_timer: float = 0.0
 var current_hp
 var jump_buffer_timer = 0.0
+var wall_jump_timer := 0.0
+var wall_jump_target_x := 0.0
+var wall_coyote_timer := 0.0
+var last_wall_dir := 0  # +1 muro a destra, -1 muro a sinistra (dipende da come lo calcoli)
+
 
 # ----------- Movments -----------
 @export var movement_enabled: bool
 var coyote_timer: float = 0.0
-var direction := 1
+var direction : int = 1
 var attacks ={
 	"light" : 1,
 	"heavy" : 2,
@@ -76,6 +83,23 @@ func _physics_process(delta):
 			knockback = Vector2.ZERO
 			velocity = Vector2.ZERO
 			set_process_input(true)
+	
+	if wall_check.is_colliding():
+		wall_coyote_timer = coyote_time
+		var n :Vector2= wall_check.get_collision_normal()
+		# se il muro è a destra, normal.x è ~-1 => wall_dir = +1
+		last_wall_dir = int(-sign(n.x))
+	else:
+		wall_coyote_timer = max(0.0, wall_coyote_timer - delta)
+
+	
+	if wall_jump_timer > 0.0:
+		wall_jump_timer -= delta
+		velocity.x = move_toward(
+			velocity.x,
+			wall_jump_target_x,
+			wall_jump_accel * delta * direction
+		)
 		
 		
 	move_and_slide()
@@ -188,3 +212,10 @@ func set_objective(text: String) -> void:
 
 func die() -> void:
 	emit_signal("died")
+
+func start_wall_jump_smooth(target_x: float) -> void:
+	wall_jump_target_x = target_x
+	wall_check_timer.wait_time = wall_jump_smooth_time
+
+func can_wall_jump() -> bool:
+	return wall_coyote_timer > 0.0 and not is_on_floor()

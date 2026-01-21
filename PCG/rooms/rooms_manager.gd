@@ -9,6 +9,7 @@ var position_room: Dictionary[Vector2i, String] = {}
 var player: Player
 var items_spawner: ItemsSpawner
 var enemies_spawner: EnemiesSpawner
+var trap_spawner: TrapsSpawner
 var G: MissionGraph
 var run_level: int = 1
 
@@ -16,7 +17,12 @@ var _combat_room: RoomTemplateMeta = null
 
 var door_scene : PackedScene = load("res://Scenes/Interactable/Door.tscn") as PackedScene
 
-func _init(_G: MissionGraph, _rooms: Dictionary[RoomTemplateMeta, RoomState], _room_position: Dictionary[String, Vector2i], _player: Player, _run_level: int) -> void:
+func _init(
+	_G: MissionGraph,
+	_rooms: Dictionary[RoomTemplateMeta, RoomState],
+	_room_position: Dictionary[String, Vector2i], 
+	_player: Player,
+	_run_level: int) -> void:
 	G = _G
 	rooms = _rooms
 	room_position = _room_position
@@ -24,6 +30,7 @@ func _init(_G: MissionGraph, _rooms: Dictionary[RoomTemplateMeta, RoomState], _r
 	run_level = _run_level
 	items_spawner = ItemsSpawner.new()
 	enemies_spawner = EnemiesSpawner.new()
+	trap_spawner = TrapsSpawner.new()
 	
 	for k in room_position.keys():
 		var value : Vector2i = room_position.get(k)
@@ -37,12 +44,14 @@ func _ready() -> void:
 		room.player_entered.connect(_on_room_player_entered)
 		room.player_exited.connect(_on_room_player_exited)
 		
+		## Aggiungo gli oggetti.
+		_add_items(room)
+		## Aggiungi le trappole.
+		_add_traps(room)
 		## Aggiungo i nemici.
 		_add_enemies(room)
-		## Aggiungo le porte
+		## Aggiungo le porte.
 		_add_doors(room)
-		## Aggiungo gli oggetti
-		_add_items(room)
 		
 
 func _process(delta: float) -> void:
@@ -174,6 +183,25 @@ func _add_enemies(room: RoomTemplateMeta)-> void:
 	enemies_state.spawn_points = spawn_points
 	enemies_state.prepared = true
 
+func _add_traps(room: RoomTemplateMeta) -> void:
+	if room.logic_node.trap_directive.trap_type == TrapDirective.TrapType.NO_TRAPS: return
+	var trap_state: RoomTrapState = rooms.get(room).traps_state
+	
+	var budget: int = trap_spawner.compute_budget(run_level, room)
+	var room_diff: int = room.logic_node.diff
+	
+	var traps: Array[TrapRegistry.ID] = trap_spawner.chose_traps(room_diff, run_level, budget)
+	if traps.is_empty(): return
+	
+	var spawn_points : Array[Vector2i] = trap_spawner.get_spawn_points(room, traps.size(), player)
+	if spawn_points.is_empty(): return
+	
+	trap_spawner.instantiate_in_position(spawn_points, traps, room, trap_state)
+	
+	trap_state.spawn_points = spawn_points
+	trap_state.traps = traps
+	trap_state.spawned = true
+
 ## Metodo privato che fa inizare il combattimento all'interno della stanza [param room].
 func _start_room_combat(room: RoomTemplateMeta) -> void:
 	_combat_room = room
@@ -211,10 +239,6 @@ func _spawn_wave(room: RoomTemplateMeta, enemies_state: RoomEnemyState) -> void:
 		var enemy: EnemyEntity = enemies_state.enemies_references[enemies_state.enemy_index]
 		enemies_state.enemies_alive.append(enemy)
 		
-		var free_slot: int = enemies_spawner.find_free_slot_index(enemies_state.spawn_points, enemies_state.enemies_alive)
-		if free_slot == -1: break
-		
-		enemy.global_position = enemies_state.spawn_points[free_slot]
 		enemy.show_entity()
 		
 		enemies_state.enemy_index += 1

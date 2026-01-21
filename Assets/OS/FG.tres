@@ -5,9 +5,9 @@
 [ext_resource type="PackedScene" uid="uid://5eh6vwi3owuj" path="res://Scenes/Object/Lamp1.tscn" id="3_ckh2g"]
 [ext_resource type="PackedScene" uid="uid://4g7bbmfsrl2g" path="res://Scenes/Interactable/Heart.tscn" id="3_m70yh"]
 [ext_resource type="PackedScene" uid="uid://behkk21bnvddi" path="res://Scenes/Object/Lamp0.tscn" id="4_4q4me"]
-[ext_resource type="PackedScene" uid="uid://bye3umlv0tvel" path="res://Scenes/Interactable/Trap.tscn" id="5_ckh2g"]
+[ext_resource type="PackedScene" uid="uid://bye3umlv0tvel" path="res://Scenes/Interactable/damaged_bit_trap.tscn" id="5_ckh2g"]
 [ext_resource type="PackedScene" uid="uid://d2w3rgrkmcw16" path="res://Scenes/Object/Light.tscn" id="7_krmf3"]
-[ext_resource type="PackedScene" uid="uid://bipi3sk65wrkm" path="res://Scenes/Interactable/LaserTrap.tscn" id="9_4q4me"]
+[ext_resource type="PackedScene" uid="uid://bipi3sk65wrkm" path="res://Scenes/Interactable/laser_trap.tscn" id="9_4q4me"]
 [ext_resource type="PackedScene" uid="uid://da022k4xm8n21" path="res://Scenes/Enemy/Minion.tscn" id="9_5565f"]
 [ext_resource type="PackedScene" uid="uid://d0hqdlx2fy43e" path="res://Scenes/Enemy/Gunner.tscn" id="10_5wnis"]
 

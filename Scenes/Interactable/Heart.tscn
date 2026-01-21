@@ -1,7 +1,7 @@
 [gd_scene load_steps=20 format=3 uid="uid://4g7bbmfsrl2g"]
 
 [ext_resource type="Script" uid="uid://df4hrqdh74jom" path="res://Scripts/Interactable/heart.gd" id="1_krk37"]
-[ext_resource type="Script" uid="uid://sso4smxpj8ky" path="res://PCG/progression/item.gd" id="2_0memu"]
+[ext_resource type="Script" uid="uid://sso4smxpj8ky" path="res://PCG/scripts/progression/item.gd" id="2_0memu"]
 [ext_resource type="Texture2D" uid="uid://c81774fjmxf2m" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_01.png" id="2_41h67"]
 [ext_resource type="Texture2D" uid="uid://2m6qwthmfrd" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_02.png" id="3_4io1a"]
 [ext_resource type="Texture2D" uid="uid://cty7qawwi2u6n" path="res://Assets/OS/ShieldsUI/Idle/Shield_Idle_03.png" id="4_6r806"]

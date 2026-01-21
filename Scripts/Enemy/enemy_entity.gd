@@ -1,6 +1,6 @@
 extends CharacterBody2D
 class_name EnemyEntity
-
+@export var spawn_offset: Vector2 = Vector2.ZERO
 signal died(enemy: EnemyEntity)
 
 var _active: bool = true

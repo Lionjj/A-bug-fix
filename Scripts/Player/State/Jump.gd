@@ -1,7 +1,7 @@
 extends State
 class_name JumpState
 
-@export var player: CharacterBody2D
+@export var player: Player
 @export var anim: AnimationPlayer
 
 
@@ -29,8 +29,9 @@ func Update(_delta):
 
 func Physics_Update(delta):
 	# Movimento orizzontale in aria
-	var direction = Input.get_axis("ui_left", "ui_right")
-	player.velocity.x = direction * player.speed
+	if player.wall_jump_timer <= 0.0:
+		var direction = Input.get_axis("ui_left", "ui_right")
+		player.velocity.x = direction * player.speed
 	
 	# Gestione opzionale: riduci salita se rilasciano il salto
 	if player.velocity.y < 0 and not Input.is_action_pressed("jump"):

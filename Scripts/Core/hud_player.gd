@@ -1,13 +1,15 @@
 extends CanvasLayer
 @export var player: Player
-@onready var h_container = $HBoxContainer
-@onready var obj_label = $ObjectiveLabel
+@onready var h_container : HBoxContainer = $Root/Margin/TopBar/LeftGroup/HeartsContainer
+@onready var obj_label : Label = $Root/Margin/TopBar/ObjectiveLabel
+@onready var keys_label: Label = $Root/Margin/TopBar/LeftGroup/KeyUI/KeysLabel
 var heart_scene = preload("res://Scenes/GUI/Heart.tscn")
 
 
 func _ready() -> void:
 	reset_heart()
 	obj_label.text = ObjectiveManager.current_objective_text()
+	set_keys(PlayerInventory.item_quantity_changed.connect(_on_item_quantity_changed))
 	ObjectiveManager.quest_updated.connect(_refresh)
 	ObjectiveManager.quest_started.connect(_refresh)
 	ObjectiveManager.quest_completed.connect(_refresh)
@@ -49,6 +51,13 @@ func gain_heart():
 		var anim = h.get_node("HeartAnimation")
 		anim.play("idle")
 		anim.seek(0, true) 
+
+func set_keys(quantity: int) -> void:
+	keys_label.text = "x" + str(quantity)
+
+func _on_item_quantity_changed(id: ItemRegistry.ID, quantity: int) -> void:
+	if id == ItemRegistry.ID.KEY:
+		set_keys(quantity)
 
 func _refresh(_id := &"") -> void:
 	obj_label.text = ObjectiveManager.current_objective_text()

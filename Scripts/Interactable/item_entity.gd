@@ -4,6 +4,7 @@ extends Area2D
 class_name ItemEntity
 
 @export var disable_collisions_on_hide : bool = true
+@export var spawn_offset: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	hide_entity()

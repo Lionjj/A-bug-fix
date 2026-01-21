@@ -3,7 +3,7 @@ class_name RoomAssembler
 
 @export var vertical_ratio: float = 0.35  # 35% di nodi verticali
 
-const PATH : String = "res://PCG/rooms/tmpl"
+const PATH : String = "res://PCG/scenes/rooms/tmpl"
 const KIND_RULES :Dictionary= {
 	"HUB":       {"require_tags_any": ["hub"],       "allow_kinds": ["ARENA"]},
 	"CHALLENGE": {"require_tags_any": ["challenge","gap","shaft"]},

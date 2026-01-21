@@ -1,7 +1,7 @@
 extends State
 class_name FallState
 
-@export var player: CharacterBody2D
+@export var player: Player
 @export var animation: AnimationPlayer
 
 func Enter():
@@ -25,8 +25,9 @@ func Update(_delta):
 
 func Physics_Update(delta):
 	# Movimento orizzontale in aria
-	var direction = Input.get_axis("ui_left", "ui_right")
-	player.velocity.x = direction * player.speed
+	if player.wall_jump_timer <= 0.0:
+		var direction = Input.get_axis("ui_left", "ui_right")
+		player.velocity.x = direction * player.speed
 	
 	if not player.is_on_floor():
 		if player.velocity.y > 0:

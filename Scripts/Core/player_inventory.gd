@@ -6,14 +6,19 @@ extends Node
 var inventory: Dictionary[ItemRegistry.ID, int] = {}
 var item_db: Dictionary[ItemRegistry.ID, Item] = {}
 
+## Segnale emesso quando la quantià dell'oggetto cambia
+signal item_quantity_changed(id: ItemRegistry.ID, quantity: int)
+
 func add_item(item: Item, quantity: int = 1) -> void:
 	inventory[item.id] = inventory.get(item.id, 0) + quantity
 	item_db[item.id] = item
+	
+	item_quantity_changed.emit(item.id, inventory.get(item.id, 0))
 
 func has_item(id: ItemRegistry.ID) -> bool:
 	return inventory.get(id, 0) > 0
 
-func get_quantity(id: ItemRegistry.ID) -> bool:
+func get_quantity(id: ItemRegistry.ID) -> int:
 	return inventory.get(id, 0)
 
 func consume_item(id: ItemRegistry.ID, quantity: int = 1) -> void:
@@ -22,3 +27,5 @@ func consume_item(id: ItemRegistry.ID, quantity: int = 1) -> void:
 	inventory[id] = inventory.get(id) - quantity
 	
 	if inventory.get(id) <= 0: inventory.erase(id)
+	
+	item_quantity_changed.emit(id, inventory.get(id, 0))
