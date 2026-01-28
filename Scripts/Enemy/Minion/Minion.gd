@@ -8,6 +8,8 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 @export var low_jump_multiplier: float = 3.5
 @onready var healt_container = $HealtContainer.get_children()
 @onready var state_machine: StateMachinePlayer = $StateMachine
+@onready var attack_area_2d: Area2D = $AttackArea2D
+@onready var collision_shape_2d: CollisionShape2D = $AttackArea2D/CollisionShape2D
 
 # Vita del nemico
 @export var max_hp = 3
@@ -81,6 +83,7 @@ func reset():
 	current_hp = max_hp
 	dead = false
 	hit = false
+	is_following = false
 	for i in range(current_hp):
 		healt_container[i].texture = texture_1
 	state_machine.reset_to()
@@ -116,6 +119,9 @@ func get_following() -> bool:
 	return self.is_following 
 
 func _on_deactivated() -> void:
+	var animation: AnimationPlayer = $AnimationPlayer
+	animation.pause()
+	
 	var ground_ray: RayCast2D = $GroudRayCast2D
 	ground_ray.enabled = false
 	
@@ -125,10 +131,13 @@ func _on_deactivated() -> void:
 	var wall_ray_cast: RayCast2D = $WallRayCast2D
 	wall_ray_cast.enabled = false
 	
-	var animation: AnimationPlayer = $AnimationPlayer
-	animation.pause()
+	active_attack(false)
+	
 
 func _on_activated() -> void:
+	var animation: AnimationPlayer = $AnimationPlayer
+	animation.play()
+	
 	var ground_ray: RayCast2D = $GroudRayCast2D
 	ground_ray.enabled = true
 	
@@ -138,5 +147,8 @@ func _on_activated() -> void:
 	var wall_ray_cast: RayCast2D = $WallRayCast2D
 	wall_ray_cast.enabled = true
 	
-	var animation: AnimationPlayer = $AnimationPlayer
-	animation.play()
+	active_attack(true)
+
+func active_attack(value: bool) -> void:
+	attack_area_2d.monitorable = value
+	attack_area_2d.monitoring = value

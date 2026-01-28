@@ -1,7 +1,7 @@
-extends Node2D
+extends ItemEntity
 class_name Checkpoint
  
-@export var spawnpoint = false
+@export var spawnpoint: bool = false
 
 var activated = false
 
@@ -11,7 +11,7 @@ func activate():
 	activated = false
 	$AnimationPlayer.play("activated")
 
-func _on_area_2d_area_entered(area: Area2D) -> void:
+func _on_area_entered(area: Area2D) -> void:
 	if area.get_parent() is Player && !activated:
 		activate()
 		area.get_parent().glitch_flash()

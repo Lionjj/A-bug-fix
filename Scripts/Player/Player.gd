@@ -130,9 +130,11 @@ func heal(amount: int) -> bool:
 	return cured
 
 func enable_glitch():
+	if shader == null: return
 	shader.set_shader_parameter("glitch_intensity", 3.0)
 
 func disable_glitch():
+	if shader == null: return
 	shader.set_shader_parameter("glitch_intensity", 0.0)
 
 func glitch_flash(duration := 0.5):
@@ -201,7 +203,7 @@ func set_invicible(invicible: bool) -> void:
 func _on_attack_area_body_entered(body: Node2D) -> void:
 	if body.is_in_group("Enemies"):
 		body.take_damage(damage)
-		CombatMechanic.hit_stop(.1, .2)
+		CombatMechanic.hit_stop(.1, .1)
 		CombatMechanic.applay_knockback(body, global_position, 600, .08)
 
 func set_damage(type: String) -> void:

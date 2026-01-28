@@ -4,5 +4,6 @@ class_name ItemRegistry
 enum ID{
 	DEFAULT,
 	HEART,
-	KEY
+	KEY,
+	CHECKPOINT
 }

@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=4 uid="uid://cyf2ge0qp71q6"]
 
-[ext_resource type="Script" uid="uid://d34bpkuli10v0" path="res://PCG/rooms/meta/room_template_meta.gd" id="1_dammw"]
+[ext_resource type="Script" uid="uid://d34bpkuli10v0" path="res://PCG/scripts/rooms/meta/room_template_meta.gd" id="1_dammw"]
 [ext_resource type="TileSet" uid="uid://3b80jy3y0tr" path="res://PCG/data/tiles/TileGen.tres" id="2_vd5xy"]
-[ext_resource type="Script" uid="uid://64c1ttipyhan" path="res://PCG/rooms/room_connector.gd" id="3_q1jup"]
+[ext_resource type="Script" uid="uid://64c1ttipyhan" path="res://PCG/scripts/rooms/room_connector.gd" id="3_q1jup"]
 
 [node name="Arena" type="Node2D"]
 script = ExtResource("1_dammw")

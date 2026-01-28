@@ -11,6 +11,7 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 @onready var gun_point = $GunPoint
 @onready var state_machine: StateMachinePlayer = $StateMachine
 
+
 # Vita del nemico
 @export var max_hp = 3
 var current_hp = 3
@@ -92,6 +93,7 @@ func reset():
 	current_hp = max_hp
 	dead = false
 	hit = false
+	is_weapon_loaded = true
 	for i in range(current_hp):
 		healt_container[i].texture = texture_1
 	state_machine.reset_to()
@@ -114,3 +116,12 @@ func set_knockback(knockback):
 
 func set_knockback_timer(time):
 	self.knockback_timer = time
+	
+func _on_deactivated() -> void:
+	var animation: AnimationPlayer = $AnimationPlayer
+	animation.pause()
+
+
+func _on_activated() -> void:
+	var animation: AnimationPlayer = $AnimationPlayer
+	animation.play()

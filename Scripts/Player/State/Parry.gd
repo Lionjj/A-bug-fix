@@ -41,7 +41,7 @@ func _on_parry_area_area_entered(area: Area2D) -> void:
 	
 	enemy = area.get_parent()
 	
-	CombatMechanic.hit_stop(.1, .2)
+	CombatMechanic.hit_stop(.1, .15)
 	CombatMechanic.applay_knockback(enemy, player.global_position, 800, .08)
 	
 	

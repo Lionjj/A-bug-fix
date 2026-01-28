@@ -1,8 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://bye3umlv0tvel"]
+[gd_scene load_steps=15 format=3 uid="uid://bye3umlv0tvel"]
 
 [ext_resource type="Script" uid="uid://b233cjyeww0yy" path="res://Scripts/Object/damaged_bit_trap.gd" id="1_6jqen"]
 [ext_resource type="Shader" uid="uid://jy5b71jgk24c" path="res://Shaders/Trap.gdshader" id="2_4jhvk"]
 [ext_resource type="Texture2D" uid="uid://dqy8qqwdi1hly" path="res://Assets/OS/Environments/Trap.png" id="3_6cikp"]
+[ext_resource type="Script" uid="uid://ilfrs45hl3vt" path="res://Scripts/dinamic_notifier.gd" id="4_4jhvk"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vm7tw"]
 size = Vector2(16, 16)
@@ -57,6 +58,15 @@ animations = [{
 "speed": 8.0
 }]
 
+[sub_resource type="Gradient" id="Gradient_ckkcc"]
+offsets = PackedFloat32Array(0, 0.643836)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_6jqen"]
+gradient = SubResource("Gradient_ckkcc")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
 [node name="Trap" type="Area2D"]
 collision_mask = 4
 script = ExtResource("1_6jqen")
@@ -70,5 +80,15 @@ scale = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_32cwx")
 autoplay = "default"
 frame_progress = 0.0110612
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+color = Color(0.941176, 0.313726, 0.313726, 1)
+shadow_enabled = true
+shadow_filter = 2
+texture = SubResource("GradientTexture2D_6jqen")
+texture_scale = 1.49
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+script = ExtResource("4_4jhvk")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

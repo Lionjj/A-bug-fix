@@ -42,7 +42,7 @@ func _on_attack_area_2d_body_entered(body: Node2D) -> void:
 		if not body.get_invicible():
 			body.take_damage(damage)
 			CombatMechanic.applay_knockback(body, enemy.global_position, 800, .08)
-			CombatMechanic.hit_stop(.1, .2)
+			CombatMechanic.hit_stop(.1, .05)
 
 func charge():
 	prepare_charging = false

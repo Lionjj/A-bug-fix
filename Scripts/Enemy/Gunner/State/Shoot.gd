@@ -20,17 +20,22 @@ func Update(delta: float):
 		Transitioned.emit(self, "Death")
 
 func _shoot() -> void:
-	if enemy.dead or not enemy.is_active(): return
+	if _interrupt(): return
+	
 	anim.play("prepare_shoot")
-	await get_tree().create_timer(anim.current_animation_length).timeout
+	await anim.animation_finished
+	if _interrupt(): return
 	
-	if enemy.dead or not enemy.is_active(): return
 	anim.play("shoot")
-	await get_tree().create_timer(anim.current_animation_length).timeout
+	await anim.animation_finished
+	if _interrupt(): return
 	
-	if enemy.dead or not enemy.is_active(): return
 	anim.play("reload")
-	await get_tree().create_timer(anim.current_animation_length).timeout
+	await anim.animation_finished
+	if _interrupt(): return
+
+func _interrupt() -> bool:
+	return enemy.dead or enemy.hit or not enemy.is_active()
 
 func init_bullet():
 	var bullet = bullet_scene.instantiate()

@@ -1,6 +1,5 @@
 ## Modulo di utilità utilizzato per verificare che le trappole non creino un
 ## soft-lock che impedisca al giocatore di proseguire nel gioco.
-extends Node
 class_name TrapPlcacementPolicy
 
 ## raggio (in celle) attorno alle walkable da proteggere 
@@ -14,6 +13,22 @@ const NEAR_WALKABLE_RADIUS: int = 1
 ## - arrotondamenti fisici
 ## - input buffering
 const WALL_JUMP_MARGIN_TILES: int = 1
+
+## Limite massimo di profondità ricorsiva consentita nella DFS.
+## Valori tipici sicuri: 2048 o 4096 (dipende da piattaforma).
+const TARJAN_MAX_RECURSION_DEPTH: int = 2048
+
+## Stato interno per l'algoritmo di Tarjan.
+## Contiene tutte le strutture dati mutate durante la DFS.
+class TarjanState:
+	var discovery_time: Dictionary[Vector2i, int] = {}
+	var lowlink: Dictionary[Vector2i, int] = {}
+	var parent: Dictionary[Vector2i, Vector2i] = {}
+	var articulation_points: Dictionary[Vector2i, bool] = {}
+	
+	var time_counter: int = 0
+	var recursion_depth: int = 0
+	var aborted: bool = false
 
 ## Calcola l'altezza teorica massima di salto in TILE (full jump) 
 ## usando fisica base.
@@ -48,39 +63,55 @@ static func _to_set(cells: Array[Vector2i]) -> Dictionary[Vector2i, bool]:
 ## Protegge:
 ## A) zone vicine alle walkable (passaggi, atterraggi, step)
 ## B) pareti adiacenti alle walkable utili al wall-jump (per evitare soft-lock)
+## C) chokepoints (articulation points) del grafo di navigazione (per evitare blocchi strutturali)
 ##
-##	- [param inner_cells]: celle interne della stanza (aria), coordinate locali;
-##	- [param walkable_cells]: celle walkable (aria sopra pavimento), coordinate locali;
-##	- [param near_walkable_radius]: raggio (in celle) attorno alle walkable da proteggere 
-##	  (1 consigliato, 2 se vuoi più safe);
-##	- [param wall_reach_tiles]: quanti tile di parete proteggere in verticale 
-##	  (tipico: ceil(jump_height_tiles)+1);
+## [param inner_cells] celle interne della stanza (aria), coordinate locali
+## [param walkable_cells] celle attraversabili dal player (aria sopra pavimento), coordinate locali
+## [param wall_reach_tiles] quanti tile di parete proteggere in verticale (tipico: ceil(jump_height_tiles) + margin)
+## [param near_walkable_radius] raggio (in celle) attorno alle walkable da proteggere (1 consigliato, 2 più safe)
+## @return Dictionary[Vector2i, bool] set di celle vietate (protette)
 static func build_protected_cells(
 	inner_cells: Array[Vector2i],
 	walkable_cells: Array[Vector2i],
 	wall_reach_tiles: int,
-	near_walkable_radius: int = NEAR_WALKABLE_RADIUS,
+	near_walkable_radius: int = NEAR_WALKABLE_RADIUS
 ) -> Dictionary[Vector2i, bool]:
-	var protected: Dictionary[Vector2i, bool] = {}
-	var inner := _to_set(inner_cells)
 
-	# (A) Protezione attorno alle walkable (non bloccare passaggi/step)
+	var protected: Dictionary[Vector2i, bool] = {}
+
+	# Set per lookup O(1)
+	var inner_set: Dictionary[Vector2i, bool] = _to_set(inner_cells)
+
+	# (A) Protezione attorno alle walkable (non bloccare passaggi/step/atterraggi)
 	for w in walkable_cells:
 		for dx in range(-near_walkable_radius, near_walkable_radius + 1):
 			for dy in range(-near_walkable_radius, near_walkable_radius + 1):
 				protected[w + Vector2i(dx, dy)] = true
 
 	# (B) Protezione pareti utili a wall-jump (adiacenti alle walkable)
+	# Se a sinistra/destra della walkable NON è "inner", allora è muro: proteggo una colonna verticale.
 	for w in walkable_cells:
-		# parete sinistra: se non è interna => muro
-		if !inner.has(w + Vector2i.LEFT):
+		# parete sinistra
+		if !inner_set.has(w + Vector2i.LEFT):
 			for t in range(0, wall_reach_tiles + 1):
 				protected[w + Vector2i.LEFT + Vector2i(0, -t)] = true
 
 		# parete destra
-		if !inner.has(w + Vector2i.RIGHT):
+		if !inner_set.has(w + Vector2i.RIGHT):
 			for t in range(0, wall_reach_tiles + 1):
 				protected[w + Vector2i.RIGHT + Vector2i(0, -t)] = true
+
+	# (C) Protezione chokepoints (celle critiche per la connettività)
+	# Uso come grafo le sole walkable: sono le celle dove il player può muoversi.
+	var walkable_set: Dictionary[Vector2i, bool] = _to_set(walkable_cells)
+	var chokepoints: Dictionary[Vector2i, bool] = compute_articulation_points(walkable_set)
+
+	for c in chokepoints.keys():
+		protected[c] = true
+
+		# opzionale: buffer extra attorno al chokepoint (più safe contro hazard/beam)
+		for n in _neighbors4(c):
+			protected[n] = true
 
 	return protected
 
@@ -96,4 +127,113 @@ static func filter_not_blocked(
 		if blocked.has(c):
 			continue
 		out.append(c)
+	return out
+
+## Restituisce i 4 vicini ortogonali (griglia 4-connessa) di una cella.
+##
+## Usato per costruire un grafo implicito su griglia:
+## ogni cella è un nodo, collegato solo a sinistra, destra, sopra e sotto.
+##
+## [param c] cella di riferimento (coordinate tile locali)
+## @return Array di celle adiacenti (LEFT, RIGHT, UP, DOWN)
+static func _neighbors4(c: Vector2i) -> Array[Vector2i]:
+	return [
+		c + Vector2i.LEFT,
+		c + Vector2i.RIGHT,
+		c + Vector2i.UP,
+		c + Vector2i.DOWN
+	]
+
+## Calcola i chokepoints con Tarjan (safe).
+## Se la DFS supera TARJAN_MAX_RECURSION_DEPTH, abortisce e restituisce un set vuoto
+## (o puoi mettere un fallback euristico).
+##
+## [param nodes] set di celle attraversabili (Dictionary usato come Set)
+## @return Dictionary[Vector2i, bool] articulation points (può essere vuoto se abortito)
+static func compute_articulation_points(nodes: Dictionary[Vector2i, bool]) -> Dictionary[Vector2i, bool]:
+	var state := TarjanState.new()
+
+	for cell in nodes.keys():
+		if state.aborted:
+			break
+		if !state.discovery_time.has(cell):
+			_tarjan_dfs_safe(cell, nodes, state)
+
+	if state.aborted:
+		# Fail-safe: non crashare mai. In debug lo segnali.
+		push_warning("Tarjan aborted: recursion depth exceeded. Returned empty chokepoints set.")
+		# Fallback semplice (opzionale): return _fallback_chokepoints(nodes)
+		return _fallback_chokepoints(nodes)
+
+	return state.articulation_points
+
+
+## DFS ricorsiva per Tarjan con guardrail sulla profondità.
+##
+## [param current] cella corrente (nodo) visitata dalla DFS
+## [param nodes] set di celle attraversabili (Dictionary usato come Set)
+## [param state] stato mutabile dell'algoritmo (TarjanState)
+static func _tarjan_dfs_safe(current: Vector2i, nodes: Dictionary[Vector2i, bool], state: TarjanState) -> void:
+	if state.aborted:
+		return
+
+	state.recursion_depth += 1
+	if state.recursion_depth > TARJAN_MAX_RECURSION_DEPTH:
+		state.aborted = true
+		state.recursion_depth -= 1
+		return
+
+	state.time_counter += 1
+	state.discovery_time[current] = state.time_counter
+	state.lowlink[current] = state.time_counter
+
+	var children_count := 0
+
+	for neighbor in _neighbors4(current):
+		if state.aborted:
+			break
+		if !nodes.has(neighbor):
+			continue
+
+		if !state.discovery_time.has(neighbor):
+			state.parent[neighbor] = current
+			children_count += 1
+
+			_tarjan_dfs_safe(neighbor, nodes, state)
+
+			if state.aborted:
+				break
+
+			state.lowlink[current] = min(state.lowlink[current], state.lowlink[neighbor])
+
+			# Root con più di un figlio => articulation
+			if !state.parent.has(current) and children_count > 1:
+				state.articulation_points[current] = true
+
+			# Non-root che separa
+			if state.parent.has(current) and state.lowlink[neighbor] >= state.discovery_time[current]:
+				state.articulation_points[current] = true
+
+		# Back-edge (non verso parent)
+		elif state.parent.get(current, Vector2i(-999999, -999999)) != neighbor:
+			state.lowlink[current] = min(state.lowlink[current], state.discovery_time[neighbor])
+
+	state.recursion_depth -= 1
+
+## Fallback: marca come "critiche" le celle con pochi vicini (corridoi/stretti).
+## Non è Tarjan, ma è una rete di sicurezza.
+##
+## [param nodes] set di celle attraversabili
+## @return Dictionary[Vector2i, bool] celle critiche euristiche
+static func _fallback_chokepoints(nodes: Dictionary[Vector2i, bool]) -> Dictionary[Vector2i, bool]:
+	var out: Dictionary[Vector2i, bool] = {}
+
+	for c in nodes.keys():
+		var deg := 0
+		for n in _neighbors4(c):
+			if nodes.has(n):
+				deg += 1
+		if deg <= 2:
+			out[c] = true
+
 	return out

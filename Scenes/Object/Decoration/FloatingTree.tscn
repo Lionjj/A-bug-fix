@@ -1,0 +1,25 @@
+[gd_scene load_steps=10 format=3 uid="uid://bvhupw7f885ae"]
+
+[ext_resource type="Script" uid="uid://dasscxv4m438s" path="res://Scripts/Object/Decorations/floating_tree.gd" id="1_aq41n"]
+[ext_resource type="Texture2D" uid="uid://bl3ybwprxl53s" path="res://Assets/OS/Environments/Trees/Tree01.png" id="2_gcxxj"]
+[ext_resource type="Texture2D" uid="uid://dn2u6kyx865mt" path="res://Assets/OS/Environments/Trees/Tree02.png" id="3_ql4t6"]
+[ext_resource type="Texture2D" uid="uid://cqq71y8xafybg" path="res://Assets/OS/Environments/Trees/Tree03.png" id="4_0hvui"]
+[ext_resource type="Texture2D" uid="uid://btas6tq00swrx" path="res://Assets/OS/Environments/Trees/TreeBack01.png" id="5_7y3p5"]
+[ext_resource type="Texture2D" uid="uid://32qmdpqg2nql" path="res://Assets/OS/Environments/Trees/TreeBack02.png" id="6_e31pr"]
+[ext_resource type="Texture2D" uid="uid://bjdisk40vy3gs" path="res://Assets/OS/Environments/Trees/TreeBack03.png" id="7_pejhm"]
+[ext_resource type="Shader" uid="uid://dk4ba5lv04wp6" path="res://Shaders/Glich.gdshader" id="8_0fgcw"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_d3odw"]
+shader = ExtResource("8_0fgcw")
+shader_parameter/glitch_strength = 0.03
+shader_parameter/glitch_speed = 10.0
+shader_parameter/slice_height = 0.05
+
+[node name="FloatingTree" type="Node2D"]
+script = ExtResource("1_aq41n")
+tree_kind = Array[Texture2D]([ExtResource("2_gcxxj"), ExtResource("3_ql4t6"), ExtResource("4_0hvui"), ExtResource("5_7y3p5"), ExtResource("6_e31pr"), ExtResource("7_pejhm")])
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_d3odw")
+scale = Vector2(0.659091, 0.6125)
+texture = ExtResource("2_gcxxj")

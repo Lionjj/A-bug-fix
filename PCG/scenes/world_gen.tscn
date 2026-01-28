@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://cjspp24lnt3mx"]
+[gd_scene load_steps=9 format=3 uid="uid://cjspp24lnt3mx"]
 
 [ext_resource type="Script" uid="uid://b1qnfid3rpqrx" path="res://PCG/scripts/world_gen.gd" id="1_xubnb"]
 [ext_resource type="PackedScene" uid="uid://b3qjste5bjucc" path="res://Scenes/Player.tscn" id="2_jtdq5"]
@@ -6,55 +6,8 @@
 [ext_resource type="Script" uid="uid://cwx0fq7rrtpkx" path="res://PCG/util/camera_2d.gd" id="4_cvgln"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_1u0hf"]
 [ext_resource type="TileSet" uid="uid://3b80jy3y0tr" path="res://PCG/data/tiles/TileGen.tres" id="6_77ys8"]
-[ext_resource type="PackedScene" uid="uid://caisknnmfu6ae" path="res://PCG/scenes/dressing/TrainedWFC.tscn" id="7_icud3"]
-[ext_resource type="Script" uid="uid://bnqimgi4cjcba" path="res://addons/wfc/problems/2d/preconditions/precondition_2d_platformer_settings.gd" id="8_560sq"]
-[ext_resource type="Script" uid="uid://bfss5oao2t8ed" path="res://PCG/scripts/dressing/proxy.gd" id="9_cu6nl"]
-
-[sub_resource type="Resource" id="Resource_2pype"]
-script = ExtResource("8_560sq")
-level_path = NodePath("../Final")
-platform_class = "wfc_platform"
-air_class = "wfc_air"
-props_class = "wfc_props"
-interactable_class = "wfc_interactable"
-classes_map = NodePath("")
-metadata/_custom_type_script = "uid://bnqimgi4cjcba"
-
-[sub_resource type="GDScript" id="GDScript_1w6fu"]
-script/source = "extends Node
-class_name ChunkManager
-
-static func get_chunck_size_tiles(player_cam: Camera2D, tile_size: Vector2i, margin_factor: float = 1.5) -> Vector2i:
-	var viewport_size : Vector2 = player_cam.get_viewport_rect().size
-	var camera_world_size: Vector2 = viewport_size * player_cam.zoom
-	
-	var chunck_size = camera_world_size * margin_factor
-	
-	var chunk_tiles_x := int(ceil(chunck_size.x / float(tile_size.x)))
-	var chunk_tiles_y := int(ceil(chunck_size.y / float(tile_size.y)))
-	
-	return Vector2i(chunk_tiles_x, chunk_tiles_y)
-
-static func get_player_cell(tilemap: TileMapLayer, player: Player) -> Vector2i:
-	var local_pos: Vector2 = tilemap.to_local(player.global_position)
-	var cell: Vector2 = tilemap.map_to_local(local_pos)
-	return cell
-
-static func get_chunk_rect_for_player(tilemap: TileMapLayer, player: Player, chunk_size_tiles: Vector2) -> Rect2i:
-	var cell: Vector2i = get_player_cell(tilemap, player)
-	# indice del chunk in cui si trova il player
-	var chunk_index_x := int(floor(cell.x / float(chunk_size_tiles.x)))
-	var chunk_index_y := int(floor(cell.y / float(chunk_size_tiles.y)))
-	
-	# cella in alto a sinistra del chunk (in tile-space)
-	var origin_x := chunk_index_x * chunk_size_tiles.x
-	var origin_y := chunk_index_y * chunk_size_tiles.y
-	var origin := Vector2i(origin_x, origin_y)
-	
-	# finalmente il Rect2i del chunk
-	var chunk_rect :Rect2i= Rect2i(origin, chunk_size_tiles)
-	return chunk_rect
-"
+[ext_resource type="Texture2D" uid="uid://dj83upk7upl4l" path="res://Assets/OS/Background.png" id="8_gb41t"]
+[ext_resource type="PackedScene" uid="uid://ctkgfqc1yal51" path="res://PCG/scenes/dressing/AutoTiles.tscn" id="10_jtdq5"]
 
 [node name="WorldGen" type="Node2D"]
 script = ExtResource("1_xubnb")
@@ -63,6 +16,7 @@ seed = 6
 player = ExtResource("2_jtdq5")
 first_checkpoint = ExtResource("3_safqx")
 run_level = 3
+metadata/_edit_lock_ = true
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(1.5, 1.5)
@@ -78,22 +32,29 @@ metadata/_custom_type_script = "uid://bd046eokvcnu2"
 [node name="Final" type="TileMapLayer" parent="."]
 tile_set = ExtResource("6_77ys8")
 
-[node name="Target" type="TileMapLayer" parent="."]
-tile_set = ExtResource("6_77ys8")
+[node name="AutoTiles" parent="." node_paths=PackedStringArray("level", "layout") instance=ExtResource("10_jtdq5")]
+level = NodePath("..")
+layout = NodePath("../Final")
 
-[node name="generator" parent="." instance=ExtResource("7_icud3")]
-target = NodePath("../Target")
-rect = Rect2i(0, 0, 256, 256)
-precondition = SubResource("Resource_2pype")
-start_on_ready = false
+[node name="DirectionalLight2D" type="DirectionalLight2D" parent="."]
+rotation = -0.785398
+color = Color(0.541176, 0.564706, 0.6, 1)
+blend_mode = 2
+shadow_enabled = true
 
-[node name="AtlasToScene" type="Node" parent="." node_paths=PackedStringArray("target")]
-script = ExtResource("9_cu6nl")
-atlas_source_id = 2
-target = NodePath("../Target")
-metadata/_custom_type_script = "uid://bfss5oao2t8ed"
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.441293, 0.524921, 0.545903, 1)
 
-[node name="ChunkManager" type="Node" parent="."]
-script = SubResource("GDScript_1w6fu")
+[node name="Parallax2D" type="Parallax2D" parent="."]
+texture_repeat = 2
+repeat_size = Vector2(512, 512)
 
-[connection signal="done" from="generator" to="." method="_on_generator_done"]
+[node name="Sprite2D" type="Sprite2D" parent="Parallax2D"]
+modulate = Color(0.0980392, 0.137255, 0.14902, 1)
+z_index = -10
+texture_filter = 1
+texture_repeat = 2
+texture = ExtResource("8_gb41t")
+centered = false
+region_enabled = true
+region_rect = Rect2(1024, 1024, 1024, 1024)

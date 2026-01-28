@@ -1,4 +1,4 @@
-[gd_scene load_steps=152 format=3 uid="uid://b3qjste5bjucc"]
+[gd_scene load_steps=154 format=3 uid="uid://b3qjste5bjucc"]
 
 [ext_resource type="Shader" uid="uid://cm5o10587hcgl" path="res://Shaders/Player.gdshader" id="1_f6yay"]
 [ext_resource type="Script" uid="uid://bs05aplgu1muh" path="res://Scripts/Player/Player.gd" id="1_omwmj"]
@@ -1027,7 +1027,7 @@ _data = {
 &"slide": SubResource("Animation_p08dw")
 }
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_6m422"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_c8x12"]
 shader = ExtResource("1_f6yay")
 shader_parameter/glitch_intensity = 3.0
 shader_parameter/glitch_speed = 10.0
@@ -1040,6 +1040,15 @@ size = Vector2(30, 35)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_k1igm"]
 size = Vector2(23, 33)
+
+[sub_resource type="Gradient" id="Gradient_iuj5c"]
+offsets = PackedFloat32Array(0, 0.00616197, 0.569542)
+colors = PackedColorArray(0.782374, 0.782374, 0.782374, 1, 1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_c8x12"]
+gradient = SubResource("Gradient_iuj5c")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
 
 [node name="Player" type="CharacterBody2D" groups=["Player"]]
 collision_layer = 5
@@ -1058,6 +1067,7 @@ audio = Dictionary[StringName, AudioStream]({
 })
 
 [node name="Area2D" type="Area2D" parent="."]
+visible = false
 collision_layer = 5
 monitoring = false
 
@@ -1079,7 +1089,7 @@ editor_draw_limits = true
 script = ExtResource("96_cqava")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-material = SubResource("ShaderMaterial_6m422")
+material = SubResource("ShaderMaterial_c8x12")
 position = Vector2(7, -25)
 texture = ExtResource("2_06ish")
 hframes = 3
@@ -1087,6 +1097,7 @@ vframes = 4
 region_rect = Rect2(9, 29, 35, 34)
 
 [node name="GroundCollision2D" type="CollisionShape2D" parent="."]
+visible = false
 position = Vector2(0, -18)
 shape = SubResource("CapsuleShape2D_afu10")
 
@@ -1209,6 +1220,13 @@ follow_damping = true
 dead_zone_width = 0.3
 dead_zone_height = 0.2
 draw_limits = true
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(2.27374e-13, -16)
+scale = Vector2(5, 5)
+color = Color(0.415686, 0.486275, 0.501961, 1)
+energy = 0.8
+texture = SubResource("GradientTexture2D_c8x12")
 
 [connection signal="body_entered" from="AttackArea" to="." method="_on_attack_area_body_entered"]
 [connection signal="area_entered" from="ParryArea" to="StateMachinePlayer/Parry" method="_on_parry_area_area_entered"]

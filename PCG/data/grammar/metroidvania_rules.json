@@ -127,6 +127,13 @@
 				"kind": "SAVE",
 				"items" : [
 					{
+						"id": "CHECKPOINT",
+						"name" : "Checkpoint",
+						"priority" : "Mandatory",
+						"spawn_rate" : 1, 
+						"max_quantity" : 1
+					},
+					{
 						"id": "HEART",
 						"name" : "Heart",
 						"priority" : "Optional",

@@ -1,6 +1,6 @@
-[gd_scene load_steps=12 format=3 uid="uid://c110js54dgci7"]
+[gd_scene load_steps=14 format=3 uid="uid://c110js54dgci7"]
 
-[ext_resource type="Script" uid="uid://c0xsyt48jixdt" path="res://Scenes/Interactable/door.gd" id="1_4ky8e"]
+[ext_resource type="Script" uid="uid://c0xsyt48jixdt" path="res://Scripts/Interactable/door.gd" id="1_4ky8e"]
 [ext_resource type="PackedScene" uid="uid://bsyrhds73a3m7" path="res://Scenes/Interactable/InterazionArea/interaction_area.tscn" id="1_iwjvu"]
 [ext_resource type="Shader" uid="uid://ctwnnfek3ya4i" path="res://Scenes/Interactable/DoorBlock.gdshader" id="3_2s30x"]
 [ext_resource type="Texture2D" uid="uid://8cp7nhhxucfg" path="res://Assets/OS/lock.png" id="3_4ky8e"]
@@ -81,6 +81,15 @@ _data = {
 &"unlock": SubResource("Animation_4ky8e")
 }
 
+[sub_resource type="Gradient" id="Gradient_2s30x"]
+offsets = PackedFloat32Array(0, 0.0625, 0.732394)
+colors = PackedColorArray(0, 0, 0, 1, 1, 1, 1, 1, 0.0123239, 0.0123239, 0.0123239, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_duap1"]
+gradient = SubResource("Gradient_2s30x")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
 [node name="Door" type="StaticBody2D"]
 collision_mask = 6
 physics_material_override = SubResource("PhysicsMaterial_i4kte")
@@ -120,3 +129,11 @@ vframes = 5
 
 [node name="InteractionShape" type="CollisionShape2D" parent="InteractionArea"]
 disabled = true
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+modulate = Color(0.158074, 0.194223, 0.208689, 1)
+color = Color(0.6, 0.984314, 0.996078, 1)
+energy = 0.8
+shadow_enabled = true
+shadow_filter_smooth = 2.0
+texture = SubResource("GradientTexture2D_duap1")

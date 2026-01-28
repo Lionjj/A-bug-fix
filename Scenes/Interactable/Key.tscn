@@ -1,10 +1,12 @@
-[gd_scene load_steps=10 format=3 uid="uid://cb2mopjb4k7on"]
+[gd_scene load_steps=14 format=3 uid="uid://cb2mopjb4k7on"]
 
 [ext_resource type="Script" uid="uid://bxblyips310bm" path="res://Scripts/Interactable/key.gd" id="1_7jdwc"]
 [ext_resource type="Texture2D" uid="uid://bdafifo7a56k7" path="res://Assets/OS/Key/sprite_0.png" id="2_rv5hb"]
 [ext_resource type="Texture2D" uid="uid://bs2nanlp68qh" path="res://Assets/OS/Key/sprite_1.png" id="3_tsiog"]
 [ext_resource type="Texture2D" uid="uid://ds1gmm2a814bn" path="res://Assets/OS/Key/sprite_2.png" id="4_6o1kh"]
 [ext_resource type="Texture2D" uid="uid://2qayytk0p75r" path="res://Assets/OS/Key/sprite_3.png" id="5_a8fok"]
+[ext_resource type="Script" uid="uid://chu6qbikatn38" path="res://Scripts/point_light_2d.gd" id="6_tsiog"]
+[ext_resource type="AudioStream" uid="uid://bvv7robc2d43v" path="res://Assets/Sound/Helton Yan's Pixel Combat - Single Files/MAGAngl_BUFF-Simple Heal_HY_PC-004.wav" id="7_6o1kh"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_rv5hb"]
 radius = 16.0
@@ -49,6 +51,15 @@ _data = {
 &"idle": SubResource("Animation_7jdwc")
 }
 
+[sub_resource type="Gradient" id="Gradient_gjcbl"]
+offsets = PackedFloat32Array(0, 0.00616197, 0.569542)
+colors = PackedColorArray(0.782374, 0.782374, 0.782374, 1, 1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_rv5hb"]
+gradient = SubResource("Gradient_gjcbl")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
 [node name="Key" type="Area2D"]
 scale = Vector2(0.5, 0.5)
 script = ExtResource("1_7jdwc")
@@ -64,5 +75,16 @@ autoplay = "idle"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_rv5hb")
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(2.27374e-13, -16)
+scale = Vector2(5, 5)
+color = Color(0.486275, 0.780392, 0.65098, 1)
+energy = 0.8
+texture = SubResource("GradientTexture2D_rv5hb")
+script = ExtResource("6_tsiog")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("7_6o1kh")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

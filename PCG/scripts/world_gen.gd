@@ -5,7 +5,10 @@ class_name WorldGen
 @export var player: PackedScene
 @export var first_checkpoint: PackedScene
 @export var run_level: int = 1
-@onready var generator: WFC2DGenerator = $generator
+
+@onready var auto_tiles: Node = $AutoTiles
+@onready var final: TileMapLayer = $Final
+
 var abil_here :Array[Abilities.Ability]= [Abilities.Ability.GRAPPLE, Abilities.Ability.DASH]	# Abilità che il giocatore possiede
 var rng: RandomNumberGenerator
 var spawn_point: Vector2
@@ -15,6 +18,8 @@ var rooms: Dictionary[RoomTemplateMeta, RoomState] = {}
 var _rooms_waiting: int = 0
 
 signal all_rooms_done
+
+signal final_layer_ready
 
 func _ready():
 	build()
@@ -94,13 +99,18 @@ func build():
 	
 	# 7) Corridoi & dressing
 	CorridorBuilder.connect_adjacent(self, positions, cell_tiles, G)
+	#_merge_tile()
+	
+	finalize()
 
-	generator.rect = await _merge_tile()
-	generator.start()
-	
-	await generator.done
-	
 	add_child(RoomsManager.new(G, rooms, positions, GameManager.player, run_level))
+#
+	#generator.rect = await _merge_tile()
+	#generator.start()
+	#
+	#await generator.done
+	
+	
 	
 	
 	
@@ -128,85 +138,18 @@ func _required_connectors_for(id: String, positions: Dictionary, G: MissionGraph
 
 	return req
 
-func _merge_tile() -> Rect2i:
-	var final: TileMapLayer = get_node_or_null("Final")
-	var corridor: TileMapLayer = get_node_or_null("Corridor")
-	var out: Rect2i = Rect2i()
-	if !final or !corridor: return out 
+func finalize():
+	
+	final = TileMapUtility.merge_tile_map_layer(self)
+	auto_tiles.seed = seed
+	final_layer_ready.emit()
 	
 	
-	var src_layer: Array[TileMapLayer]
+	#spawn_first_checkpoint(spawn_point)
+	spawn_palyer(spawn_point)
 	
-	for room in get_tree().get_nodes_in_group("rooms"):
-		var tile: TileMapLayer = room.get_node_or_null("Collision")
-		
-		if !tile: continue
-		
-		src_layer.append(tile)
-		
-		tile.visible = false
-		
-	
-	src_layer.append(corridor)
-	out = _merge(final, src_layer)
-	
-	
-	#for room in get_tree().get_nodes_in_group("rooms"): room.queue_free()
-	
-	corridor.queue_free()
-	
-	return out
 
-func _merge(final: TileMapLayer, src_layer: Array[TileMapLayer]) -> Rect2i:
-	var min_x :=  2147483647
-	var min_y :=  2147483647
-	var max_x := -2147483648
-	var max_y := -2147483648
-	var found := false
-	
-	for src in src_layer:
-		for cell in src.get_used_cells():
-			var sid := src.get_cell_source_id(cell)
-			if sid == -1:
-				continue
-			
-			var atlas := src.get_cell_atlas_coords(cell)
-			
-			var world_local_src := src.map_to_local(cell)
-			var world_global := src.to_global(world_local_src)
-			var dst_local := final.to_local(world_global)
-			var dst_map := final.local_to_map(dst_local)
-			
-			# FUSIBILE DI SICUREZZA: niente coordinate assurde
-			if abs(dst_map.x) > 10000 or abs(dst_map.y) > 10000:
-				push_warning("Merge: salto cella fuori scala %s da '%s'" % [dst_map, src.name])
-				continue
-			
-			min_x = min(min_x, dst_map.x)
-			min_y = min(min_y, dst_map.y)
-			max_x = max(max_x, dst_map.x)
-			max_y = max(max_y, dst_map.y)
-			found = true
-			
-			final.set_cell(dst_map, sid, atlas)
-	
-	if not found:
-		return Rect2i()  # vuoto
 
-	var w := max_x - min_x + 1
-	var h := max_y - min_y + 1
-
-	# Controllo che il rect non sia folle
-	if w <= 0 or h <= 0 or w > 10000 or h > 10000:
-		push_warning("Merge: rect invalido/ENORME (%d x %d) da [%d..%d]x[%d..%d]. Uso final.get_used_rect()" % [
-			w, h, min_x, max_x, min_y, max_y
-		])
-		var used := final.get_used_rect()
-		return Rect2i(used.position, used.size)
-
-	var rect := Rect2i(Vector2i(min_x, min_y), Vector2i(w, h))
-	print("Merge rect:", rect)
-	return rect
 
 func spawn_palyer(spawn_point: Vector2):
 	var player_istance : Player = player.instantiate()

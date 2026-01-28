@@ -1,0 +1,65 @@
+[gd_scene load_steps=7 format=3 uid="uid://d2w3rgrkmcw16"]
+
+[ext_resource type="Script" uid="uid://d1y4vqtasmnmj" path="res://Scripts/Object/Decorations/light.gd" id="1_gct1v"]
+[ext_resource type="Texture2D" uid="uid://bnwmgwl8bxq4e" path="res://Assets/OS/Environments/UpperCable.png" id="1_sy064"]
+[ext_resource type="Script" uid="uid://chu6qbikatn38" path="res://Scripts/point_light_2d.gd" id="2_pn2en"]
+[ext_resource type="Script" uid="uid://ilfrs45hl3vt" path="res://Scripts/dinamic_notifier.gd" id="4_gct1v"]
+
+[sub_resource type="Gradient" id="Gradient_fnep4"]
+offsets = PackedFloat32Array(0, 0.643836)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_6h8oh"]
+gradient = SubResource("Gradient_fnep4")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[node name="Light" type="Node2D"]
+z_index = 1
+script = ExtResource("1_gct1v")
+metadata/_custom_type_script = "uid://dvcqum7c6uufs"
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(-43, 45)
+color = Color(0.447059, 0.788235, 0.647059, 1)
+shadow_filter_smooth = 2.0
+texture = SubResource("GradientTexture2D_6h8oh")
+texture_scale = 2.5
+script = ExtResource("2_pn2en")
+metadata/_custom_type_script = "uid://chu6qbikatn38"
+
+[node name="PointLight2D2" type="PointLight2D" parent="."]
+position = Vector2(5, 12)
+color = Color(0.447059, 0.788235, 0.647059, 1)
+shadow_filter_smooth = 2.0
+texture = SubResource("GradientTexture2D_6h8oh")
+texture_scale = 2.0
+script = ExtResource("2_pn2en")
+metadata/_custom_type_script = "uid://chu6qbikatn38"
+
+[node name="PointLight2D3" type="PointLight2D" parent="."]
+position = Vector2(29, 6)
+scale = Vector2(0.671875, 0.734375)
+color = Color(0.447059, 0.788235, 0.647059, 1)
+shadow_filter_smooth = 2.0
+texture = SubResource("GradientTexture2D_6h8oh")
+texture_scale = 2.0
+script = ExtResource("2_pn2en")
+metadata/_custom_type_script = "uid://chu6qbikatn38"
+
+[node name="PointLight2D4" type="PointLight2D" parent="."]
+position = Vector2(47, 54)
+scale = Vector2(1.29688, 1.34375)
+color = Color(0.447059, 0.788235, 0.647059, 1)
+shadow_filter_smooth = 2.0
+texture = SubResource("GradientTexture2D_6h8oh")
+texture_scale = 3.0
+script = ExtResource("2_pn2en")
+metadata/_custom_type_script = "uid://chu6qbikatn38"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_sy064")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+script = ExtResource("4_gct1v")
+metadata/_custom_type_script = "uid://ilfrs45hl3vt"
