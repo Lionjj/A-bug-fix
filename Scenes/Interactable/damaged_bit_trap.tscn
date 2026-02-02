@@ -5,8 +5,8 @@
 [ext_resource type="Texture2D" uid="uid://dqy8qqwdi1hly" path="res://Assets/OS/Environments/Trap.png" id="3_6cikp"]
 [ext_resource type="Script" uid="uid://ilfrs45hl3vt" path="res://Scripts/dinamic_notifier.gd" id="4_4jhvk"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_vm7tw"]
-size = Vector2(16, 16)
+[sub_resource type="CircleShape2D" id="CircleShape2D_4jhvk"]
+radius = 8.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8rf1a"]
 shader = ExtResource("2_4jhvk")
@@ -72,7 +72,7 @@ collision_mask = 4
 script = ExtResource("1_6jqen")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_vm7tw")
+shape = SubResource("CircleShape2D_4jhvk")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 material = SubResource("ShaderMaterial_8rf1a")

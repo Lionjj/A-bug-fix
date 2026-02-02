@@ -1,8 +1,7 @@
-[gd_scene load_steps=9 format=3 uid="uid://cjspp24lnt3mx"]
+[gd_scene load_steps=8 format=3 uid="uid://cjspp24lnt3mx"]
 
-[ext_resource type="Script" uid="uid://b1qnfid3rpqrx" path="res://PCG/scripts/world_gen.gd" id="1_xubnb"]
+[ext_resource type="Script" uid="uid://b1qnfid3rpqrx" path="res://PCG/scripts/worldgen/world_gen.gd" id="1_xubnb"]
 [ext_resource type="PackedScene" uid="uid://b3qjste5bjucc" path="res://Scenes/Player.tscn" id="2_jtdq5"]
-[ext_resource type="PackedScene" uid="uid://5mm4ltm5jn3f" path="res://Scenes/Interactable/checkpoint.tscn" id="3_safqx"]
 [ext_resource type="Script" uid="uid://cwx0fq7rrtpkx" path="res://PCG/util/camera_2d.gd" id="4_cvgln"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_1u0hf"]
 [ext_resource type="TileSet" uid="uid://3b80jy3y0tr" path="res://PCG/data/tiles/TileGen.tres" id="6_77ys8"]
@@ -12,11 +11,9 @@
 [node name="WorldGen" type="Node2D"]
 script = ExtResource("1_xubnb")
 budget_nodes = 13
-seed = 6
-player = ExtResource("2_jtdq5")
-first_checkpoint = ExtResource("3_safqx")
+seed = 1
+player_scene = ExtResource("2_jtdq5")
 run_level = 3
-metadata/_edit_lock_ = true
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(1.5, 1.5)
@@ -38,19 +35,20 @@ layout = NodePath("../Final")
 
 [node name="DirectionalLight2D" type="DirectionalLight2D" parent="."]
 rotation = -0.785398
-color = Color(0.541176, 0.564706, 0.6, 1)
+color = Color(1, 0.803922, 0.647059, 1)
+energy = 0.75
 blend_mode = 2
 shadow_enabled = true
 
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
-color = Color(0.441293, 0.524921, 0.545903, 1)
+color = Color(0.745098, 0.803922, 0.843137, 1)
 
 [node name="Parallax2D" type="Parallax2D" parent="."]
 texture_repeat = 2
 repeat_size = Vector2(512, 512)
 
 [node name="Sprite2D" type="Sprite2D" parent="Parallax2D"]
-modulate = Color(0.0980392, 0.137255, 0.14902, 1)
+modulate = Color(0.0862745, 0.109804, 0.133333, 1)
 z_index = -10
 texture_filter = 1
 texture_repeat = 2

@@ -15,7 +15,6 @@ static func build_base() -> MissionGraph:
 	(G.nodes["C"] as MissionNode).requires.append(Abilities.Ability.GRAPPLE)
 	
 	## Item list
-	
 	(G.nodes["S"] as MissionNode).catalog = NodeCatalogue.new([
 		Item.new(ItemRegistry.ID.CHECKPOINT, "Checkpoint", Item.Priority.MANDATORY),
 		Item.new(ItemRegistry.ID.HEART, "Heart", Item.Priority.OPTIONAL, 0.5)

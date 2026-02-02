@@ -1,216 +1,371 @@
-## Modulo per gestire e istanziare in posizione i nemici contenuti in una stanza.
+# ============================================================================
+# EnemiesSpawner
+# ============================================================================
+## Modulo responsabile della selezione, pianificazione e istanziazione
+## dei nemici all'interno di una stanza.
+##
+## Responsabilità:
+## - Calcolare il budget di nemici per stanza
+## - Selezionare i tipi di nemici in modo pesato
+## - Individuare celle candidate di spawn
+## - Posizionare i nemici rispettando una distanza minima iniziale
+##
+## Note di design:
+## - I nemici sono entità MOBILI
+## - NON occupano celle in modo permanente
+## - NON usano footprint o RoomPlacementManager.reserve()
+## - La validazione è solo iniziale (spawn-time)
+##
+## Coordinate:
+## - Le celle (Vector2i) servono solo come punti di partenza
+## - Le distanze sono valutate in world-space (pixel)
+# ============================================================================
+
 extends Node
 class_name EnemiesSpawner
 
-## Lista di scene che rappresentano i nemicici fisici in gioco
+
+# ---------------------------------------------------------------------------
+# Enemy catalog
+# ---------------------------------------------------------------------------
+
+## Catalogo dei nemici disponibili.
+## - Chiave: EnemiesRegistry.ID
+## - Valore: Enemy (costo, scena, peso, range di difficoltà, max_per_room)
 @export var enemy_table: Dictionary[EnemiesRegistry.ID, Enemy] = {
-	EnemiesRegistry.ID.MINION : Enemy.new(
-		EnemiesRegistry.ID.MINION, 1, load("res://Scenes/Enemy/Minion.tscn"), 1.0, 0.0, 9999.0, 10
+	EnemiesRegistry.ID.MINION: Enemy.new(
+		EnemiesRegistry.ID.MINION,
+		1,
+		load("res://Scenes/Enemy/Minion.tscn"),
+		1.0,
+		0.0,
+		9999.0,
+		10
 	),
-	EnemiesRegistry.ID.GUNNER : Enemy.new(
-		EnemiesRegistry.ID.GUNNER, 2, load("res://Scenes/Enemy/Gunner.tscn"), 0.55, 2.0, 9999.0, 4
+	EnemiesRegistry.ID.GUNNER: Enemy.new(
+		EnemiesRegistry.ID.GUNNER,
+		2,
+		load("res://Scenes/Enemy/Gunner.tscn"),
+		0.55,
+		2.0,
+		9999.0,
+		4
 	),
 }
-## Budget di base dipsonibile per una stanza
+
+
+# ---------------------------------------------------------------------------
+# Budget parameters
+# ---------------------------------------------------------------------------
+
+## Budget base disponibile per stanza.
 @export var base_budget: int = 3
-## Moltiplicatore del budget per livello
-@export var budget_per_level : float = 1.2
-## Mottiplicatore per la difficoltà del livello
+
+## Incremento del budget per livello.
+@export var budget_per_level: float = 1.2
+
+## Moltiplicatore del budget in base alla difficoltà della stanza.
 @export var room_diff_mult: float = 0.35
 
-## Limite inferiore del moltiplicatore del budget
+## Limite minimo del moltiplicatore logico.
 const LOGIC_BUDGET_MULT_MIN: float = 0.5
-## Limite superiore del moltiplicatore del budget
+## Limite massimo del moltiplicatore logico.
 const LOGIC_BUDGET_MULT_MAX: float = 2.5
-## Coefficente di smorzamento usato per evitare che la difficolta cresca troppo velocemente.
+
+## Coefficiente di smorzamento della progressione di difficoltà.
 const DAMPING_COEFFICENT: float = 0.8
-## Distanza fra un nemico e l'altro
+
+## Distanza minima iniziale (in pixel) tra nemici spawnati.
 const MIN_DISTANCE: float = 48.0
-## Limite inferiore di budget dipsonibile per una stanza
+
+## Limiti assoluti di budget.
 const MIN_BUDGET: int = 0
-## Limite superiore di budget dipsonibile per una stanza
 const MAX_BUDGET: int = 20
 
-## Classe di supporto per la scelta pesata dei nemici, vedi anche: [method chose_enemys]
+
+# ---------------------------------------------------------------------------
+# Support types
+# ---------------------------------------------------------------------------
+
+## Classe di supporto per la selezione pesata dei nemici.
 class EnemyId_Weight:
-	var id : EnemiesRegistry.ID
+	var id: EnemiesRegistry.ID
 	var weight: float
-	
+
 	func _init(_id: EnemiesRegistry.ID, _weight: float) -> void:
 		id = _id
 		weight = _weight
-	
-	
-## Individua un insieme di n: [param slots_count] all'itnerno della stanza [param room].
-func get_spawn_points(room: RoomTemplateMeta, slots_count: int) -> Array[Vector2i]:
-	var inner_cells: Array[Vector2i] = room.spawn_points
-	if inner_cells.is_empty(): return []
-	
-	var spawnable_air_cells: Array[Vector2i] = SmartPlacement.get_floor_air_cells(room, inner_cells)
-	if spawnable_air_cells.is_empty(): return []
-	
-	return SmartPlacement.beautify(spawnable_air_cells, slots_count)
 
-## Trova uno spazio libero tra quelli disponibili [param slots] mantenendo una 
-## distanza minima [param min_dist] tra i nemici vivi [param alive_enemies].
+
+# ---------------------------------------------------------------------------
+# Spawn points
+# ---------------------------------------------------------------------------
+
+## Restituisce un insieme di celle candidate per lo spawn dei nemici.
+##
+## Usa solo celle aria su pavimento e le distribuisce
+## tramite [method SmartPlacement.beautify].
+##
+## [param room] Stanza target.
+## [param rng] Generatore randomico basato sul seed del livello.[br]
+## [param slots_count] Numero di punti richiesti.
+##
+## @return Array di celle candidate (Vector2i).
+func get_spawn_points(room: RoomTemplateMeta, rng: RandomNumberGenerator, slots_count: int) -> Array[Vector2i]:
+	var spawnable_air_cells: Array[Vector2i] = room.placement.floor_air_cells
+	if spawnable_air_cells.is_empty():
+		return []
+
+	return SmartPlacement.beautify(spawnable_air_cells, rng ,slots_count)
+
+
+# ---------------------------------------------------------------------------
+# Slot validation
+# ---------------------------------------------------------------------------
+
+## Trova un indice valido in [param slots] tale che la posizione
+## rispetti una distanza minima da tutti i nemici vivi.
+##
+## [param slots] Celle candidate.
+## [param alive_enemies] Nemici già istanziati e vivi.
+## [param tilemap] TileMapLayer della stanza.
+## [param min_dist] Distanza minima in pixel.
+##
+## @return Indice valido oppure -1 se nessuna posizione è valida.
 func find_free_slot_index(
-	slots: Array[Vector2i], 
-	alive_enemies: Array[EnemyEntity], 
-	tilemap: TileMapLayer, 
+	slots: Array[Vector2i],
+	alive_enemies: Array[EnemyEntity],
+	tilemap: TileMapLayer,
 	min_dist: float = MIN_DISTANCE
 ) -> int:
 	for i: int in range(slots.size()):
-		var current: Vector2i = slots[i]
-		var ok: bool = true
-		for enemy: EnemyEntity in alive_enemies:
-			var real_current: Vector2 = SmartPlacement.cell_to_world_position(tilemap, current)
-			if enemy.global_position.distance_to(real_current) >= min_dist: continue
-			
-			ok = false
-			break
+		var cell: Vector2i = slots[i]
+		var world_pos: Vector2 = SmartPlacement.cell_to_world_position(tilemap, cell)
 		
-		if ok: return i
+		var is_blocked: bool = false
+
+		for enemy: EnemyEntity in alive_enemies:
+			if enemy.global_position.distance_to(world_pos) >= min_dist:
+				continue
+			
+			is_blocked = true
+			break
+			
+		if is_blocked: continue
+		
+		return i
+		
 	return -1
 
-## Istanzia nella stanza [param room] il nemico idetificato da [param enemy_id] 
-## nelle poszioni possibili [param slots] aggiornando lo stato dei nemici nella 
-## stanza [param room_enemy_state].
+
+# ---------------------------------------------------------------------------
+# Spawn single enemy
+# ---------------------------------------------------------------------------
+
+## Istanzia un singolo nemico in una posizione casuale tra gli slot disponibili.
+##
+## Nota:
+## - Non riserva celle
+## - Non verifica footprint
+## - Il posizionamento finale viene raffinato successivamente
+##
+## [param room] Stanza target.
+## [param room_enemy_state] Stato runtime dei nemici.
+## [param enemy_id] ID del nemico da istanziare.
+## [param slots] Celle candidate.
+## [param rng] Generatore randomico basato sul seed del livello.[br]
+##
+## @return Istanza del nemico creata.
 func spawn_enemy_at_free_slot(
-	room: RoomTemplateMeta, 
-	room_enemy_state: RoomEnemyState, 
-	enemy_id: EnemiesRegistry.ID, 
-	slots: Array[Vector2i]
+	room: RoomTemplateMeta,
+	room_enemy_state: RoomEnemyState,
+	enemy_id: EnemiesRegistry.ID,
+	slots: Array[Vector2i],
+	rng: RandomNumberGenerator
 ) -> EnemyEntity:
-	var data : Enemy = enemy_table[enemy_id]
+	var data: Enemy = enemy_table[enemy_id]
 	var inst: EnemyEntity = data.scene.instantiate()
-	
+
 	room.add_child(inst)
-	
+
 	room_enemy_state.enemies_references.append(inst)
 	room_enemy_state.to_eliminate += 1
-	
-	var idx: int = Rng.randi() % slots.size()
-	
-	inst.global_position = SmartPlacement.cell_to_world_position(room.collision, slots[idx], inst.spawn_offset)
+
+	var idx: int = rng.randi() % slots.size()
+	inst.global_position = SmartPlacement.cell_to_world_position(
+		room.collision,
+		slots[idx],
+		inst.spawn_offset
+	)
+
 	inst.hide_entity()
-	
 	return inst
 
-## Istanzia una lista di nemici [param enemies] nelle posizioni possibili 
-## [param slots] all'iterno della stanza [param room] aggiornado lo stato
-## dei nemici nella stanza [param room_enemy_state].
-func istanziate_in_position(
-	slots: Array[Vector2i], 
-	enemies: Array[EnemiesRegistry.ID], 
-	room: RoomTemplateMeta, 
-	room_enemy_state: RoomEnemyState
-) -> void:
-	var pos = slots.duplicate()
-	
-	for enemy: EnemiesRegistry.ID in enemies:
-		spawn_enemy_at_free_slot(room, room_enemy_state, enemy, slots)
-	
-	var e_list: Array[EnemyEntity] = room_enemy_state.enemies_references
-	for enemy: EnemyEntity in e_list:
-		var idx : int = find_free_slot_index(slots, e_list, room.collision)
-		if idx == -1: continue
-		
-		enemy.global_position = SmartPlacement.cell_to_world_position(room.collision, slots[idx], enemy.spawn_offset)
 
-## Calcola il buget che la stanza [param room] possiede per livello 
-## [param run_level], questo indica il numero di nemcici che possiamo 
-## isnerire per stanza.
-func compute_budget(run_level: int , room: RoomTemplateMeta) -> int:
-	var budget : int = base_budget + int(round(float(run_level) * budget_per_level))
-	budget = int(round(float(budget) * (1.0 + float(room.logic_node.diff - 1) * room_diff_mult)))
-	budget = int(round(float(budget) * clamp(room.logic_node.enemy_directive.budget_mult, LOGIC_BUDGET_MULT_MIN, LOGIC_BUDGET_MULT_MAX)))
-	
+# ---------------------------------------------------------------------------
+# Spawn batch
+# ---------------------------------------------------------------------------
+
+## Istanzia una lista di nemici distribuendoli nello spazio
+## in modo da rispettare la distanza minima iniziale.
+##
+## [param slots] Celle candidate.
+## [param enemies] Lista di ID nemici da spawnare.
+## [param room] Stanza target.
+## [param room_enemy_state] Stato runtime dei nemici.
+## [param rng] Generatore randomico basato sul seed del livello.[br]
+func istanziate_in_position(
+	slots: Array[Vector2i],
+	enemies: Array[EnemiesRegistry.ID],
+	room: RoomTemplateMeta,
+	room_enemy_state: RoomEnemyState,
+	rng: RandomNumberGenerator
+) -> void:
+	for enemy_id: EnemiesRegistry.ID in enemies:
+		spawn_enemy_at_free_slot(room, room_enemy_state, enemy_id, slots, rng)
+
+	var alive: Array[EnemyEntity] = room_enemy_state.enemies_references
+	for enemy: EnemyEntity in alive:
+		var idx: int = find_free_slot_index(slots, alive, room.collision)
+		if idx == -1:
+			continue
+
+		enemy.global_position = SmartPlacement.cell_to_world_position(
+			room.collision,
+			slots[idx],
+			enemy.spawn_offset
+		)
+
+
+# ---------------------------------------------------------------------------
+# Budget computation
+# ---------------------------------------------------------------------------
+
+## Calcola il budget di nemici disponibile per una stanza.
+##
+## [param run_level] Livello corrente della run.
+## [param room] Stanza target.
+##
+## @return Budget finale clampato.
+func compute_budget(run_level: int, room: RoomTemplateMeta) -> int:
+	var budget: int = base_budget + int(round(run_level * budget_per_level))
+	budget = int(round(budget * (1.0 + float(room.logic_node.diff - 1) * room_diff_mult)))
+	budget = int(round(
+		budget * clamp(
+			room.logic_node.enemy_directive.budget_mult,
+			LOGIC_BUDGET_MULT_MIN,
+			LOGIC_BUDGET_MULT_MAX
+		)
+	))
+
 	return clamp(budget, MIN_BUDGET, MAX_BUDGET)
 
-## Calcolo il peso normalizzato dello spawn dei [param enemy] con una curva 
-## di progressione lenta all'inizio e poi accella con il progredire della 
-## [param difficulty] dei livelli.
+
+# ---------------------------------------------------------------------------
+# Enemy selection (weighted)
+# ---------------------------------------------------------------------------
+
+## Calcola il peso di spawn di un nemico in funzione della difficoltà.
+##
+## [param enemy] Dati del nemico.
+## [param difficulty] Difficoltà complessiva.
+##
+## @return Peso finale (0 se non spawnabile).
 func _compute_spawn_weight(enemy: Enemy, difficulty: float) -> float:
-	if difficulty < enemy.min_difficulty: return 0.0
-	if difficulty > enemy.max_difficulty: return 0.0
-	
-	var difficulty_window : float = max(0.0001, enemy.max_difficulty - enemy.min_difficulty)
-	var progression : float = (difficulty - enemy.min_difficulty) / difficulty_window
-	progression = clamp(progression, 0.0, 1.0)
-	
-	## Progressione dei livvelli non lineare
+	if difficulty < enemy.min_difficulty:
+		return 0.0
+	if difficulty > enemy.max_difficulty:
+		return 0.0
+
+	var window: float = max(0.0001, enemy.max_difficulty - enemy.min_difficulty)
+	var progression: float = clamp((difficulty - enemy.min_difficulty) / window, 0.0, 1.0)
+
 	var rarity_ramp: float = progression * progression
-	
 	return enemy.weight * (0.3 + 0.7 * rarity_ramp)
 
-## Sualla base del numero totale di nemici [param total_budget] e di ondate 
-## [param waves] definsico quanti nemici devono esserci per ondata.
+
+## Costruisce il piano di distribuzione dei nemici per ondate.
+##
+## [param total_budget] Numero totale di nemici.
+## [param waves] Numero di ondate.
+##
+## @return Array con il numero di nemici per ondata.
 func build_wave_plan(total_budget: int, waves: int) -> Array[int]:
 	var plan: Array[int] = []
-	## Calcolo in quante ondate vengono distribuiti tutti i nemici da istanziare.
 	var base: int = total_budget / waves
 	var rem: int = total_budget % waves
-	
-	for i in range(waves): plan.append(base)
-	
-	for i in range(rem): plan[waves - 1 - i] += 1
-	
+
+	for _i in range(waves):
+		plan.append(base)
+
+	for i in range(rem):
+		plan[waves - 1 - i] += 1
+
 	return plan
 
-## Metodo che restituisce una lista di nemici calcolata sulla base della 
-## difficoltà della stanza [param room_difficulty], quella del livello 
-## [param run_level] e sul budget disponibile [param budget].
-func chose_enemys(room_difficulty: int, run_level: int, budget: int) -> Array[EnemiesRegistry.ID]:
+
+## Seleziona una lista di nemici in base a difficoltà e budget.
+##
+## [param room_difficulty] Difficoltà della stanza.
+## [param run_level] Livello corrente.
+## [param budget] Budget disponibile.
+## [param rng] Generatore randomico basato sul seed del livello.[br]
+##
+## @return Lista di ID nemici.
+func chose_enemys(room_difficulty: int, run_level: int, budget: int, rng: RandomNumberGenerator) -> Array[EnemiesRegistry.ID]:
 	var out: Array[EnemiesRegistry.ID] = []
-	if enemy_table.is_empty() or budget <= 0: return out
-	
-	var run_difficulty: float = float(run_level) + float(room_difficulty) * DAMPING_COEFFICENT
-	var remaining : int = budget
-	
+	if enemy_table.is_empty() or budget <= 0:
+		return out
+
+	var run_difficulty: float = float(run_level) + room_difficulty * DAMPING_COEFFICENT
+	var remaining: int = budget
 	var counts: Dictionary[EnemiesRegistry.ID, int] = {}
-	
-	var safety : int = 10_000
-	
+	var safety: int = 10_000
+
 	while remaining > 0 and safety > 0:
 		safety -= 1
-		
+
 		var candidates: Array[EnemyId_Weight] = []
-		for id in enemy_table.keys():
-			var enemy: Enemy = enemy_table.get(id)
-			
-			var weighed_enemy: float = _compute_spawn_weight(enemy, run_difficulty)
-			if weighed_enemy <= 0.0: continue
-			
-			if enemy.cost > remaining: continue
-			
-			## Se ho raggiunto il numero massimo di nemici per quella stanza 
-			## passa alla prossima iterazione del ciclo.
-			var current_enemy_count: int = counts.get(id, 0)
-			if current_enemy_count >= enemy.max_per_room: continue
-			
-			candidates.append(EnemyId_Weight.new(id, weighed_enemy))
-		
-		if candidates.is_empty(): break
-		
-		var picked_id: EnemiesRegistry.ID = _pick_enemy_weighted(candidates)
-		var picked_enemy: Enemy = enemy_table[picked_id]
-		
-		out.append(picked_id)
-		counts[picked_id] = counts.get(picked_id, 0) + 1
-		remaining -= picked_enemy.cost
-			
+
+		for id: EnemiesRegistry.ID in enemy_table.keys():
+			var enemy: Enemy = enemy_table[id]
+			var weight: float = _compute_spawn_weight(enemy, run_difficulty)
+
+			if weight <= 0.0:
+				continue
+			if enemy.cost > remaining:
+				continue
+			if counts.get(id, 0) >= enemy.max_per_room:
+				continue
+
+			candidates.append(EnemyId_Weight.new(id, weight))
+
+		if candidates.is_empty():
+			break
+
+		var picked: EnemiesRegistry.ID = _pick_enemy_weighted(candidates, rng)
+		out.append(picked)
+		counts[picked] = counts.get(picked, 0) + 1
+		remaining -= enemy_table[picked].cost
+
 	return out
 
-## Metodo privato utilizzato per selezionare l'identificativo da una lista 
-## [param candidates] in base al peso contenuto in [class EnemyId_Weight].
-func _pick_enemy_weighted(candidates: Array[EnemyId_Weight]) -> EnemiesRegistry.ID:
+
+## Pick pesato di un nemico da una lista di candidati.
+##
+## [param candidates] Lista di EnemyId_Weight.
+## [param rng] Generatore randomico basato sul seed del livello.[br]
+##
+## @return ID del nemico selezionato.
+func _pick_enemy_weighted(candidates: Array[EnemyId_Weight], rng: RandomNumberGenerator) -> EnemiesRegistry.ID:
 	var total: float = 0.0
-	for candiate in candidates: total += candiate.weight
-	
-	var rng : float = Rng.randf() * total
-	for candidate in candidates:
-		rng -= candidate.weight
-		if rng <= 0.0: return candidate.id
-		
+	for c: EnemyId_Weight in candidates:
+		total += c.weight
+
+	var roll: float = rng.randf() * total
+	for c: EnemyId_Weight in candidates:
+		roll -= c.weight
+		if roll <= 0.0:
+			return c.id
+
 	return candidates.back().id
-	

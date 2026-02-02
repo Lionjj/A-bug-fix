@@ -425,15 +425,15 @@ func caps_available_for_graph(G: MissionGraph, abilities: Array[Abilities.Abilit
 		out[id] = caps_decide_for_node(G.nodes[id], abilities, rng)
 	return out
 
+
 # -------- API nuova: scelta template con connettori richiesti --------
 func pick_template_with_requirements(
-		node_data,                      # MissionNode o simile (deve avere .kind e .requires)
-		abil_here: Array,
-		positions: Dictionary,
-		rng: RandomNumberGenerator,
+		context: RoomSpawnContext,
+		id: String,
 		req: Dictionary                 # {"N":bool,"E":bool,"S":bool,"W":bool}
 ) -> PackedScene:
-	var candidates := _candidates_for(node_data, abil_here)
+	var node_data: MissionNode = context.graph.nodes[id]
+	var candidates := _candidates_for(node_data, context.abilities)
 	if candidates.is_empty():
 		push_warning("RoomAssembler: nessun candidato dopo il filtro abilità.")
 		return null
@@ -476,13 +476,13 @@ func pick_template_with_requirements(
 
 	# priorità: kind -> tag -> any
 	if exact_kind.size() > 0:
-		var chosen = exact_kind[rng.randi() % exact_kind.size()]
+		var chosen = exact_kind[context.rng.randi() % exact_kind.size()]
 		return _finalize_choice(node_data, chosen)
 	if exact_tags.size() > 0:
-		var chosen = exact_tags[rng.randi() % exact_tags.size()]
+		var chosen = exact_tags[context.rng.randi() % exact_tags.size()]
 		return _finalize_choice(node_data, chosen)
 	if exact_any.size() > 0:
-		var chosen = exact_any[rng.randi() % exact_any.size()]
+		var chosen = exact_any[context.rng.randi() % exact_any.size()]
 		return _finalize_choice(node_data, chosen)
 
 	# ---------- 2) FALLBACK RELAXED (asse coerente) ----------
@@ -511,18 +511,18 @@ func pick_template_with_requirements(
 			relax_any.append(p)
 
 	if relax_kind.size() > 0:
-		var chosen = relax_kind[rng.randi() % relax_kind.size()]
+		var chosen = relax_kind[context.rng.randi() % relax_kind.size()]
 		return _finalize_choice(node_data, chosen)
 	if relax_tags.size() > 0:
-		var chosen = relax_tags[rng.randi() % relax_tags.size()]
+		var chosen = relax_tags[context.rng.randi() % relax_tags.size()]
 		return _finalize_choice(node_data, chosen)
 	if relax_any.size() > 0:
-		var chosen = relax_any[rng.randi() % relax_any.size()]
+		var chosen = relax_any[context.rng.randi() % relax_any.size()]
 		return _finalize_choice(node_data, chosen)
 
 	# ---------- 3) ULTIMO FALLBACK: QUALSIASI CANDIDATO ----------
 	if candidates.size() > 0:
-		var chosen = candidates[rng.randi() % candidates.size()]
+		var chosen = candidates[context.rng.randi() % candidates.size()]
 		return _finalize_choice(node_data, chosen)
 
 	push_warning("RoomAssembler: nessun candidate template disponibile; usa un placeholder.")

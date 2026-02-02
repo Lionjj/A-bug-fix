@@ -23,9 +23,9 @@ InteractionManager="*res://Scenes/Interactable/InterazionArea/InteractionManager
 DialogManager="*res://Scripts/Core/DialogManager.gd"
 EventBus="*res://Scripts/Quest/EventBus.gd"
 ObjectiveManager="*res://Scripts/Core/ObjectiveManager.gd"
-Rng="*res://PCG/util/RNG.gd"
 PhantomCameraManager="*res://addons/phantom_camera/scripts/managers/phantom_camera_manager.gd"
 PlayerInventory="*res://Scripts/Core/player_inventory.gd"
+CacheRng="*res://PCG/util/cache_rng.gd"
 
 [display]
 

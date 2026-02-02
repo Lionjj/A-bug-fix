@@ -1,115 +1,243 @@
+# ============================================================================
+# RoomTemplateMeta
+# ============================================================================
+## Rappresenta una stanza fisica del mondo di gioco.[br]
+##
+## Responsabilità:[br]
+## - Contenere la geometria della stanza (TileMap).[br]
+## - Esporre metadati logici (tipo, difficoltà, abilità richieste).[br]
+## - Gestire la presenza del player nella stanza.[br]
+## - Fungere da owner del [RoomPlacementManager] (spawn, occupazione, buffer).[br]
+##
+## Coordinate:[br]
+## - Tutto ciò che riguarda spawn e placement lavora in CELLE ([Vector2i]).[br]
+##
+## Architettura:[br]
+## - Ogni stanza possiede il proprio PlacementManager.[br]
+## - Nessuna interferenza tra stanze.[br]
+## - Lifecycle chiaro e confinato.
+# ============================================================================
+
 extends Node2D
 class_name RoomTemplateMeta
 
-## Stringa rappresentante il tipo della stanza.
+
+# ---------------------------------------------------------------------------
+# Metadati stanza
+# ---------------------------------------------------------------------------
+
+## Tipo logico della stanza (es. "ARENA", "PUZZLE", "BOSS").
 @export var kind: String = "ARENA"
-## Dimensione in tile della stanza.
-@export var size_tiles: Vector2i = Vector2i(80,48)
+
+## Dimensione della stanza in tile.
+@export var size_tiles: Vector2i = Vector2i(80, 48)
+
 ## Abilità obbligatorie per superare la stanza.
 @export var requires: Array[Abilities.Ability] = []
+
+## Difficoltà della stanza (scala arbitraria).
 @export var difficulty: int = 1
 
-# Connettori dichiarati: true = presente, false = assente
-@export var connectors := {"N":false, "E":true, "S":false, "W":true}
 
-# Convenzione: nel scene tree devono esistere Marker2D con questi nomi se true
-const CONNECTOR_NAMES := {"N":"conn_N","E":"conn_E","S":"conn_S","W":"conn_W"}
+# ---------------------------------------------------------------------------
+# Connettori
+# ---------------------------------------------------------------------------
 
-const PIXEL = 16
+## Connettori dichiarati:[br]
+## - true  → connettore presente[br]
+## - false → connettore assente
+@export var connectors: Dictionary[String, bool] = {
+	"N": false,
+	"E": true,
+	"S": false,
+	"W": true
+}
 
-@export var base_weight: float = 1.0												# “quanto vuole apparire” il template
-@export var tags: Array[String] = []												# es: ["vertical","gap","combat","platforming"]
+## Convenzione:[br]
+## - Se un connettore è true, nel scene tree deve esistere un Marker2D
+##   con il nome specificato in questa mappa.
+const CONNECTOR_NAMES: Dictionary[String, String] = {
+	"N": "conn_N",
+	"E": "conn_E",
+	"S": "conn_S",
+	"W": "conn_W"
+}
 
+
+# ---------------------------------------------------------------------------
+# Costanti
+# ---------------------------------------------------------------------------
+
+## Dimensione di un tile in pixel.
+const TILE_SIZE_PX: int = 16
+
+
+# ---------------------------------------------------------------------------
+# Peso e tag per PCG
+# ---------------------------------------------------------------------------
+
+## Peso base del template (probabilità di selezione nel PCG).
+@export var base_weight: float = 1.0
+
+## Tag semantici per il PCG.[br]
+## Esempi: ["vertical", "gap", "combat", "platforming"]
+@export var tags: Array[String] = []
+
+
+# ---------------------------------------------------------------------------
+# Nodi e componenti
+# ---------------------------------------------------------------------------
+
+## TileMapLayer di collisione della stanza.
 @onready var collision: TileMapLayer = $Collision
 
-## Area usata per verificare quando un giocatore etra in una stanza.
+## Placement manager responsabile di spawn e occupazione celle.
+@onready var placement: RoomPlacementManager = RoomPlacementManager.new()
+
+
+# ---------------------------------------------------------------------------
+# Stato runtime
+# ---------------------------------------------------------------------------
+
+## Bounding box globale della stanza (in pixel).[br]
+## Usata per verificare ingresso/uscita del player.
 var bounds: Rect2 = Rect2()
 
-## Valore privato che rappresneta quando il giocatore entra in una stanza istanziata.
+## Flag interno: true se il player è attualmente nella stanza.
 var _player_entered: bool = false
 
-## Elenco di punti disponibili per lo spawn all'interno della stanza.
-var spawn_points: Array[Vector2i] = []
 
-## Elenco di punti disponibili per lo spawn di oggetti.
-var item_spawn_points: Array[Vector2i] = []
+# ---------------------------------------------------------------------------
+# Riferimenti logici
+# ---------------------------------------------------------------------------
 
-## Elenco di punti disponibili per lo spawn di nemici.
-var enemy_spawn_points: Array[Vector2i] = []
+## Nodo del grafo logico associato alla stanza.
+var logic_node: MissionNode = null
 
-## Nodo del grafo logico
-var logic_node: MissionNode = null :
-	set(_logic_node): logic_node = _logic_node
-
-## Lista di riferimenti alle porte della stanza corrente, variabile di utilità per semplificarne 
-## il loro accesso e la loro gestione.
+## Riferimenti alle porte fisiche della stanza.
 var doors: Array[Door] = []
 
+
+# ---------------------------------------------------------------------------
+# Segnali
+# ---------------------------------------------------------------------------
+
+## Emesso quando la stanza viene completata.
 signal done
-## Segnale emesso quando un giocatore entra nella stanza.
+
+## Emesso quando il player entra nella stanza.
 signal player_entered(room: RoomTemplateMeta)
-## Segnale emesso quando un giocatore esce della stanza.
+
+## Emesso quando il player esce dalla stanza.
 signal player_exited(room: RoomTemplateMeta)
 
 
+# ---------------------------------------------------------------------------
+# Lifecycle
+# ---------------------------------------------------------------------------
+
 func _ready() -> void:
-	## Caricare le posizioni interne per lo spawn
-	spawn_points = SmartPlacement.compute_internal_cells(self)
+	## Inizializza il PlacementManager a partire dalla stanza.
+	add_child(placement)
+	placement.init_from_room(self)
 
+
+# ---------------------------------------------------------------------------
+# Spawn helpers
+# ---------------------------------------------------------------------------
+
+## Restituisce il marker di spawn principale della stanza.
+##
+## @return Marker2D di spawn.
 func get_spawn_point() -> Marker2D:
-	var spawn: Marker2D = $Spawn
-	return spawn
+	return $Spawn as Marker2D
 
-## Verifica in che stanza sta il player.
+
+# ---------------------------------------------------------------------------
+# Player presence
+# ---------------------------------------------------------------------------
+
+## Aggiorna lo stato di presenza del player nella stanza.[br]
+## Emette i segnali di ingresso e uscita.[br]
+##
+## [param player] Player da verificare.
 func update_player_presence(player: Player) -> void:
-	#var player_pos : Vector2 = player.global_position
-	var player_shape : CapsuleShape2D = player.ground_collision_2d.shape as CapsuleShape2D
-	
-	var player_transform : Transform2D = player.ground_collision_2d.global_transform
-	var center : Vector2 = player_transform.origin
-	
-	## Area della forma shape del player
-	var w : float = player_shape.radius * 2.0
-	var h : float = player_shape.height + w
-	
-	## Scala globlale
-	var player_scale : Vector2 = player.ground_collision_2d.global_scale
-	var half := Vector2(w * abs(player_scale.x), h * abs(player_scale.y)) * 0.5
-	
-	
-	var player_aabb := Rect2(center - half, half * 2.0)
-	
-	var is_inside : bool = bounds.encloses(player_aabb)
-	
-	if is_inside and not _player_entered:
-		_player_entered = true
-		emit_signal("player_entered", self)
-	elif not is_inside and _player_entered:
-		_player_entered = false
-		emit_signal("player_exited", self)
+	var collider: CollisionShape2D = player.ground_collision_2d
+	if collider == null:
+		return
 
-# ====== Helper ======
+	var shape: CapsuleShape2D = collider.shape as CapsuleShape2D
+	if shape == null:
+		return
 
-## Restitusice un dizzionario di [class RoomConnector] identificati dalla posizione cardinle:
-## - "N" = Nord;
-## - "S" = Sud;
-## - "W" = West;
-## - "E" = Est;
+	var center: Vector2 = collider.global_transform.origin
+
+	## Dimensioni locali della capsule
+	var width: float = shape.radius * 2.0
+	var height: float = shape.height + width
+
+	## Scala globale del collider
+	var scale: Vector2 = collider.global_scale
+	var half_extents: Vector2 = Vector2(
+		width * abs(scale.x),
+		height * abs(scale.y)
+	) * 0.5
+
+	var player_aabb: Rect2 = Rect2(center - half_extents, half_extents * 2.0)
+
+	var is_inside: bool = bounds.encloses(player_aabb)
+
+	## Early-exit leggibile
+	if is_inside == _player_entered:
+		return
+
+	_player_entered = is_inside
+
+	if is_inside:
+		player_entered.emit(self)
+	else:
+		player_exited.emit(self)
+
+
+# ---------------------------------------------------------------------------
+# Connettori
+# ---------------------------------------------------------------------------
+
+## Restituisce i connettori fisici della stanza indicizzati per direzione.[br]
+##
+## @return Dictionary[String, RoomConnector]
 func get_connectors() -> Dictionary[String, RoomConnector]:
-	var out : Dictionary[String, RoomConnector] = {}
-	for conn in CONNECTOR_NAMES.keys():
-		var current : RoomConnector = get_node_or_null(CONNECTOR_NAMES.get(conn)) as RoomConnector
-		if !current: continue
-		out[conn] = current
-	
-	return out
+	var result: Dictionary[String, RoomConnector] = {}
 
-func center_to_top_left(center_cell: Vector2i, tiles_x: int, tiles_y: int) -> Vector2:
-	# offset in celle
-	var offset_x := tiles_x / 2
-	var offset_y := tiles_y / 2
+	for dir: String in CONNECTOR_NAMES.keys():
+		var node_name: String = CONNECTOR_NAMES[dir]
+		var connector: RoomConnector = get_node_or_null(node_name) as RoomConnector
+		if connector == null:
+			continue
 
-	var top_left_cell: Vector2i = center_cell - Vector2i(offset_x, offset_y)
+		result[dir] = connector
 
-	# conversione finale in pixel
-	return Vector2(top_left_cell) * PIXEL
+	return result
+
+
+# ---------------------------------------------------------------------------
+# Utility coordinate
+# ---------------------------------------------------------------------------
+
+## Converte una cella centrale in coordinate pixel top-left
+## di un rettangolo di dimensione (tiles_x, tiles_y).[br]
+##
+## [param center_cell] Cella centrale.[br]
+## [param tiles_x] Larghezza in tile.[br]
+## [param tiles_y] Altezza in tile.[br]
+##
+## @return Posizione top-left in pixel.
+func center_to_top_left(
+	center_cell: Vector2i,
+	tiles_x: int,
+	tiles_y: int
+) -> Vector2:
+	var offset: Vector2i = Vector2i(tiles_x / 2, tiles_y / 2)
+	var top_left_cell: Vector2i = center_cell - offset
+
+	return Vector2(top_left_cell) * TILE_SIZE_PX

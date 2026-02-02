@@ -101,3 +101,18 @@ static func _merge_tile(
 			final.set_cell(dst_cell, src_id, atlas, alt)
 		
 		layer.visible = false
+
+## Allinea tutti i TileMapLayer figli alla posizione della stanza.[br]
+static func align_all_tilemap_layers(room: Node2D) -> void:
+	if room == null:
+		return
+
+	var stack := [room]
+	while stack.size() > 0:
+		var n: Node = stack.pop_back()
+		for c in n.get_children():
+			stack.append(c)
+
+		var l : TileMapLayer = n as TileMapLayer
+		if l:
+			l.position = room.position

@@ -43,8 +43,8 @@ position = Vector2(96, 176)
 position = Vector2(144, -1.90735e-06)
 rotation = -0.00128019
 script = ExtResource("3_mo6tc")
-offset_left = 2
-offset_right = 2
+offset_left = 6
+offset_right = 6
 metadata/_custom_type_script = "uid://64c1ttipyhan"
 
 [node name="conn_S" type="Marker2D" parent="."]

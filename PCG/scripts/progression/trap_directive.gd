@@ -2,7 +2,7 @@
 extends Resource
 class_name TrapDirective
 
-enum TrapType { NO_TRAPS, STATIC }
+enum TrapType {NO_TRAPS, STATIC}
 
 ## Moltiplicatore del budget (valori consigliati tra 0.5 e 2.5).
 @export var budget_mult: float = 1.0

@@ -1,21 +1,82 @@
-## Modulo usato per gestire le decorazioni presenti in una stanza.
+# ============================================================================
+# RoomDecoState
+# ============================================================================
+## Modulo che gestisce lo **stato runtime delle decorazioni** presenti in una stanza.[br]
+##
+## Responsabilità:[br]
+## - Conservare i punti di spawn disponibili per le decorazioni.[br]
+## - Tracciare quali decorazioni devono essere istanziate.[br]
+## - Mantenere i riferimenti alle istanze create.[br]
+##
+## Note architetturali:[br]
+## - Non decide *quali* decorazioni spawnare (compito di [DecoSpawner]).[br]
+## - Non gestisce logica o comportamento delle decorazioni.[br]
+## - È un **contenitore di stato** puro.[br]
+## - È contenuto all’interno di [RoomState].[br]
+##
+## A differenza di nemici e trappole:[br]
+## - le decorazioni NON hanno ondate[br]
+## - NON hanno reset di combattimento[br]
+## - vengono spawnate una sola volta
+# ============================================================================
+
 extends Node
 class_name RoomDecoState
 
-## Punti di spawn disponibili.
+
+# ---------------------------------------------------------------------------
+# Spawn data
+# ---------------------------------------------------------------------------
+
+## Lista di celle ([Vector2i]) utilizzabili come punti di spawn per le decorazioni.[br]
+##
+## I punti sono calcolati dal [DecoSpawner] in base a:[br]
+## - geometria della stanza[br]
+## - tipo di decorazione (GROUND / WALL / CEILING)[br]
+## - distribuzione estetica (Voronoi / beautify)
 var spawn_points: Array[Vector2i] = []
 
-## Coda di ID di decorazioni che devono essere istanziati.
-var queue: Array[EnemiesRegistry.ID] = []
 
-## Lista di riferimenti alle decorazioni della stanza corrente, 
-## variabile di utilità per semplificarne il loro accesso e la loro gestione.
+# ---------------------------------------------------------------------------
+# Decoration planning
+# ---------------------------------------------------------------------------
+
+## Coda di ID di decorazioni che devono essere istanziate nella stanza.[br]
+##
+## L’ordine è deterministico ed è deciso dal [DecoSpawner]
+## in base a budget, pesi e limiti per stanza.
+var queue: Array[DecorationsRegistry.ID] = []
+
+
+# ---------------------------------------------------------------------------
+# Runtime references
+# ---------------------------------------------------------------------------
+
+## Lista di riferimenti alle istanze di decorazioni presenti nella stanza.[br]
+##
+## Serve per:[br]
+## - gestione runtime[br]
+## - cleanup automatico[br]
+## - future ottimizzazioni (es. spegnere luci fuori stanza)
 var deco_references: Array[DecorationEntity] = []
 
+
+# ---------------------------------------------------------------------------
+# Init
+# ---------------------------------------------------------------------------
+
+## Costruttore dello stato delle decorazioni della stanza.[br]
+##
+## Permette di inizializzare lo stato con dati già calcolati
+## oppure usare valori di default.[br]
+##
+## [param _spawn_points] Celle utilizzate per lo spawn delle decorazioni.[br]
+## [param _queue] Lista ordinata di ID di decorazioni da istanziare.[br]
+## [param _deco_references] Riferimenti alle istanze create.[br]
 func _init(
-	_spawn_points: Array[Vector2i] = [], 
-	_queue: Array[EnemiesRegistry.ID] = [], 
-	_deco_references: Array[DecorationEntity] = [] 
+	_spawn_points: Array[Vector2i] = [],
+	_queue: Array[DecorationsRegistry.ID] = [],
+	_deco_references: Array[DecorationEntity] = []
 ) -> void:
 	spawn_points = _spawn_points
 	queue = _queue

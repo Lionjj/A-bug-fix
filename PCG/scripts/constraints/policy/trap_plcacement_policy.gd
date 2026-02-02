@@ -81,39 +81,35 @@ static func build_protected_cells(
 
 	# Set per lookup O(1)
 	var inner_set: Dictionary[Vector2i, bool] = _to_set(inner_cells)
-
-	# (A) Protezione attorno alle walkable (non bloccare passaggi/step/atterraggi)
-	for w in walkable_cells:
-		for dx in range(-near_walkable_radius, near_walkable_radius + 1):
-			for dy in range(-near_walkable_radius, near_walkable_radius + 1):
-				protected[w + Vector2i(dx, dy)] = true
-
-	# (B) Protezione pareti utili a wall-jump (adiacenti alle walkable)
-	# Se a sinistra/destra della walkable NON è "inner", allora è muro: proteggo una colonna verticale.
-	for w in walkable_cells:
-		# parete sinistra
-		if !inner_set.has(w + Vector2i.LEFT):
-			for t in range(0, wall_reach_tiles + 1):
-				protected[w + Vector2i.LEFT + Vector2i(0, -t)] = true
-
-		# parete destra
-		if !inner_set.has(w + Vector2i.RIGHT):
-			for t in range(0, wall_reach_tiles + 1):
-				protected[w + Vector2i.RIGHT + Vector2i(0, -t)] = true
-
-	# (C) Protezione chokepoints (celle critiche per la connettività)
-	# Uso come grafo le sole walkable: sono le celle dove il player può muoversi.
+	
+	## Proteggi vicino le are calpestabili
+	_protect_near_walkables(protected, walkable_cells, near_walkable_radius)
+	
+	## Proteggi i wall-jump
+	_protect_walljump_walls(
+		walkable_cells,
+		inner_set,
+		protected,
+		wall_reach_tiles,
+		true # corner_protect (spigoli)
+	)
+	
+	## Proteggi eventuali strettoie
 	var walkable_set: Dictionary[Vector2i, bool] = _to_set(walkable_cells)
-	var chokepoints: Dictionary[Vector2i, bool] = compute_articulation_points(walkable_set)
-
-	for c in chokepoints.keys():
-		protected[c] = true
-
-		# opzionale: buffer extra attorno al chokepoint (più safe contro hazard/beam)
-		for n in _neighbors4(c):
-			protected[n] = true
+	_protect_chokepoints(protected, walkable_set, true) # true = buffer neighbors4
 
 	return protected
+
+static func _protect_near_walkables(
+	protected: Dictionary[Vector2i, bool],
+	walkable_cells: Array[Vector2i],
+	radius: int
+) -> void:
+	for w in walkable_cells:
+		for dx in range(-radius, radius + 1):
+			for dy in range(-radius, radius + 1):
+				protected[w + Vector2i(dx, dy)] = true
+				
 
 ## Filtra una lista di celle rimuovendo quelle presenti nel set "blocked".
 ## - [param candidates]: celle candidate;
@@ -237,3 +233,66 @@ static func _fallback_chokepoints(nodes: Dictionary[Vector2i, bool]) -> Dictiona
 			out[c] = true
 
 	return out
+
+static func _protect_chokepoints(
+	protected: Dictionary[Vector2i, bool],
+	walkable_set: Dictionary[Vector2i, bool],
+	add_neighbors4_buffer: bool = true
+) -> void:
+	var chokepoints: Dictionary[Vector2i, bool] = compute_articulation_points(walkable_set)
+
+	for c in chokepoints.keys():
+		protected[c] = true
+
+		if add_neighbors4_buffer:
+			for n in _neighbors4(c):
+				protected[n] = true
+
+## Entry point modulare: protezione wall-jump.
+## - corner_protect: se true, protegge anche lo spigolo (muro+UP)
+## - extra_offsets: ulteriori offset (es. diagonali) se vuoi più safe
+static func _protect_walljump_walls(
+	walkable_cells: Array[Vector2i],
+	inner_set: Dictionary[Vector2i, bool],
+	protected: Dictionary[Vector2i, bool],
+	wall_reach_tiles: int,
+	corner_protect: bool = true,
+	extra_offsets: Array[Vector2i] = []
+) -> void:
+	var wall_offsets: Array[Vector2i] = []
+	
+	if corner_protect: wall_offsets.append(Vector2i.UP)
+	
+	for offset in extra_offsets:
+		wall_offsets.append(offset)
+	
+	for walkable in walkable_cells:
+		for wall_reach_tile in range(0, wall_reach_tiles + 1):
+			var air: Vector2i = walkable + Vector2i.UP * wall_reach_tile
+			if !inner_set.has(air): continue
+			_protect_air_if_adjacent_to_wall(air, inner_set, protected, wall_offsets)
+
+## Dato un punto d’aria (air), protegge il muro a sinistra/destra se presente.
+## - wall_offsets: offset extra da proteggere *rispetto alla cella muro* (es. UP per lo spigolo)
+static func _protect_air_if_adjacent_to_wall(
+	air: Vector2i,
+	inner_set: Dictionary[Vector2i, bool],
+	protected: Dictionary[Vector2i, bool],
+	air_offsets: Array[Vector2i]
+) -> void:
+	var has_left_wall := !inner_set.has(air + Vector2i.LEFT)
+	var has_right_wall := !inner_set.has(air + Vector2i.RIGHT)
+
+	if has_left_wall or has_right_wall:
+		_protect_with_offsets(protected, air, air_offsets)
+
+
+## Protegge una cella e (opzionale) i suoi offset aggiuntivi.
+static func _protect_with_offsets(
+	protected: Dictionary[Vector2i, bool],
+	base: Vector2i,
+	offsets: Array[Vector2i]
+) -> void:
+	protected[base] = true
+	for o in offsets:
+		protected[base + o] = true
