@@ -15,7 +15,6 @@ var base_y: float
 func _ready():
 	super._ready()
 	
-	base_y = position.y
 	z_index = z_offset  # se vuoi forzare ordine Z
 	z_as_relative = true
 	
@@ -36,3 +35,9 @@ func prepare_for_spawn() -> void:
 	
 	sprite.texture = pick_random()
 	sprite.flip_h = flip_h
+	
+	spawn_offset = _compute_anchor_offset()
+	footprint_cells = compute_footprint_cells()
+
+func on_spawned() -> void:
+	base_y = position.y

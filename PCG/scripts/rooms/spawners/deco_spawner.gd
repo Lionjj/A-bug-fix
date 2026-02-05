@@ -413,6 +413,7 @@ func spawn_deco_at_free_slot(
 		return null
 
 	inst.global_position = pick.global_pos
+	inst.on_spawned()
 
 	var gap_cells: int = _min_gap_cells(room, deco_type)
 	room.placement.reserve(pick.cell, inst.footprint_cells, gap_cells)
@@ -601,6 +602,8 @@ func _pick_safe_spawn_position(
 
 		var pos: Vector2 = SmartPlacement.cell_to_world_position(tilemap, cell, spawn_offset)
 		inst.global_position = pos
+		
+		print("cell:", cell, " pos:", pos, " spawn_offset:", spawn_offset, " tile:", tilemap.tile_set.tile_size)
 
 		var aabb: Rect2 = get_sprite_global_aabb(inst)
 		var allowed: Dictionary[Vector2i, bool] = _build_allowed_contact_cells(cell, inst.footprint_cells, deco_type)

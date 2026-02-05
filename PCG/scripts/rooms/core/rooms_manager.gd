@@ -390,7 +390,6 @@ func _add_traps(room: RoomTemplateMeta) -> void:
 func _add_decos(room: RoomTemplateMeta) -> void:
 	var deco_state: RoomDecoState = rooms.get(room).decos_state
 
-	# TODO: spegnere luci/particles quando il player esce per ottimizzare performance
 	for type in Decoration.DECO_TYPE.values():
 		deco_spawner.spawn_room_decos(room, deco_state, type, rng)
 

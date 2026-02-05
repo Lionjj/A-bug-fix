@@ -83,3 +83,6 @@ func compute_footprint_cells(tile_size: Vector2i = Vector2i(16, 16)) -> int:
 
 func prepare_for_spawn() -> void:
 	pass
+	
+func on_spawned() -> void:
+	pass

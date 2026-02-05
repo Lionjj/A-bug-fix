@@ -42,49 +42,81 @@ func _set_collision_enabled(enabled: bool) -> void:
 				(ch as CollisionShape2D).set_deferred("disabled", not enabled)
 
 func _compute_anchor_offset() -> Vector2:
-	var sprite: Sprite2D = get_node_or_null(sprite_2d_name)
-	if sprite == null or sprite.texture == null:
+	var sprite := get_node_or_null(sprite_2d_name) as Node2D
+	if sprite == null:
 		return Vector2.ZERO
 
-	# Rect del disegno in coordinate locali del nodo Sprite2D
-	var r: Rect2 = sprite.get_rect()
+	# Rect del disegno in locale dello sprite
+	var local_rect: Rect2
+	if sprite is Sprite2D:
+		var s := sprite as Sprite2D
+		if s.texture == null: return Vector2.ZERO
+		local_rect = s.get_rect()
+	elif sprite is AnimatedSprite2D:
+		var a := sprite as AnimatedSprite2D
+		if a.sprite_frames == null: return Vector2.ZERO
+		local_rect = a.get_rect()
+	else:
+		return Vector2.ZERO
 
-	# Applica la scala del nodo sprite (get_rect NON include scale)
-	r.position *= sprite.scale
-	r.size *= sprite.scale
+	# 4 angoli del rect (spazio locale sprite)
+	var p0: Vector2 = local_rect.position
+	var p1: Vector2 = local_rect.position + Vector2(local_rect.size.x, 0.0)
+	var p2: Vector2 = local_rect.position + Vector2(0.0, local_rect.size.y)
+	var p3: Vector2 = local_rect.position + local_rect.size
 
-	# r.position è l'angolo alto-sinistra del disegno
-	# bottom_local = r.position.y + r.size.y
-	# top_local = r.position.y
+	# Converti in spazio LOCALE dell'ItemEntity (considera scale/offset/rotazioni di tutto)
+	var q0: Vector2 = to_local(sprite.to_global(p0))
+	var q1: Vector2 = to_local(sprite.to_global(p1))
+	var q2: Vector2 = to_local(sprite.to_global(p2))
+	var q3: Vector2 = to_local(sprite.to_global(p3))
 
-	var bottom_local := r.position.y + r.size.y
-	return Vector2(0.0, -bottom_local)
+	var max_y: float = max(q0.y, q1.y, q2.y, q3.y)
+
+	# voglio che il bordo inferiore tocchi y=0
+	return Vector2(0.0, -max_y)
+
 
 func compute_footprint_cells(tile_size: Vector2i = Vector2i(16, 16)) -> int:
-	var sprite: Sprite2D = get_node_or_null(sprite_2d_name)
-	if sprite == null or sprite.texture == null:
+	var sprite := get_node_or_null(sprite_2d_name) as Node2D
+	if sprite == null:
 		return 1
 
-	var tile_w : float = float(tile_size.x)
+	var local_rect: Rect2
+	if sprite is Sprite2D:
+		var s := sprite as Sprite2D
+		if s.texture == null: return 1
+		local_rect = s.get_rect()
+	elif sprite is AnimatedSprite2D:
+		var a := sprite as AnimatedSprite2D
+		if a.sprite_frames == null: return 1
+		local_rect = a.get_rect()
+	else:
+		return 1
+
+	var p0: Vector2 = local_rect.position
+	var p1: Vector2 = local_rect.position + Vector2(local_rect.size.x, 0.0)
+	var p2: Vector2 = local_rect.position + Vector2(0.0, local_rect.size.y)
+	var p3: Vector2 = local_rect.position + local_rect.size
+
+	var q0: Vector2 = to_local(sprite.to_global(p0))
+	var q1: Vector2 = to_local(sprite.to_global(p1))
+	var q2: Vector2 = to_local(sprite.to_global(p2))
+	var q3: Vector2 = to_local(sprite.to_global(p3))
+
+	var min_x: float = min(q0.x, q1.x, q2.x, q3.x)
+	var max_x: float = max(q0.x, q1.x, q2.x, q3.x)
+	var width_px: float = max(1.0, max_x - min_x)
+
+	var tile_w := float(tile_size.x)
 	if tile_w <= 0.0:
 		return 1
 
-	# Rect del disegno in coordinate locali del nodo Sprite2D
-	var r: Rect2 = sprite.get_rect()
-
-	# get_rect non include scale: applicala
-	var sx : float = abs(sprite.scale.x)
-	r.position.x *= sx
-	r.size.x *= sx
-
-	# Larghezza reale in pixel
-	var w_px : float = max(1.0, float(r.size.x))
-
-	# celle richieste
-	var cells : int = int(ceil(w_px / tile_w))
-
-	# forza dispari (1,3,5...) per simmetria
+	var cells := int(ceil(width_px / tile_w))
 	if cells % 2 == 0:
 		cells += 1
-
 	return max(1, cells)
+
+func refresh_spawn_data() -> void:
+	spawn_offset = _compute_anchor_offset()
+	footprint_width_cells = compute_footprint_cells()
