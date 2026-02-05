@@ -2,23 +2,28 @@
 # CorridorBuildContext
 # ============================================================================
 ## Contesto dati per la fase di costruzione dei corridoi.[br]
-##
-## Responsabilità:[br]
-## - Fornire a [CorridorBuilder] tutti i dati necessari per collegare
-##   le stanze fisiche già istanziate.[br]
-## - Disaccoppiare completamente la logica dei corridoi da WorldGen.[br]
-##
-## Contenuto:[br]
-## - Nodo root del livello (per accesso al scene tree).[br]
-## - Grafo logico della missione (adiacenze).[br]
-## - Posizioni logiche delle stanze su griglia.[br]
-## - Dimensione della cella stanza (grid spacing).[br]
-## - Dimensione tile (per conversioni world ↔ cell).[br]
-##
-## Note architetturali:[br]
-## - Oggetto immutabile dopo l’inizializzazione.[br]
-## - Deve essere creato dopo lo spawn delle stanze.[br]
-## - CorridorBuilder non deve mai leggere direttamente WorldGen.[br]
+##[br]
+## [b]Responsabilità principali[/b]:[br]
+## - Fornire a [CorridorBuilder] tutti i riferimenti necessari per collegare stanze già istanziate.[br]
+## - Separare la logica corridoi dall’orchestratore ([WorldGen]).[br]
+## - Trasportare i dati minimi per conversioni griglia ↔ world in modo consistente.[br]
+##[br]
+## [b]Cosa NON fa[/b]:[br]
+## - Non crea corridoi: contiene solo dati.[br]
+## - Non valida la correttezza del grafo o delle posizioni.[br]
+## - Non decide dove piazzare le stanze: riceve posizioni già calcolate.[br]
+##[br]
+## [b]Contenuto[/b]:[br]
+## - [member root]: root del livello (accesso a scene tree e TileMapLayer corridoi).[br]
+## - [member graph]: grafo logico (adiacenze da collegare).[br]
+## - [member positions]: mapping id logico → cella su griglia.[br]
+## - [member cell_tiles]: dimensione cella stanza in tile (grid spacing fisico).[br]
+## - [member tile_size]: dimensione tile (conversioni world ↔ cell).[br]
+##[br]
+## [b]Note architetturali[/b]:[br]
+## - Da trattare come immutabile dopo la costruzione.[br]
+## - Va creato dopo lo spawn delle stanze: il builder deve trovare stanze/layer nello scene tree.[br]
+## - [CorridorBuilder] non deve leggere direttamente [WorldGen]: questo context è il contratto.[br]
 # ============================================================================
 
 extends RefCounted
@@ -29,26 +34,26 @@ class_name CorridorBuildContext
 # Core references
 # ---------------------------------------------------------------------------
 
-## Nodo root del livello.
-## Usato per:
-## - recuperare / creare il TileMapLayer dei corridoi
-## - indicizzare le stanze presenti nel scene tree
+## Root del livello.[br]
+## Usato da [CorridorBuilder] per:[br]
+## - recuperare/creare il [TileMapLayer] dei corridoi[br]
+## - indicizzare le stanze presenti nello scene tree[br]
 var root: Node2D
 
-## Grafo logico della missione.
-## Usato per determinare quali stanze sono adiacenti.
+## Grafo logico della missione.[br]
+## Usato per determinare quali stanze (id) vanno collegate.[br]
 var graph: MissionGraph
 
-## Mapping id nodo logico -> posizione su griglia.
-## Le posizioni sono in coordinate logiche (celle).
+## Mapping id nodo logico → posizione su griglia.[br]
+## Le posizioni sono in coordinate logiche (celle).[br]
 var positions: Dictionary[String, Vector2i]
 
-## Dimensione della cella stanza in tile.
-## Definisce lo spacing della griglia fisica.
+## Dimensione della cella stanza in tile.[br]
+## Definisce lo spacing fisico tra stanze quando si converte la griglia in world.[br]
 var cell_tiles: Vector2i
 
-## Dimensione del tile (fallback 16x16).
-## Usata per conversioni world/cell nei TileMapLayer.
+## Dimensione del tile (fallback 16x16).[br]
+## Usata per conversioni tra coordinate world e celle dei [TileMapLayer].[br]
 var tile_size: Vector2i = Vector2i(16, 16)
 
 
@@ -56,13 +61,13 @@ var tile_size: Vector2i = Vector2i(16, 16)
 # Init
 # ---------------------------------------------------------------------------
 
-## Costruisce il contesto per la fase di build dei corridoi.[br]
-## [br]
-## [param _root] Nodo root del livello.[br]
-## [param _graph] Grafo logico della missione.[br]
-## [param _positions] Posizioni logiche su griglia.[br]
-## [param _cell_tiles] Dimensione cella stanza in tile.[br]
-## [param _tile_size] Dimensione tile (default 16x16).[br]
+## Costruisce il contesto per la build dei corridoi.[br]
+##[br]
+## [param _root]: root del livello.[br]
+## [param _graph]: grafo logico della missione.[br]
+## [param _positions]: posizioni logiche su griglia (id → cella).[br]
+## [param _cell_tiles]: dimensione cella stanza in tile.[br]
+## [param _tile_size]: dimensione tile usata per conversioni world ↔ cell (default 16x16).[br]
 func _init(
 	_root: Node2D,
 	_graph: MissionGraph,

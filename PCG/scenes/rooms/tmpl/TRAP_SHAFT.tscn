@@ -2,21 +2,21 @@
 
 [ext_resource type="Script" uid="uid://d34bpkuli10v0" path="res://PCG/scripts/rooms/meta/room_template_meta.gd" id="1_psa5t"]
 [ext_resource type="TileSet" uid="uid://3b80jy3y0tr" path="res://PCG/data/tiles/TileGen.tres" id="2_y536f"]
-[ext_resource type="Script" uid="uid://64c1ttipyhan" path="res://PCG/scripts/rooms/room_connector.gd" id="3_i2ipv"]
+[ext_resource type="Script" uid="uid://64c1ttipyhan" path="res://PCG/scripts/rooms/core/room_connector.gd" id="3_i2ipv"]
 
 [node name="TrapShaft" type="Node2D"]
 script = ExtResource("1_psa5t")
-kind = "CHALLENGE"
+kind = 4
 size_tiles = Vector2i(24, 33)
 requires = Array[int]([1, 2])
 difficulty = 3
-connectors = {
+connectors = Dictionary[String, bool]({
 "E": true,
 "N": true,
 "S": true,
 "W": true
-}
-tags = Array[String](["challenge", "vertical", "shaft"])
+})
+tag_mask = 64
 
 [node name="Collision" type="TileMapLayer" parent="." groups=["Object"]]
 top_level = true

@@ -27,7 +27,7 @@ class_name RoomTemplateMeta
 # ---------------------------------------------------------------------------
 
 ## Tipo logico della stanza (es. "ARENA", "PUZZLE", "BOSS").
-@export var kind: String = "ARENA"
+@export var kind: RoomTags.Tag = RoomTags.Tag.ARENA
 
 ## Dimensione della stanza in tile.
 @export var size_tiles: Vector2i = Vector2i(80, 48)
@@ -65,11 +65,21 @@ const CONNECTOR_NAMES: Dictionary[String, String] = {
 
 
 # ---------------------------------------------------------------------------
-# Costanti
+# Costanti (no magic numbers)
 # ---------------------------------------------------------------------------
 
 ## Dimensione di un tile in pixel.
 const TILE_SIZE_PX: int = 16
+
+## Default “safe” per bounds finché non viene calcolato altrove.
+const DEFAULT_BOUNDS: Rect2 = Rect2(Vector2.ZERO, Vector2.ZERO)
+
+## Moltiplicatori usati per derivare dimensioni della capsule del player.
+const CAPSULE_DIAMETER_MULT: float = 2.0
+const HALF_MULT: float = 0.5
+
+## Direzioni dei connettori (serve se vuoi iterare in modo deterministico).
+const CONNECTOR_DIRS: Array[String] = ["N", "E", "S", "W"]
 
 
 # ---------------------------------------------------------------------------
@@ -80,8 +90,10 @@ const TILE_SIZE_PX: int = 16
 @export var base_weight: float = 1.0
 
 ## Tag semantici per il PCG.[br]
-## Esempi: ["vertical", "gap", "combat", "platforming"]
-@export var tags: Array[String] = []
+@export_flags(
+	"START","HUB","CHALLENGE","KEY_ROOM","SAVE","SIDE","ARENA","BOSS", "FALLBACK"
+)
+var tag_mask: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -101,7 +113,7 @@ const TILE_SIZE_PX: int = 16
 
 ## Bounding box globale della stanza (in pixel).[br]
 ## Usata per verificare ingresso/uscita del player.
-var bounds: Rect2 = Rect2()
+var bounds: Rect2 = DEFAULT_BOUNDS
 
 ## Flag interno: true se il player è attualmente nella stanza.
 var _player_entered: bool = false
@@ -173,7 +185,7 @@ func update_player_presence(player: Player) -> void:
 	var center: Vector2 = collider.global_transform.origin
 
 	## Dimensioni locali della capsule
-	var width: float = shape.radius * 2.0
+	var width: float = shape.radius * CAPSULE_DIAMETER_MULT
 	var height: float = shape.height + width
 
 	## Scala globale del collider
@@ -181,9 +193,9 @@ func update_player_presence(player: Player) -> void:
 	var half_extents: Vector2 = Vector2(
 		width * abs(scale.x),
 		height * abs(scale.y)
-	) * 0.5
+	) * HALF_MULT
 
-	var player_aabb: Rect2 = Rect2(center - half_extents, half_extents * 2.0)
+	var player_aabb: Rect2 = Rect2(center - half_extents, half_extents * CAPSULE_DIAMETER_MULT)
 
 	var is_inside: bool = bounds.encloses(player_aabb)
 
@@ -209,7 +221,11 @@ func update_player_presence(player: Player) -> void:
 func get_connectors() -> Dictionary[String, RoomConnector]:
 	var result: Dictionary[String, RoomConnector] = {}
 
-	for dir: String in CONNECTOR_NAMES.keys():
+	## Iterazione deterministica (evita dipendenze dall'ordine delle keys del dict)
+	for dir: String in CONNECTOR_DIRS:
+		if not CONNECTOR_NAMES.has(dir):
+			continue
+
 		var node_name: String = CONNECTOR_NAMES[dir]
 		var connector: RoomConnector = get_node_or_null(node_name) as RoomConnector
 		if connector == null:

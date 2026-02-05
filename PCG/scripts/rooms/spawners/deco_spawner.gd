@@ -2,7 +2,7 @@
 # DecoSpawner
 # ============================================================================
 ## Modulo che gestisce lo spawn delle decorazioni all'interno delle stanze.[br]
-## [br]
+##
 ## Obiettivo:[br]
 ## - Scegliere un set di decorazioni in base a budget, tipo e pesi (weight).[br]
 ## - Selezionare punti di spawn “esteticamente belli” tramite [method SmartPlacement.beautify].[br]
@@ -19,6 +19,23 @@
 
 extends Node
 class_name DecoSpawner
+
+# ---------------------------------------------------------------------------
+# Tuning constants (no magic numbers)
+# ---------------------------------------------------------------------------
+
+## Oversampling: quante candidate in più generiamo prima dei filtri (beautify).
+const SPAWN_POINTS_OVERSAMPLE_MULT: int = 3
+
+## Safety cap per loop di pick/allocazione (evita freeze in caso di vincoli impossibili).
+const PICK_SAFETY_MAX_ITERS: int = 10_000
+
+## Default tentativi massimi per trovare uno slot “safe”.
+const SAFE_SPAWN_DEFAULT_ATTEMPTS: int = 30
+
+## Fallback gap in celle se tipo non gestito.
+const GAP_FALLBACK_CELLS: int = 0
+
 
 # ---------------------------------------------------------------------------
 # Tabella decorazioni
@@ -204,7 +221,7 @@ func get_spawn_points(
 		Decoration.DECO_TYPE.CEILING:
 			candidates = room.placement.ceiling_air_cells
 
-	return SmartPlacement.beautify(candidates, rng, slots_count * 3)
+	return SmartPlacement.beautify(candidates, rng, slots_count * SPAWN_POINTS_OVERSAMPLE_MULT)
 
 ## Filtra i punti candidati in base al tipo e alla footprint.[br]
 ## - GROUND: deve essere piazzabile a terra.[br]
@@ -288,7 +305,7 @@ func chose_decorations(deco_type: Decoration.DECO_TYPE, budget: int, rng: Random
 
 	var remaining_budget: int = budget
 	var counts: Dictionary[DecorationsRegistry.ID, int] = {}
-	var safety: int = 10_000
+	var safety: int = PICK_SAFETY_MAX_ITERS
 
 	while remaining_budget > 0 and safety > 0:
 		safety -= 1
@@ -565,7 +582,7 @@ func _pick_safe_spawn_position(
 	valid_slots: Array[Vector2i],
 	deco_type: Decoration.DECO_TYPE,
 	rng: RandomNumberGenerator,
-	max_attempts: int = 30,
+	max_attempts: int = SAFE_SPAWN_DEFAULT_ATTEMPTS,
 ) -> SpawnPick:
 	var tilemap: TileMapLayer = room.collision
 	var spawn_offset: Vector2 = inst.get_spawn_offset() + _contact_snap(tilemap, deco_type)
@@ -643,4 +660,4 @@ func _min_gap_cells(room: RoomTemplateMeta, deco_type: Decoration.DECO_TYPE) -> 
 		Decoration.DECO_TYPE.CEILING:
 			return RoomPlacementManager.px_to_cells(MIN_DIST_CEILING, tile_size_x)
 
-	return 0
+	return GAP_FALLBACK_CELLS

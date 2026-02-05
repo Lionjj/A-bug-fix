@@ -1,6 +1,8 @@
 # ============================================================================
 # ItemsSpawner
 # ============================================================================
+## Modulo per la gestione degli spawn degli oggetti.
+##
 ## Modulo che si occupa di:[br]
 ## - Ricavare il catalogo di item dai nodi logici (MissionNode / NodeCatalogue).[br]
 ## - Eseguire il binding tra item logici ([Item]) e oggetti fisici (scene).[br]
@@ -41,10 +43,21 @@ class_name ItemsSpawner
 ## Viene aggiornato da [method _compute_items] e usato da [method get_spawn_points].
 var items_count: int = 0
 
+# ---------------------------------------------------------------------------
+# Tuning constants (no magic numbers)
+# ---------------------------------------------------------------------------
+
 ## Distanza minima (in pixel) tra un item e QUALSIASI altra cosa piazzata tramite PlacementManager
 ## (item, deco, nemici, trappole, ecc.).[br]
 ## Se la metti a 0, gli item possono spawnare appiccicati alle decorazioni.
 const MIN_DIST_ITEMS_PX: float = 32.0
+
+## Footprint minimo garantito (in celle) per evitare edge-case con footprint 0/negativi.
+const MIN_FOOTPRINT_CELLS: int = 1
+
+## Fallback se la scena dell'item non è presente in tabella.
+## Nota: tenuto come costante per coerenza, ma qui si decide semplicemente di saltare lo spawn.
+const MISSING_SCENE_COUNT_PENALTY: int = 1
 
 # ---------------------------------------------------------------------------
 # Catalog building (logico → quantità)
@@ -127,18 +140,18 @@ func istanziate_in_position(
 			var scene: PackedScene = item_table.get(item_id)
 			if scene == null:
 				## Se manca la scena, non posso spawnare questo item
-				remaining_count -= 1
+				remaining_count -= MISSING_SCENE_COUNT_PENALTY
 				continue
 
 			## 1) Istanzia: serve per leggere footprint/spawn_offset
 			var new_item: ItemEntity = scene.instantiate() as ItemEntity
 			if new_item == null:
-				remaining_count -= 1
+				remaining_count -= MISSING_SCENE_COUNT_PENALTY
 				continue
 
 			## 2) Trova una cella valida per QUESTO item (footprint variabile)
 			## Nota: footprint_width_cells è inteso come “larghezza footprint in celle”.
-			var footprint_cells: int = max(1, new_item.footprint_width_cells)
+			var footprint_cells: int = max(MIN_FOOTPRINT_CELLS, new_item.footprint_width_cells)
 
 			var picked_cell: Vector2i = Vector2i.ZERO
 			var found: bool = false

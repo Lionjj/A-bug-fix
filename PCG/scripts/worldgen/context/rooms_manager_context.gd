@@ -3,23 +3,28 @@
 # ============================================================================
 ## Context runtime passato a [RoomsManager].[br]
 ##
-## Responsabilità:[br]
-## - Fornire al RoomsManager tutti i riferimenti necessari per gestire
-##   il comportamento runtime delle stanze.[br]
-## - Disaccoppiare il manager dal nodo WorldGen e dalla pipeline di build.[br]
-##
-## Contenuto:[br]
-## - Grafo logico della missione (per stato e progressione).[br]
-## - Mapping stanze fisiche -> stato runtime.[br]
-## - Posizioni logiche delle stanze su griglia.[br]
-## - Riferimento al player runtime.[br]
-## - RNG del livello (coerente con il seed di generazione).[br]
-## - Run level corrente (difficoltà / progressione).[br]
-##
-## Note architetturali:[br]
-## - Oggetto immutabile dopo l’inizializzazione.[br]
-## - Deve essere creato una sola volta al termine della build del livello.[br]
-## - RoomsManager non deve mai leggere direttamente WorldGen.[br]
+## [b]Responsabilità principali[/b]:[br]
+## - Fornire a [RoomsManager] tutti i riferimenti necessari per la gestione runtime.[br]
+## - Disaccoppiare il manager dall’orchestratore ([WorldGen]) e dalla pipeline di build.[br]
+## - Trasportare i dati di run (graph/rooms/player/rng/run_level) in modo esplicito.[br]
+##[br]
+## [b]Cosa NON fa[/b]:[br]
+## - Non gestisce logica runtime: contiene solo dati.[br]
+## - Non crea stanze o stati: riceve oggetti già costruiti dalla fase di build.[br]
+## - Non valida coerenza tra mappe (graph/rooms/positions): quella è responsabilità del chiamante.[br]
+##[br]
+## [b]Contenuto[/b]:[br]
+## - [member graph]: grafo logico della missione.[br]
+## - [member rooms]: mapping stanza fisica → stato runtime.[br]
+## - [member positions]: mapping id logico → posizione su griglia.[br]
+## - [member player]: riferimento al player runtime.[br]
+## - [member rng]: RNG della run (coerente con il seed di generazione).[br]
+## - [member run_level]: livello run/difficoltà corrente.[br]
+##[br]
+## [b]Note architetturali[/b]:[br]
+## - Da trattare come immutabile dopo la costruzione.[br]
+## - Va creato una sola volta al termine della build del livello.[br]
+## - [RoomsManager] non deve conoscere [WorldGen]: questo context è il confine tra build e runtime.[br]
 # ============================================================================
 
 extends RefCounted
@@ -30,31 +35,27 @@ class_name RoomsManagerContext
 # Runtime references
 # ---------------------------------------------------------------------------
 
-## Grafo logico della missione (MissionGraph).
-## Usato per:
-## - determinare connessioni logiche
-## - stato dei nodi (visitato, completato, ecc.)
+## Grafo logico della missione.[br]
+## Usato da [RoomsManager] per connessioni logiche e progressione (visitato, completato, gating, ecc.).[br]
 var graph: MissionGraph
 
-## Mapping stanza fisica -> stato runtime.
-## Ogni RoomState contiene informazioni dinamiche (nemici vivi, clear, trigger, ecc.)
+## Mapping stanza fisica → stato runtime.[br]
+## Ogni [RoomState] contiene informazioni dinamiche (clear, nemici vivi, trigger, ecc.).[br]
 var rooms: Dictionary[RoomTemplateMeta, RoomState]
 
-## Mapping id nodo logico -> posizione su griglia.
-## Utile per:
-## - correlare eventi logici con stanze fisiche
-## - debug / minimap / navigazione
+## Mapping id nodo logico → posizione su griglia.[br]
+## Serve per correlare eventi logici con stanze fisiche e per supportare debug/minimap.[br]
 var positions: Dictionary[String, Vector2i]
 
-## Player runtime attualmente attivo nel livello.
+## Player runtime attualmente attivo nel livello.[br]
 var player: Player
 
-## RNG del livello.
-## Deve essere lo stesso usato nella generazione per garantire coerenza.
+## RNG della run.[br]
+## Deve essere lo stesso usato in build per mantenere coerenza e determinismo dove richiesto.[br]
 var rng: RandomNumberGenerator
 
-## Livello di run / difficoltà corrente.
-## Può influenzare spawn, scaling, comportamento nemici.
+## Livello di run / difficoltà corrente.[br]
+## Input usato per scaling (spawn/AI/ricompense) a discrezione di [RoomsManager].[br]
 var run_level: int
 
 
@@ -62,14 +63,14 @@ var run_level: int
 # Init
 # ---------------------------------------------------------------------------
 
-## Costruisce il context runtime per il RoomsManager.[br]
-## [br]
-## [param _graph] Grafo logico della missione.[br]
-## [param _rooms] Mapping stanze -> RoomState.[br]
-## [param _positions] Posizioni logiche su griglia.[br]
-## [param _player] Player runtime.[br]
-## [param _rng] RNG del livello.[br]
-## [param _run_level] Livello di run / difficoltà.[br]
+## Costruisce il context runtime per [RoomsManager].[br]
+##[br]
+## [param _graph]: grafo logico della missione.[br]
+## [param _rooms]: mapping stanze fisiche → [RoomState].[br]
+## [param _positions]: posizioni logiche su griglia (id → cella).[br]
+## [param _player]: player runtime.[br]
+## [param _rng]: RNG della run.[br]
+## [param _run_level]: livello run/difficoltà corrente.[br]
 func _init(
 	_graph: MissionGraph,
 	_rooms: Dictionary[RoomTemplateMeta, RoomState],

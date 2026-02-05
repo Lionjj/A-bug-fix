@@ -78,6 +78,23 @@ const MAX_BUDGET: int = 12
 const MIN_DIST_FROM_ENTRY: int = 5
 
 # ---------------------------------------------------------------------------
+# Weighted picking tuning (no magic numbers)
+# ---------------------------------------------------------------------------
+
+## Safety cap del loop di picking (evita while infinito se qualcosa va storto).
+const PICK_LOOP_SAFETY_MAX: int = 10_000
+
+## Epsilon per evitare divisione per zero nella normalizzazione della finestra.
+const DIFF_WINDOW_EPS: float = 0.0001
+
+## Parametri della rampa del peso: BASE 
+const WEIGHT_RAMP_BASE: float = 0.3
+## Parametri della rampa del peso: SCALE 
+const WEIGHT_RAMP_SCALE: float = 0.7
+## Parametri della rampa del peso: prog^POW
+const WEIGHT_RAMP_POWER: float = 2.0
+
+# ---------------------------------------------------------------------------
 # Support Types
 # ---------------------------------------------------------------------------
 
@@ -255,7 +272,7 @@ func chose_traps(room_difficulty: int, run_level: int, budget: int, rng: RandomN
 	var remaining: int = budget
 
 	var counts: Dictionary[TrapRegistry.ID, int] = {}
-	var safety: int = 10_000
+	var safety: int = PICK_LOOP_SAFETY_MAX
 
 	while remaining > 0 and safety > 0:
 		safety -= 1
@@ -313,7 +330,7 @@ func _pick_trap_weighted(candidates: Array[TrapId_Weight], rng: RandomNumberGene
 
 ## Calcola il peso dinamico di una trappola in base alla difficoltà.[br]
 ## - Fuori dalla finestra [min_difficulty, max_difficulty] → peso 0.[br]
-## - Dentro la finestra → rampa quadratica (rarity_ramp) per aumentare gradualmente.[br]
+## - Dentro la finestra → rampa (prog^POW) per aumentare gradualmente.[br]
 ##
 ## [param trap] Dati della trappola (min/max difficulty, weight base).[br]
 ## [param difficulty] Difficoltà effettiva corrente (run_level + room_difficulty smorzata).[br]
@@ -325,10 +342,10 @@ func _compute_spawn_weight(trap: Trap, difficulty: float) -> float:
 	if difficulty > trap.max_difficulty:
 		return 0.0
 
-	var window: float = max(0.0001, trap.max_difficulty - trap.min_difficulty)
+	var window: float = max(DIFF_WINDOW_EPS, trap.max_difficulty - trap.min_difficulty)
 	var prog: float = (difficulty - trap.min_difficulty) / window
 	prog = clamp(prog, 0.0, 1.0)
 
-	## Rampa quadratica: lento all'inizio, più presente verso il massimo
-	var rarity_ramp: float = prog * prog
-	return trap.weight * (0.3 + 0.7 * rarity_ramp)
+	## Rampa controllata via costanti (niente magic number)
+	var rarity_ramp: float = pow(prog, WEIGHT_RAMP_POWER)
+	return trap.weight * (WEIGHT_RAMP_BASE + WEIGHT_RAMP_SCALE * rarity_ramp)

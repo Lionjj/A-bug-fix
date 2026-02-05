@@ -1,35 +1,35 @@
 [gd_scene load_steps=8 format=3 uid="uid://cjspp24lnt3mx"]
 
-[ext_resource type="Script" uid="uid://b1qnfid3rpqrx" path="res://PCG/scripts/worldgen/world_gen.gd" id="1_xubnb"]
-[ext_resource type="PackedScene" uid="uid://b3qjste5bjucc" path="res://Scenes/Player.tscn" id="2_jtdq5"]
-[ext_resource type="Script" uid="uid://cwx0fq7rrtpkx" path="res://PCG/util/camera_2d.gd" id="4_cvgln"]
-[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_1u0hf"]
-[ext_resource type="TileSet" uid="uid://3b80jy3y0tr" path="res://PCG/data/tiles/TileGen.tres" id="6_77ys8"]
-[ext_resource type="Texture2D" uid="uid://dj83upk7upl4l" path="res://Assets/OS/Background.png" id="8_gb41t"]
-[ext_resource type="PackedScene" uid="uid://ctkgfqc1yal51" path="res://PCG/scenes/dressing/AutoTiles.tscn" id="10_jtdq5"]
+[ext_resource type="Script" uid="uid://b1qnfid3rpqrx" path="res://PCG/scripts/worldgen/world_gen.gd" id="1_0qxf4"]
+[ext_resource type="PackedScene" uid="uid://b3qjste5bjucc" path="res://Scenes/Player.tscn" id="2_ci64r"]
+[ext_resource type="Script" uid="uid://cwx0fq7rrtpkx" path="res://PCG/util/camera_2d.gd" id="3_ekxqb"]
+[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="4_fdktm"]
+[ext_resource type="TileSet" uid="uid://3b80jy3y0tr" path="res://PCG/data/tiles/TileGen.tres" id="5_veq17"]
+[ext_resource type="PackedScene" uid="uid://ctkgfqc1yal51" path="res://PCG/scenes/dressing/AutoTiles.tscn" id="6_vxngb"]
+[ext_resource type="Texture2D" uid="uid://dj83upk7upl4l" path="res://Assets/OS/Background.png" id="7_s417j"]
 
 [node name="WorldGen" type="Node2D"]
-script = ExtResource("1_xubnb")
+script = ExtResource("1_0qxf4")
 budget_nodes = 13
 seed = 1
-player_scene = ExtResource("2_jtdq5")
+player_scene = ExtResource("2_ci64r")
 run_level = 3
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(1.5, 1.5)
 editor_draw_limits = true
-script = ExtResource("4_cvgln")
+script = ExtResource("3_ekxqb")
 
 [node name="PhantomCameraHost" type="Node" parent="Camera2D"]
 process_priority = 300
 process_physics_priority = 300
-script = ExtResource("5_1u0hf")
+script = ExtResource("4_fdktm")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
 [node name="Final" type="TileMapLayer" parent="."]
-tile_set = ExtResource("6_77ys8")
+tile_set = ExtResource("5_veq17")
 
-[node name="AutoTiles" parent="." node_paths=PackedStringArray("level", "layout") instance=ExtResource("10_jtdq5")]
+[node name="AutoTiles" parent="." node_paths=PackedStringArray("level", "layout") instance=ExtResource("6_vxngb")]
 level = NodePath("..")
 layout = NodePath("../Final")
 
@@ -52,7 +52,7 @@ modulate = Color(0.0862745, 0.109804, 0.133333, 1)
 z_index = -10
 texture_filter = 1
 texture_repeat = 2
-texture = ExtResource("8_gb41t")
+texture = ExtResource("7_s417j")
 centered = false
 region_enabled = true
 region_rect = Rect2(1024, 1024, 1024, 1024)

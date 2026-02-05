@@ -29,6 +29,17 @@ class_name RoomPlacementManager
 
 
 # ---------------------------------------------------------------------------
+# Tuning constants (no magic numbers)
+# ---------------------------------------------------------------------------
+
+## Inclusività dei range: Godot range(a,b) esclude b, quindi usiamo +1 per includere il bordo.
+const RANGE_INCLUSIVE_END_OFFSET: int = 1
+
+## Fallback “sicuro” per footprint/gap negativi (non dovrebbe mai succedere).
+const MIN_NON_NEGATIVE: int = 0
+
+
+# ---------------------------------------------------------------------------
 # Celle spawnabili (statiche)
 # ---------------------------------------------------------------------------
 
@@ -155,14 +166,16 @@ func can_place(
 	footprint_width_cells: int,
 	gap_cells: int
 ) -> bool:
+	## Clamp difensivo: niente valori negativi
+	var fp: int = max(MIN_NON_NEGATIVE, footprint_width_cells)
+	var gap: int = max(MIN_NON_NEGATIVE, gap_cells)
 
 	## La cella centrale deve essere spawnabile
 	if not spawnable_cells.has(center_cell):
 		return false
 
 	## Celle occupate dall’oggetto (footprint)
-	var occupied_cells: Array[Vector2i] = \
-		SmartPlacement.get_footprint_cells(center_cell, footprint_width_cells)
+	var occupied_cells: Array[Vector2i] = SmartPlacement.get_footprint_cells(center_cell, fp)
 
 	## Tutte le celle del footprint devono essere spawnabili
 	for cell: Vector2i in occupied_cells:
@@ -172,8 +185,13 @@ func can_place(
 	## Controllo collisione con celle bloccate,
 	## includendo il buffer di distanza
 	for cell: Vector2i in occupied_cells:
-		for y: int in range(cell.y - gap_cells, cell.y + gap_cells + 1):
-			for x: int in range(cell.x - gap_cells, cell.x + gap_cells + 1):
+		var y0: int = cell.y - gap
+		var y1: int = cell.y + gap + RANGE_INCLUSIVE_END_OFFSET
+		var x0: int = cell.x - gap
+		var x1: int = cell.x + gap + RANGE_INCLUSIVE_END_OFFSET
+
+		for y: int in range(y0, y1):
+			for x: int in range(x0, x1):
 				if blocked_cells.has(Vector2i(x, y)):
 					return false
 
@@ -197,9 +215,11 @@ func reserve(
 	footprint_cells: int,
 	gap_cells: int
 ) -> void:
+	## Clamp difensivo: niente valori negativi
+	var fp: int = max(MIN_NON_NEGATIVE, footprint_cells)
+	var gap: int = max(MIN_NON_NEGATIVE, gap_cells)
 
-	var occupied_cells: Array[Vector2i] = \
-		SmartPlacement.get_footprint_cells(center_cell, footprint_cells)
+	var occupied_cells: Array[Vector2i] = SmartPlacement.get_footprint_cells(center_cell, fp)
 
 	## Blocca footprint
 	for cell: Vector2i in occupied_cells:
@@ -207,8 +227,13 @@ func reserve(
 
 	## Blocca buffer di distanza
 	for cell: Vector2i in occupied_cells:
-		for y: int in range(cell.y - gap_cells, cell.y + gap_cells + 1):
-			for x: int in range(cell.x - gap_cells, cell.x + gap_cells + 1):
+		var y0: int = cell.y - gap
+		var y1: int = cell.y + gap + RANGE_INCLUSIVE_END_OFFSET
+		var x0: int = cell.x - gap
+		var x1: int = cell.x + gap + RANGE_INCLUSIVE_END_OFFSET
+
+		for y: int in range(y0, y1):
+			for x: int in range(x0, x1):
 				blocked_cells[Vector2i(x, y)] = true
 
 

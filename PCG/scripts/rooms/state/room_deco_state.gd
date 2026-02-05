@@ -3,6 +3,9 @@
 # ============================================================================
 ## Modulo che gestisce lo **stato runtime delle decorazioni** presenti in una stanza.[br]
 ##
+## Questo nodo funge da **contenitore di stato passivo** per tutto ciò che
+## riguarda le decorazioni istanziate in una stanza.[br]
+##
 ## Responsabilità:[br]
 ## - Conservare i punti di spawn disponibili per le decorazioni.[br]
 ## - Tracciare quali decorazioni devono essere istanziate.[br]
@@ -14,13 +17,13 @@
 ## - È un **contenitore di stato** puro.[br]
 ## - È contenuto all’interno di [RoomState].[br]
 ##
-## A differenza di nemici e trappole:[br]
+## Differenze rispetto ad altri state (nemici / trappole):[br]
 ## - le decorazioni NON hanno ondate[br]
 ## - NON hanno reset di combattimento[br]
-## - vengono spawnate una sola volta
+## - vengono spawnate una sola volta per stanza
 # ============================================================================
 
-extends Node
+extends RefCounted
 class_name RoomDecoState
 
 
@@ -41,7 +44,7 @@ var spawn_points: Array[Vector2i] = []
 # Decoration planning
 # ---------------------------------------------------------------------------
 
-## Coda di ID di decorazioni che devono essere istanziate nella stanza.[br]
+## Coda degli ID delle decorazioni da istanziare nella stanza.[br]
 ##
 ## L’ordine è deterministico ed è deciso dal [DecoSpawner]
 ## in base a budget, pesi e limiti per stanza.
@@ -65,10 +68,10 @@ var deco_references: Array[DecorationEntity] = []
 # Init
 # ---------------------------------------------------------------------------
 
-## Costruttore dello stato delle decorazioni della stanza.[br]
+## Costruisce lo stato runtime delle decorazioni della stanza.[br]
 ##
 ## Permette di inizializzare lo stato con dati già calcolati
-## oppure usare valori di default.[br]
+## oppure con valori di default.[br]
 ##
 ## [param _spawn_points] Celle utilizzate per lo spawn delle decorazioni.[br]
 ## [param _queue] Lista ordinata di ID di decorazioni da istanziare.[br]

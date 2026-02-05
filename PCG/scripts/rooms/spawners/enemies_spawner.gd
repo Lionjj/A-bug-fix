@@ -26,6 +26,36 @@ class_name EnemiesSpawner
 
 
 # ---------------------------------------------------------------------------
+# Tuning constants (no magic numbers)
+# ---------------------------------------------------------------------------
+
+## Rampa rarità: mix tra peso base e incremento con difficoltà.
+const RARITY_BASE_FACTOR: float = 0.3
+const RARITY_RAMP_FACTOR: float = 0.7
+
+## Epsilon per evitare divisione per zero sulle finestre di difficoltà.
+const DIFFICULTY_WINDOW_EPS: float = 0.0001
+
+## Safety cap per loop di pick, evita freeze se tabelle/constraint non permettono scelte.
+const PICK_SAFETY_MAX_ITERS: int = 10_000
+
+## Distanza minima iniziale (in pixel) tra nemici spawnati.
+const MIN_DISTANCE_PX: float = 48.0
+
+## Limiti assoluti di budget.
+const MIN_BUDGET: int = 0
+const MAX_BUDGET: int = 20
+
+## Limite minimo del moltiplicatore logico.
+const LOGIC_BUDGET_MULT_MIN: float = 0.5
+## Limite massimo del moltiplicatore logico.
+const LOGIC_BUDGET_MULT_MAX: float = 2.5
+
+## Coefficiente di smorzamento della progressione di difficoltà.
+const DAMPING_COEFFICENT: float = 0.8
+
+
+# ---------------------------------------------------------------------------
 # Enemy catalog
 # ---------------------------------------------------------------------------
 
@@ -67,21 +97,6 @@ class_name EnemiesSpawner
 ## Moltiplicatore del budget in base alla difficoltà della stanza.
 @export var room_diff_mult: float = 0.35
 
-## Limite minimo del moltiplicatore logico.
-const LOGIC_BUDGET_MULT_MIN: float = 0.5
-## Limite massimo del moltiplicatore logico.
-const LOGIC_BUDGET_MULT_MAX: float = 2.5
-
-## Coefficiente di smorzamento della progressione di difficoltà.
-const DAMPING_COEFFICENT: float = 0.8
-
-## Distanza minima iniziale (in pixel) tra nemici spawnati.
-const MIN_DISTANCE: float = 48.0
-
-## Limiti assoluti di budget.
-const MIN_BUDGET: int = 0
-const MAX_BUDGET: int = 20
-
 
 # ---------------------------------------------------------------------------
 # Support types
@@ -116,7 +131,7 @@ func get_spawn_points(room: RoomTemplateMeta, rng: RandomNumberGenerator, slots_
 	if spawnable_air_cells.is_empty():
 		return []
 
-	return SmartPlacement.beautify(spawnable_air_cells, rng ,slots_count)
+	return SmartPlacement.beautify(spawnable_air_cells, rng, slots_count)
 
 
 # ---------------------------------------------------------------------------
@@ -136,25 +151,26 @@ func find_free_slot_index(
 	slots: Array[Vector2i],
 	alive_enemies: Array[EnemyEntity],
 	tilemap: TileMapLayer,
-	min_dist: float = MIN_DISTANCE
+	min_dist: float = MIN_DISTANCE_PX
 ) -> int:
 	for i: int in range(slots.size()):
 		var cell: Vector2i = slots[i]
 		var world_pos: Vector2 = SmartPlacement.cell_to_world_position(tilemap, cell)
-		
+
 		var is_blocked: bool = false
 
 		for enemy: EnemyEntity in alive_enemies:
 			if enemy.global_position.distance_to(world_pos) >= min_dist:
 				continue
-			
+
 			is_blocked = true
 			break
-			
-		if is_blocked: continue
-		
+
+		if is_blocked:
+			continue
+
 		return i
-		
+
 	return -1
 
 
@@ -248,10 +264,10 @@ func istanziate_in_position(
 ##
 ## @return Budget finale clampato.
 func compute_budget(run_level: int, room: RoomTemplateMeta) -> int:
-	var budget: int = base_budget + int(round(run_level * budget_per_level))
-	budget = int(round(budget * (1.0 + float(room.logic_node.diff - 1) * room_diff_mult)))
+	var budget: int = base_budget + int(round(float(run_level) * budget_per_level))
+	budget = int(round(float(budget) * (1.0 + float(room.logic_node.diff - 1) * room_diff_mult)))
 	budget = int(round(
-		budget * clamp(
+		float(budget) * clamp(
 			room.logic_node.enemy_directive.budget_mult,
 			LOGIC_BUDGET_MULT_MIN,
 			LOGIC_BUDGET_MULT_MAX
@@ -277,11 +293,11 @@ func _compute_spawn_weight(enemy: Enemy, difficulty: float) -> float:
 	if difficulty > enemy.max_difficulty:
 		return 0.0
 
-	var window: float = max(0.0001, enemy.max_difficulty - enemy.min_difficulty)
+	var window: float = max(DIFFICULTY_WINDOW_EPS, enemy.max_difficulty - enemy.min_difficulty)
 	var progression: float = clamp((difficulty - enemy.min_difficulty) / window, 0.0, 1.0)
 
 	var rarity_ramp: float = progression * progression
-	return enemy.weight * (0.3 + 0.7 * rarity_ramp)
+	return enemy.weight * (RARITY_BASE_FACTOR + RARITY_RAMP_FACTOR * rarity_ramp)
 
 
 ## Costruisce il piano di distribuzione dei nemici per ondate.
@@ -317,10 +333,10 @@ func chose_enemys(room_difficulty: int, run_level: int, budget: int, rng: Random
 	if enemy_table.is_empty() or budget <= 0:
 		return out
 
-	var run_difficulty: float = float(run_level) + room_difficulty * DAMPING_COEFFICENT
+	var run_difficulty: float = float(run_level) + float(room_difficulty) * DAMPING_COEFFICENT
 	var remaining: int = budget
 	var counts: Dictionary[EnemiesRegistry.ID, int] = {}
-	var safety: int = 10_000
+	var safety: int = PICK_SAFETY_MAX_ITERS
 
 	while remaining > 0 and safety > 0:
 		safety -= 1

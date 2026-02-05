@@ -12,7 +12,10 @@ func load_rules(path: String) -> void:
 	rules = JSON.parse_string(FileAccess.get_file_as_string(path))["rules"]
 
 func _match(n:MissionNode, cond:Dictionary) -> bool:
-	return (not cond.has("kind")) or (n.kind == cond["kind"])
+	if not cond.has("kind"): return false
+	
+	var _kind: RoomTags.Tag = RoomTags.Tag.get((cond["kind"] as String).to_upper(), RoomTags.Tag.FALLBACK)
+	return (n.kind == _kind)
 
 ## Metodo utilizzato per espandere il grafo di base [param G] applicando le regole della grammatica
 ## fintanto che il numero di nodi generati e minore del [param budget] fornito.
@@ -151,7 +154,7 @@ func _applay_expand_nodes(G: MissionGraph, rule: Dictionary, new_ids: Dictionary
 	
 	for node_def in rule["expand_nodes"]:
 		var _id: String = node_def["id"] as String
-		var _kind: String = node_def["kind"] as String
+		var _kind: RoomTags.Tag = RoomTags.Tag.get((node_def["kind"] as String).to_upper(), RoomTags.Tag.FALLBACK)
 
 		## sostituzione del "$" del base_id con un numero incrementale
 		var real_id : String = _id.replace("$", str(_unique_id(_id)))

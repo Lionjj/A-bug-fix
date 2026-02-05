@@ -81,6 +81,7 @@ static func run(seed: int, budget_nodes: int, randomize_seed: bool = false) -> R
 		rng.randomize()
 		effective_seed = rng.seed
 	
+	rng.seed = effective_seed
 	r.rng = rng
 	r.graph = G
 	r.seed = effective_seed

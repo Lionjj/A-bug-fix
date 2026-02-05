@@ -3,20 +3,20 @@
 # ============================================================================
 ## Modulo che gestisce lo **stato runtime delle trappole** presenti in una stanza.[br]
 ##
-## Responsabilità:[br]
+## [b]Responsabilità[/b]:[br]
 ## - Memorizzare i punti di spawn validi.[br]
 ## - Tracciare quali trappole devono essere istanziate.[br]
 ## - Conservare i riferimenti alle istanze create.[br]
 ## - Segnalare se le trappole sono già state spawnate/preparate.[br]
 ##
-## Note architetturali:[br]
+## [b]Note architetturali[/b]:[br]
 ## - Non decide *quali* trappole spawnare (compito di [TrapsSpawner]).[br]
 ## - Non gestisce la logica delle trappole (attivazione/danno).[br]
 ## - È puramente uno **state container**.[br]
 ## - È contenuto all’interno di [RoomState].[br]
 # ============================================================================
 
-extends Node
+extends RefCounted
 class_name RoomTrapState
 
 
@@ -25,11 +25,11 @@ class_name RoomTrapState
 # ---------------------------------------------------------------------------
 
 ## Lista di celle ([Vector2i]) utilizzate come punti di spawn per le trappole.[br]
-##
+##[br]
 ## I punti sono calcolati dallo spawner tenendo conto di:[br]
 ## - geometria della stanza[br]
 ## - protezione da soft-lock[br]
-## - distanza dall’entry point
+## - distanza dall’entry point[br]
 var spawn_points: Array[Vector2i] = []
 
 
@@ -38,11 +38,11 @@ var spawn_points: Array[Vector2i] = []
 # ---------------------------------------------------------------------------
 
 ## Lista degli ID delle trappole che devono essere istanziate nella stanza.[br]
-##
+##[br]
 ## L’ordine è deterministico e dipende da:[br]
 ## - budget[br]
 ## - difficoltà[br]
-## - pesi di spawn
+## - pesi di spawn[br]
 var traps: Array[TrapRegistry.ID] = []
 
 
@@ -51,11 +51,11 @@ var traps: Array[TrapRegistry.ID] = []
 # ---------------------------------------------------------------------------
 
 ## Lista di riferimenti alle istanze di trappole presenti nella stanza.[br]
-##
+##[br]
 ## Serve per:[br]
 ## - gestione runtime[br]
 ## - reset della stanza[br]
-## - cleanup automatico
+## - cleanup automatico[br]
 var traps_references: Array[TrapEntity] = []
 
 
@@ -64,9 +64,9 @@ var traps_references: Array[TrapEntity] = []
 # ---------------------------------------------------------------------------
 
 ## Indica se le trappole sono già state spawnate/preparate per questa stanza.[br]
-##
-## Evita duplicazioni di spawn in caso di rientro del giocatore
-## o di riattivazioni multiple della stanza.
+##[br]
+## Evita duplicazioni di spawn in caso di rientro del player
+## o di riattivazioni multiple della stanza.[br]
 var spawned: bool = false
 
 
@@ -74,11 +74,10 @@ var spawned: bool = false
 # Init
 # ---------------------------------------------------------------------------
 
-## Costruttore dello stato delle trappole della stanza.[br]
-##
-## Permette di inizializzare lo stato con dati già calcolati
-## o di usare valori di default.[br]
-##
+## Costruisce lo stato delle trappole della stanza.[br]
+##[br]
+## Permette di inizializzare lo stato con dati già calcolati oppure usare default.[br]
+##[br]
 ## [param _spawn_points] Celle utilizzate per lo spawn delle trappole.[br]
 ## [param _traps] Lista degli ID delle trappole da istanziare.[br]
 ## [param _traps_references] Riferimenti alle istanze create.[br]

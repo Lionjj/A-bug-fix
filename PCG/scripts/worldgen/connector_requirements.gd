@@ -1,20 +1,27 @@
 # ============================================================================
 # ConnectorRequirements
 # ============================================================================
-## Modulo responsabile del calcolo dei requisiti di connettività (N/E/S/W)
+## Modulo responsabile del calcolo dei requisiti di connettività (N/E/S/W)[br]
 ## per una stanza già piazzata su griglia.[br]
 ##
-## Responsabilità principali:[br]
-## - Determinare quali lati di una stanza devono avere un connettore fisico.[br]
-## - Basarsi esclusivamente sulle adiacenze reali nella griglia (non sul grafo).[br]
-## - Fornire un output semplice e diretto per la selezione dei template stanza.[br]
-##
-## Note architetturali:[br]
+## [b]Responsabilità principali[/b]:[br]
+## - Determinare quali lati di una stanza richiedono un connettore fisico.[br]
+## - Basarsi esclusivamente sulle adiacenze reali nella griglia.[br]
+## - Fornire un output minimale e diretto per la selezione dei template stanza.[br]
+##[br]
+## [b]Cosa NON fa[/b]:[br]
+## - Non verifica la validità logica delle connessioni.[br]
+## - Non consulta il grafo logico della missione.[br]
+## - Non applica regole di gating o compatibilità dei template.[br]
+##[br]
+## [b]Dipendenze[/b]:[br]
+## - [MissionGraph]: responsabile della validità logica delle connessioni.[br]
+## - [RoomAssembler]: utilizza l’output per filtrare i template compatibili.[br]
+##[br]
+## [b]Note architetturali[/b]:[br]
 ## - Modulo stateless: espone solo funzioni statiche.[br]
-## - Complessità O(1): controlla solo le 4 celle adiacenti.[br]
-## - Richiede una mappa inversa `occupied` (Vector2i → id) per lookup rapido.[br]
-## - NON verifica la validità logica delle connessioni (responsabilità di
-##   [MissionGraph] e [RoomAssembler]).[br]
+## - Complessità O(1): controlla esclusivamente le 4 celle adiacenti.[br]
+## - Richiede una mappa inversa `occupied` (Vector2i → id) per lookup immediato.[br]
 # ============================================================================
 
 extends RefCounted
@@ -25,22 +32,23 @@ class_name ConnectorRequirements
 # Public API
 # ---------------------------------------------------------------------------
 
-## Calcola quali connettori (N/E/S/W) sono richiesti per una stanza.[br]
-## [br]
-## Strategia:[br]
-## - Recupera la posizione della stanza corrente.[br]
-## - Controlla la presenza di stanze nelle 4 celle adiacenti (UP/RIGHT/DOWN/LEFT).[br]
-## - Ogni adiacenza corrisponde a un connettore richiesto.[br]
-## [br]
-## Output:[br]
-## Dizionario con chiavi "N","E","S","W" e valori booleani.[br]
-## - true  → esiste una stanza adiacente su quel lato → serve un connettore.[br]
-## - false → nessuna stanza su quel lato.[br]
-## [br]
-## [param id] Id della stanza di cui calcolare i requisiti.[br]
-## [param positions] Dizionario { id(String) -> Vector2i } con posizioni piazzate.[br]
-## [param occupied] Dizionario { Vector2i -> id(String) } inverso di positions.[br]
-## [return] Dizionario { "N":bool, "E":bool, "S":bool, "W":bool }. [br]
+## Calcola i requisiti di connettività per una stanza.[br]
+##[br]
+## [b]Strategia[/b]:[br]
+## - Recupera la posizione della stanza corrente dalla mappa `positions`.[br]
+## - Controlla la presenza di stanze nelle celle adiacenti (N/E/S/W).[br]
+## - Ogni adiacenza rilevata implica la necessità di un connettore su quel lato.[br]
+##[br]
+## [b]Output[/b]:[br]
+## Dizionario con chiavi "N","E","S","W" e valori booleani:[br]
+## - [code]true[/code]  → esiste una stanza adiacente → connettore richiesto.[br]
+## - [code]false[/code] → nessuna stanza adiacente su quel lato.[br]
+##[br]
+## [param id]: id della stanza di cui calcolare i requisiti.[br]
+## [param positions]: [code]dizionario[id, Vector2i][/code] con le posizioni piazzate.[br]
+## [param occupied]: [code]dizionario[Vector2i,id][/code] per lookup inverso rapido.[br]
+##[br]
+## Ritorna: [code] dizionario { "N":bool, "E":bool, "S":bool, "W":bool }[/code].[br]
 static func required_for(
 	id: String,
 	positions: Dictionary[String, Vector2i],
@@ -53,7 +61,7 @@ static func required_for(
 		"W": false,
 	}
 
-	## Guard: input invalidi / stanza non piazzata
+	# Guard: input non valido o stanza non piazzata
 	if positions == null or occupied == null:
 		return req
 	if not positions.has(id):
@@ -61,7 +69,7 @@ static func required_for(
 
 	var p: Vector2i = positions[id]
 
-	## Tabella direzioni (stesso O(1), meno ripetizione)
+	# Mappa direzioni → offset su griglia (lookup O(1), niente if ripetuti)
 	const DIRS := {
 		"N": Vector2i.UP,
 		"E": Vector2i.RIGHT,

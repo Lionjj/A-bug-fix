@@ -2,15 +2,15 @@
 
 [ext_resource type="Script" uid="uid://d34bpkuli10v0" path="res://PCG/scripts/rooms/meta/room_template_meta.gd" id="1_kcjsi"]
 [ext_resource type="TileSet" uid="uid://3b80jy3y0tr" path="res://PCG/data/tiles/TileGen.tres" id="2_f8311"]
-[ext_resource type="Script" uid="uid://64c1ttipyhan" path="res://PCG/scripts/rooms/room_connector.gd" id="3_uml2s"]
+[ext_resource type="Script" uid="uid://64c1ttipyhan" path="res://PCG/scripts/rooms/core/room_connector.gd" id="3_uml2s"]
 
 [node name="TmplLongGap" type="Node2D"]
 script = ExtResource("1_kcjsi")
-kind = "CHALLENGE"
+kind = 32
 size_tiles = Vector2i(32, 17)
 requires = Array[int]([1])
 difficulty = 2
-tags = Array[String](["challenge", "horizontal", "gap", "side"])
+tag_mask = 26
 
 [node name="Collision" type="TileMapLayer" parent="." groups=["Object"]]
 top_level = true

@@ -2,21 +2,21 @@
 
 [ext_resource type="Script" uid="uid://d34bpkuli10v0" path="res://PCG/scripts/rooms/meta/room_template_meta.gd" id="1_pgx3u"]
 [ext_resource type="TileSet" uid="uid://3b80jy3y0tr" path="res://PCG/data/tiles/TileGen.tres" id="2_r5inp"]
-[ext_resource type="Script" uid="uid://64c1ttipyhan" path="res://PCG/scripts/rooms/room_connector.gd" id="3_hgyuu"]
+[ext_resource type="Script" uid="uid://64c1ttipyhan" path="res://PCG/scripts/rooms/core/room_connector.gd" id="3_hgyuu"]
 
 [node name="TmplVerticalShaft" type="Node2D"]
 script = ExtResource("1_pgx3u")
-kind = "SIDE"
+kind = 32
 size_tiles = Vector2i(20, 22)
 requires = Array[int]([2])
 difficulty = 2
-connectors = {
+connectors = Dictionary[String, bool]({
 "E": false,
 "N": true,
 "S": true,
 "W": false
-}
-tags = Array[String](["challenge", "vertical", "shaft"])
+})
+tag_mask = 20
 
 [node name="Collision" type="TileMapLayer" parent="." groups=["Object"]]
 top_level = true

@@ -2,20 +2,20 @@
 
 [ext_resource type="Script" uid="uid://d34bpkuli10v0" path="res://PCG/scripts/rooms/meta/room_template_meta.gd" id="1_1qwhr"]
 [ext_resource type="TileSet" uid="uid://3b80jy3y0tr" path="res://PCG/data/tiles/TileGen.tres" id="2_sxlmf"]
-[ext_resource type="Script" uid="uid://64c1ttipyhan" path="res://PCG/scripts/rooms/room_connector.gd" id="3_q4284"]
+[ext_resource type="Script" uid="uid://64c1ttipyhan" path="res://PCG/scripts/rooms/core/room_connector.gd" id="3_q4284"]
 
 [node name="Boss" type="Node2D"]
 script = ExtResource("1_1qwhr")
-kind = "BOSS"
+kind = 128
 size_tiles = Vector2i(32, 20)
 difficulty = 2
-connectors = {
+connectors = Dictionary[String, bool]({
 "E": true,
 "N": true,
 "S": true,
 "W": true
-}
-tags = Array[String](["boss"])
+})
+tag_mask = 98
 
 [node name="Collision" type="TileMapLayer" parent="." groups=["Object"]]
 top_level = true

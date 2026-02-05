@@ -3,28 +3,30 @@
 # ============================================================================
 ## Contesto dati per la fase di finalizzazione del livello.[br]
 ##
-## Responsabilità:[br]
-## - Fornire a [WorldFinalize] tutte le informazioni necessarie
-##   per completare la generazione del livello.[br]
-## - Isolare la fase finale (merge tilemap + spawn player)
-##   dal nodo orchestratore ([WorldGen]).[br]
-##
-## Operazioni supportate:[br]
-## - Merge dei TileMapLayer in un layer finale.[br]
-## - Inizializzazione del sistema di autotiling.[br]
+## [b]Responsabilità principali[/b]:[br]
+## - Fornire a [WorldFinalize] tutti i riferimenti necessari per chiudere la pipeline.[br]
+## - Separare la fase “finale” (merge + spawn) dall’orchestrazione generale ([WorldGen]).[br]
+##[br]
+## [b]Cosa NON fa[/b]:[br]
+## - Non esegue operazioni: contiene solo dati.[br]
+## - Non valida la correttezza della pipeline: i guard sono responsabilità del chiamante/consumer.[br]
+##[br]
+## [b]Operazioni abilitate da questo context[/b]:[br]
+## - Merge dei [TileMapLayer] in un layer finale.[br]
+## - Inizializzazione del sistema di autotiling post-merge.[br]
 ## - Spawn e setup del player.[br]
-##
-## Contenuto:[br]
-## - Nodo root del livello.[br]
-## - Seed definitivo della run.[br]
-## - Nodo AutoTiles per inizializzazione post-merge.[br]
-## - Scena del player da istanziare.[br]
-## - Punto di spawn del player (world-space).[br]
-##
-## Note architetturali:[br]
-## - Oggetto immutabile dopo l’inizializzazione.[br]
-## - Deve essere creato solo dopo il completamento di stanze e corridoi.[br]
-## - WorldFinalize non deve accedere direttamente a WorldGen.[br]
+##[br]
+## [b]Contenuto[/b]:[br]
+## - [member level_root]: root del livello su cui operare.[br]
+## - [member seed]: seed effettivo della run (coerenza post-merge).[br]
+## - [member auto_tiles]: nodo AutoTiles opzionale.[br]
+## - [member player_scene]: scena del player da instanziare.[br]
+## - [member spawn_point]: posizione world di spawn.[br]
+##[br]
+## [b]Note architetturali[/b]:[br]
+## - Da trattare come immutabile dopo la costruzione: chi lo consuma deve leggerlo, non modificarlo.[br]
+## - Va creato solo quando stanze e corridoi esistono già (altrimenti il merge non ha senso).[br]
+## - [WorldFinalize] non deve conoscere [WorldGen]: questa classe è il “contratto” tra i due.[br]
 # ============================================================================
 
 extends RefCounted
@@ -35,21 +37,22 @@ class_name WorldFinalizeContext
 # Core references
 # ---------------------------------------------------------------------------
 
-## Nodo root del livello.
-## Tipicamente WorldGen.
+## Root del livello su cui operare.[br]
+## Tipicamente l’istanza di [WorldGen], o un suo nodo equivalente usato come contenitore.[br]
 var level_root: Node
 
-## Seed definitivo della run.
-## Usato per sincronizzare sistemi post-merge (es. autotiling).
+## Seed effettivo della run.[br]
+## Usato per sincronizzare sistemi post-merge (es. autotiling) e mantenere riproducibilità.[br]
 var seed: int
 
-## Nodo responsabile dell’autotiling finale.
+## Nodo responsabile dell’autotiling finale (opzionale).[br]
+## Se null, la fase di seed autotiles viene semplicemente saltata.[br]
 var auto_tiles: Node
 
-## Scena del player da istanziare.
+## Scena del player da instanziare (obbligatoria per rendere il livello giocabile).[br]
 var player_scene: PackedScene
 
-## Punto di spawn del player in coordinate world.
+## Posizione di spawn del player in coordinate world.[br]
 var spawn_point: Vector2
 
 
@@ -57,13 +60,13 @@ var spawn_point: Vector2
 # Init
 # ---------------------------------------------------------------------------
 
-## Costruisce il contesto per la fase di finalize del livello.[br]
-## [br]
-## [param _level_root] Nodo root del livello.[br]
-## [param _seed] Seed definitivo della run.[br]
-## [param _auto_tiles] Nodo AutoTiles.[br]
-## [param _player_scene] Scena del player.[br]
-## [param _spawn_point] Posizione world di spawn del player.[br]
+## Costruisce il contesto per la fase di finalize.[br]
+##[br]
+## [param _level_root]: root del livello su cui verranno eseguiti merge e spawn.[br]
+## [param _seed]: seed effettivo della run.[br]
+## [param _auto_tiles]: nodo AutoTiles (può essere null).[br]
+## [param _player_scene]: scena del player da instanziare.[br]
+## [param _spawn_point]: posizione world di spawn del player.[br]
 func _init(
 	_level_root: Node,
 	_seed: int,

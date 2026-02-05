@@ -3,12 +3,12 @@ static func build_base() -> MissionGraph:
 	var G : MissionGraph = MissionGraph.new()
 	
 	## Main path
-	G.add_node(MissionNode.new("S","START"))
-	G.add_node(MissionNode.new("H","HUB"))
-	G.add_node(MissionNode.new("A","ARENA"))
-	G.add_node(MissionNode.new("K","KEY_ROOM"))
-	G.add_node(MissionNode.new("C","CHALLENGE"))
-	G.add_node(MissionNode.new("B","BOSS"))
+	G.add_node(MissionNode.new("S", RoomTags.Tag.START))
+	G.add_node(MissionNode.new("H", RoomTags.Tag.HUB))
+	G.add_node(MissionNode.new("A", RoomTags.Tag.ARENA))
+	G.add_node(MissionNode.new("K", RoomTags.Tag.KEY_ROOM))
+	G.add_node(MissionNode.new("C", RoomTags.Tag.CHALLENGE))
+	G.add_node(MissionNode.new("B", RoomTags.Tag.BOSS))
 	
 	## Ability granted/required
 	(G.nodes["K"] as MissionNode).grants.append(Abilities.Ability.GRAPPLE)

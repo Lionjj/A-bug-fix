@@ -1,8 +1,8 @@
 extends Node
 class_name ConstraintValidator
 
-static func can_traverse(G:MissionGraph, from_id:String, to_id:String, abilities:Array[int]) -> bool:
-	var req :Array[int]= G.nodes[to_id].requires
+static func can_traverse(G:MissionGraph, from_id:String, to_id:String, abilities:Array[Abilities.Ability]) -> bool:
+	var req: Array[Abilities.Ability] = G.nodes[to_id].requires
 	for r in req:
 		if not abilities.has(r): return false
 	return true
@@ -10,18 +10,18 @@ static func can_traverse(G:MissionGraph, from_id:String, to_id:String, abilities
 # Verifica se il grafo prodotto è risovlible ovvero se esite un percorso
 # dal nodo start al goal
 static func solvable(G:MissionGraph) -> bool:
-	var start : String = G.start_id; 
-	var goal : String = G.boss_id
+	var start: String = G.start_id; 
+	var goal: String = G.boss_id
 	
-	var q : Array[Dictionary] = [ {"id":start, "abilities": [] as Array[int]} ]
-	var seen : Dictionary = {} # key -> true
+	var q: Array[Dictionary] = [ {"id":start, "abilities": [] as Array[Abilities.Ability]} ]
+	var seen: Dictionary = {} # key -> true
 	
 	while q.size() > 0:
 		
-		var s : Dictionary = q.pop_front()
-		var s_id : String = s["id"]
+		var s: Dictionary = q.pop_front()
+		var s_id: String = s["id"]
 		
-		var abil_key : Array[int] = (s["abilities"] as Array[int]).duplicate()
+		var abil_key : Array[Abilities.Ability] = (s["abilities"] as Array[Abilities.Ability]).duplicate()
 		abil_key.sort()
 		var key : String = "%s|%s" % [s_id, abil_key]
 		
@@ -31,7 +31,7 @@ static func solvable(G:MissionGraph) -> bool:
 		# recupera il nodo missione
 		var n : MissionNode = (G.nodes[s_id] as MissionNode)
 		
-		var abil : Array[int] = (s["abilities"] as Array[int]).duplicate()
+		var abil : Array[Abilities.Ability] = (s["abilities"] as Array[Abilities.Ability]).duplicate()
 		for g in n.grants:
 			if not abil.has(g): abil.append(g)
 		

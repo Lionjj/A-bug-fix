@@ -1,28 +1,39 @@
 # ============================================================================
 # SmartPlacement
 # ============================================================================
-## Modulo statico usato per calcolare posizioni valide e “belle” per lo spawn[br]
+## Modulo statico per calcolare posizioni valide e “belle” per lo spawn[br]
 ## di entità (decorazioni, item, nemici, trappole) all’interno di una stanza.[br]
 ##
-## Responsabilità principali:[br]
-## - Calcolo delle celle interne "aria" tramite flood fill (geometria valida).[br]
-## - Cache di sottoinsiemi utili:[br]
-##   - pavimento (floor air)[br]
-##   - soffitto (ceiling air)[br]
-##   - rientranze a parete (wall recess)[br]
-##   - candidati trappole (pit + niches)[br]
-## - Selezione di punti ben distribuiti tramite clustering stile Voronoi
-##   (centroidi + regioni + pick “spread”).[br]
-## - Utility per conversioni cella → world e per footprint orizzontale.[br]
-##
-## Convenzioni:[br]
-## - Tutta la logica di selezione/filtraggio lavora in CELLE ([Vector2i]).[br]
-## - La conversione in world-space è demandata a:[br]
-##   [method cell_to_world_position].[br]
-##
-## Note:[br]
-## - Questo modulo non gestisce conflitti tra sistemi (distanze, occupazione).
-##   Quello è compito del [RoomPlacementManager].[br]
+## [b]Responsabilità principali[/b]:[br]
+## - Calcolare le celle interne “aria” tramite flood fill (geometria spawnabile).[br]
+## - Costruire sottoinsiemi utili (cache) per categorie di spawn:[br]
+##   - floor air (aria con solido sotto)[br]
+##   - ceiling air (aria con solido sopra)[br]
+##   - wall recess (rientranze a parete)[br]
+##   - trap candidates (pit + niches)[br]
+## - Selezionare punti ben distribuiti con un clustering “Voronoi-like”:[br]
+##   centroidi → regioni → pick spread.[br]
+## - Offrire utility per conversioni cella → world e filtri footprint orizzontali.[br]
+##[br]
+## [b]Cosa NON fa[/b]:[br]
+## - Non gestisce conflitti tra sistemi (occupazione globale, distanze minime 
+## tra entità, ecc.).[br]
+## - Non decide quali entità spawnare: produce solo candidati/posizioni.[br]
+## - Non gestisce policy di fairness/soft-lock a livello di missione 
+## (solo filtri locali).[br]
+##[br]
+## [b]Convenzioni[/b]:[br]
+## - La selezione e il filtering lavorano in celle ([Vector2i]).[br]
+## - La conversione in world-space avviene solo tramite [method SmartPlacement.cell_to_world_position].[br]
+##[br]
+## [b]Dipendenze[/b]:[br]
+## - [RoomTemplateMeta]: fornisce [member RoomTemplateMeta.collision] e [member RoomTemplateMeta.placement].[br]
+## - [TileMapLayer]: query solid/air tramite [method TileMapLayer.get_cell_tile_data].[br]
+## - [RoomPlacementManager]: responsabile della risoluzione conflitti tra sistemi (occupazione/distanze).[br]
+##[br]
+## [b]Note architetturali[/b]:[br]
+## - Le funzioni sono pensate per essere composabili: candidates → score → beautify → world.[br]
+## - L’RNG deve essere quello della run per evitare pattern inconsistenti tra generazione e spawn.[br]
 # ============================================================================
 class_name SmartPlacement
 
@@ -31,16 +42,16 @@ class_name SmartPlacement
 # CONFIG / SCORE
 # ---------------------------------------------------------------------------
 
-## Numero di centroidi generati per il clustering “Voronoi-like”.
+## Numero di centroidi generati per il clustering “Voronoi-like”.[br]
 const VORONOI_CENTERS: int = 6
 
-## Score per favorire celle in corridoi (grado 2 nel grafo 4-dir).
+## Score per favorire celle in corridoi (grado 2 nel grafo 4-dir).[br]
 const SCORE_HALLWAY: float = 3.0
-## Score per favorire dead-end (grado 1).
+## Score per favorire dead-end (grado 1).[br]
 const SCORE_DEAD_END: float = 2.0
-## Score per favorire aree aperte (grado >= 3).
+## Score per favorire aree aperte (grado >= 3).[br]
 const SCORE_OPEN_AREA: float = 0.5
-## Score aggiuntivo per favorire celle adiacenti a muro.
+## Score aggiuntivo per favorire celle adiacenti a muro.[br]
 const SCORE_NEAR_WALL: float = 1.0
 
 
@@ -48,14 +59,14 @@ const SCORE_NEAR_WALL: float = 1.0
 # SUPPORT TYPES
 # ---------------------------------------------------------------------------
 
-## Associa una cella ad un valore di priorità (score).
-## Usata da [method score_list].
+## Associa una cella ad un valore di priorità.[br]
+## Usata come DTO di supporto da [method SmartPlacement.score_list].[br]
 class PositionScore:
 	var position: Vector2i
 	var score: float
 
-	## [param _position] Cella candidata.[br]
-	## [param _score] Punteggio assegnato alla cella.[br]
+	## [param _position]: cella candidata.[br]
+	## [param _score]: punteggio assegnato alla cella.[br]
 	func _init(_position: Vector2i = Vector2i.ZERO, _score: float = 0.0) -> void:
 		position = _position
 		score = _score
@@ -66,17 +77,22 @@ class PositionScore:
 # ---------------------------------------------------------------------------
 
 ## Seleziona un sottoinsieme di punti “ben distribuiti” da un set di posizioni.[br]
-## Implementazione:[br]
-## 1) genera centroidi ([method _generate_centers])[br]
-## 2) crea regioni per prossimità ([method _compute_regions])[br]
-## 3) assegna quote e seleziona punti “spread” ([method _select_beautiful_points])[br]
-##
-## [param all_positions] Lista di celle candidate.[br]
-## [param rng] Generatore randomico basato sul seed del livello.[br]
-## [param require_count] Numero minimo di punti desiderati.[br]
-##
-## @return Array di celle selezionate (dimensione ≈ require_count).[br]
-static func beautify(all_positions: Array[Vector2i], rng: RandomNumberGenerator, require_count: int = 1) -> Array[Vector2i]:
+##[br]
+## [b]Implementazione[/b]:[br]
+## 1) genera centroidi ([method SmartPlacement._generate_centers])[br]
+## 2) costruisce regioni per prossimità ([method SmartPlacement._compute_regions])[br]
+## 3) assegna quote e seleziona punti spread ([method SmartPlacement._select_beautiful_points])[br]
+##[br]
+## [param all_positions]: lista di celle candidate.[br]
+## [param rng]: RNG della run.[br]
+## [param require_count]: numero di punti desiderati (target, non garantito al 100%).[br]
+##[br]
+## [return]: array di celle selezionate (dimensione ≈ require_count).[br]
+static func beautify(
+	all_positions: Array[Vector2i],
+	rng: RandomNumberGenerator,
+	require_count: int = 1
+) -> Array[Vector2i]:
 	if all_positions.is_empty():
 		return []
 
@@ -91,11 +107,11 @@ static func beautify(all_positions: Array[Vector2i], rng: RandomNumberGenerator,
 # PUBLIC API: GEOMETRY CACHES
 # ---------------------------------------------------------------------------
 
-## Restituisce le celle interne “aria” che hanno un solido sotto (pavimento).[br]
-##
-## [param room] Stanza da cui leggere tilemap e celle interne.[br]
-##
-## @return Array di celle candidate per spawn a terra.
+## Restituisce celle interne “aria” che hanno un solido sotto (pavimento).[br]
+##[br]
+## [param room]: stanza di riferimento.[br]
+##[br]
+## [return]: array di celle candidate per spawn a terra.[br]
 static func get_floor_air_cells(room: RoomTemplateMeta) -> Array[Vector2i]:
 	var tilemap: TileMapLayer = room.collision
 	var inner_lookup: Dictionary[Vector2i, bool] = room.placement.spawnable_cells
@@ -105,15 +121,15 @@ static func get_floor_air_cells(room: RoomTemplateMeta) -> Array[Vector2i]:
 		return out
 
 	if tilemap == null:
-		push_error("Room has no TileMapLayer named 'Collision'")
+		push_error("SmartPlacement: room senza TileMapLayer 'collision'")
 		return out
 
 	for cell: Vector2i in inner_lookup.keys():
-		## Guard: la cella deve essere aria
+		# Guard: la cella deve essere aria
 		if tilemap.get_cell_tile_data(cell) != null:
 			continue
 
-		## Guard: sotto deve esserci un tile solido
+		# Guard: sotto deve esserci solido
 		var below: Vector2i = cell + Vector2i.DOWN
 		if tilemap.get_cell_tile_data(below) == null:
 			continue
@@ -123,18 +139,18 @@ static func get_floor_air_cells(room: RoomTemplateMeta) -> Array[Vector2i]:
 	return out
 
 
-## Calcola tutte le celle interne “aria” tramite flood fill partendo da un entry point.[br]
-## Aggiorna anche [member room.bounds] in coordinate globali.[br]
-##
-## [param room] Stanza su cui calcolare area interna e bounds.[br]
-##
-## @return Array di celle interne “aria”.[br]
+## Calcola le celle interne “aria” tramite flood fill partendo da un entry point.[br]
+## Aggiorna anche [member RoomTemplateMeta.bounds] in coordinate world.[br]
+##[br]
+## [param room]: stanza su cui calcolare area interna e bounds.[br]
+##[br]
+## [return]: array di celle interne “aria”.[br]
 static func compute_internal_cells(room: RoomTemplateMeta) -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 
 	var tilemap: TileMapLayer = room.collision
 	if tilemap == null:
-		push_error("Room has no TileMapLayer named 'Collision'")
+		push_error("SmartPlacement: room senza TileMapLayer 'collision'")
 		return out
 
 	var entry_cell: Vector2i = _find_entry_point(tilemap)
@@ -155,14 +171,14 @@ static func compute_internal_cells(room: RoomTemplateMeta) -> Array[Vector2i]:
 # COORD CONVERSION
 # ---------------------------------------------------------------------------
 
-## Converte una cella locale della TileMap in posizione world (centro cella),
+## Converte una cella locale della TileMap in posizione world (centro cella),[br]
 ## con offset opzionale.[br]
-##
-## [param tilemap] TileMapLayer di riferimento.[br]
-## [param cell] Cella locale da convertire.[br]
-## [param offset] Offset world-space da sommare al centro cella.[br]
-##
-## @return Posizione globale risultante.[br]
+##[br]
+## [param tilemap]: [TileMapLayer] di riferimento.[br]
+## [param cell]: cella locale da convertire.[br]
+## [param offset]: offset world-space da sommare alla posizione calcolata.[br]
+##[br]
+## [return]: posizione globale risultante.[br]
 static func cell_to_world_position(
 	tilemap: TileMapLayer,
 	cell: Vector2i,
@@ -177,12 +193,15 @@ static func cell_to_world_position(
 # ---------------------------------------------------------------------------
 
 ## Genera una lista di centroidi casuali pescati da [param all_positions].[br]
-##
-## [param all_positions] Set di posizioni da cui scegliere i centroidi.[br]
-## [param rng] Generatore randomico basato sul seed del livello.[br]
-##
-## @return Array di centroidi.[br]
-static func _generate_centers(all_positions: Array[Vector2i], rng: RandomNumberGenerator) -> Array[Vector2i]:
+##[br]
+## [param all_positions]: set di posizioni da cui scegliere i centroidi.[br]
+## [param rng]: RNG della run.[br]
+##[br]
+## [return]: array di centroidi.[br]
+static func _generate_centers(
+	all_positions: Array[Vector2i],
+	rng: RandomNumberGenerator
+) -> Array[Vector2i]:
 	var centers: Array[Vector2i] = []
 
 	for i in VORONOI_CENTERS:
@@ -193,11 +212,11 @@ static func _generate_centers(all_positions: Array[Vector2i], rng: RandomNumberG
 
 
 ## Crea regioni assegnando ogni punto al centroide più vicino.[br]
-##
-## [param all_positions] Punti totali da distribuire nelle regioni.[br]
-## [param centers] Centroidi di riferimento.[br]
-##
-## @return Dizionario center -> lista di punti assegnati.[br]
+##[br]
+## [param all_positions]: punti totali da distribuire nelle regioni.[br]
+## [param centers]: centroidi di riferimento.[br]
+##[br]
+## [return]: dizionario center → lista di punti assegnati.[br]
 static func _compute_regions(
 	all_positions: Array[Vector2i],
 	centers: Array[Vector2i]
@@ -222,17 +241,18 @@ static func _compute_regions(
 	return regions
 
 
-## Seleziona un insieme di punti “belli” distribuiti tra le regioni.[br]
-##
-## Strategia:[br]
+## Seleziona un insieme di punti distribuiti tra le regioni.[br]
+##[br]
+## [b]Strategia[/b]:[br]
 ## - assegna a ciascuna regione una quota proporzionale alla sua capacità[br]
-## - poi seleziona punti spread nella singola regione.[br]
-##
-## [param regions] Dizionario center -> lista di punti.[br]
-## [param items_count] Numero totale di punti richiesti.[br]
-## [param total_capacity] Numero totale di punti disponibili (tutte le regioni).[br]
-##
-## @return Array di punti selezionati.[br]
+## - distribuisce gli arrotondamenti sui resti maggiori[br]
+## - seleziona punti “spread” dentro ogni regione[br]
+##[br]
+## [param regions]: dizionario center → lista di punti.[br]
+## [param items_count]: numero totale di punti richiesti.[br]
+## [param total_capacity]: numero totale di punti disponibili.[br]
+##[br]
+## [return]: array di punti selezionati.[br]
 static func _select_beautiful_points(
 	regions: Dictionary[Vector2i, Array],
 	items_count: int,
@@ -241,19 +261,18 @@ static func _select_beautiful_points(
 	var picks: Array[Vector2i] = []
 	var centers: Array[Vector2i] = regions.keys()
 
-	## Capacità per regione
+	# Capacità per regione
 	var capacities: Array[int] = []
 	for center in centers:
 		capacities.append(regions[center].size())
 
-	## Primo pass: quota base (floor)
+	# Primo pass: quota base
 	var counts: Array[int] = []
 	var remainders: Array = []
 	var assigned: int = 0
 
 	for i in range(centers.size()):
 		var cap: int = capacities[i]
-
 		var ideal: float = float(items_count) * float(cap) / float(total_capacity)
 		var base_count: int = int(floor(ideal))
 
@@ -264,7 +283,7 @@ static func _select_beautiful_points(
 
 	var remaining: int = items_count - assigned
 
-	## Secondo pass: assegno +1 ai resti più grandi
+	# Secondo pass: +1 ai resti più grandi
 	if remaining > 0:
 		remainders.sort_custom(func(a, b):
 			return a["rem"] > b["rem"]
@@ -274,7 +293,7 @@ static func _select_beautiful_points(
 			var i: int = remainders[idx]["i"]
 			counts[i] += 1
 
-	## Pick nella singola regione
+	# Pick nella singola regione
 	for i in range(centers.size()):
 		var n_for_region: int = counts[i]
 		if n_for_region <= 0:
@@ -295,18 +314,22 @@ static func _select_beautiful_points(
 	return picks
 
 
-## Sceglie [param count] punti in [param region] cercando una distribuzione uniforme.
-## Strategia:
-## 1) primo punto vicino al centro
-## 2) poi scegli iterativamente il punto che massimizza la distanza minima
-##    rispetto ai già selezionati.
-##
-## [param region] Lista di punti della regione.
-## [param center] Centroide della regione (riferimento).
-## [param count] Numero di punti da selezionare.
-##
-## @return Array di punti selezionati.
-static func _pick_spread_points(region: Array[Vector2i], center: Vector2i, count: int) -> Array[Vector2i]:
+## Sceglie [param count] punti in [param region] massimizzando la distanza minima.[br]
+##[br]
+## [b]Strategia[/b]:[br]
+## 1) primo punto: più vicino al centroide[br]
+## 2) iterazione: scegli il punto che massimizza la distanza minima dai già selezionati[br]
+##[br]
+## [param region]: lista di punti della regione.[br]
+## [param center]: centroide della regione.[br]
+## [param count]: numero di punti da selezionare.[br]
+##[br]
+## [return]: array di punti selezionati.[br]
+static func _pick_spread_points(
+	region: Array[Vector2i],
+	center: Vector2i,
+	count: int
+) -> Array[Vector2i]:
 	var selected: Array[Vector2i] = []
 	if region.is_empty() or count <= 0:
 		return selected
@@ -347,13 +370,13 @@ static func _pick_spread_points(region: Array[Vector2i], center: Vector2i, count
 # INTERNAL AREA
 # ---------------------------------------------------------------------------
 
-## Flood fill interno: parte da [param start] e visita solo celle entro l’area usata
+## Flood fill interno: parte da [param start] e visita solo celle entro l’area usata[br]
 ## della TileMap, fermandosi su celle solide.[br]
-##
-## [param tilemap] TileMapLayer su cui eseguire il flood fill.[br]
-## [param start] Cella di partenza (deve essere aria).[br]
-##
-## @return Array di celle interne “aria”.[br]
+##[br]
+## [param tilemap]: [TileMapLayer] su cui eseguire il flood fill.[br]
+## [param start]: cella di partenza (deve essere aria).[br]
+##[br]
+## [return]: array di celle interne “aria”.[br]
 static func _flood_internal_area(tilemap: TileMapLayer, start: Vector2i) -> Array[Vector2i]:
 	var used_rect: Rect2i = tilemap.get_used_rect()
 
@@ -368,11 +391,11 @@ static func _flood_internal_area(tilemap: TileMapLayer, start: Vector2i) -> Arra
 			continue
 		visited[cell] = true
 
-		## Guard: resta dentro i limiti della stanza
+		# Guard: resta dentro i limiti della stanza
 		if not used_rect.has_point(cell):
 			continue
 
-		## Guard: se è solido non è interno
+		# Guard: se è solido non è interno
 		if tilemap.get_cell_tile_data(cell) != null:
 			continue
 
@@ -387,11 +410,14 @@ static func _flood_internal_area(tilemap: TileMapLayer, start: Vector2i) -> Arra
 
 
 ## Trova un entry point per il flood fill interno.[br]
-## Strategia: scansiona dall’alto verso il basso e cerca una cella vuota.[br]
-##
-## [param tilemap] TileMapLayer su cui cercare l’entry.[br]
-##
-## @return Cella di entry oppure [constant Vector2i.ZERO] se non trovata.[br]
+##[br]
+## [b]Strategia[/b]:[br]
+## - Scansiona la fascia verticale del used set e cerca una cella vuota.[br]
+## - È un euristico: basta che sia “aria” dentro il rettangolo usato.[br]
+##[br]
+## [param tilemap]: [TileMapLayer] su cui cercare l’entry.[br]
+##[br]
+## [return]: cella di entry oppure [constant Vector2i.ZERO] se non trovata.[br]
 static func _find_entry_point(tilemap: TileMapLayer) -> Vector2i:
 	var used: Array[Vector2i] = tilemap.get_used_cells()
 	if used.is_empty():
@@ -414,11 +440,11 @@ static func _find_entry_point(tilemap: TileMapLayer) -> Vector2i:
 
 
 ## Calcola i bounds globali di un set di celle interne.[br]
-##
-## [param internal_cells] Celle interne “aria”.[br]
-## [param tilemap] TileMapLayer di riferimento (serve per tile_size e transform).[br]
-##
-## @return Rettangolo in world-space che racchiude l’area interna.[br]
+##[br]
+## [param internal_cells]: celle interne “aria”.[br]
+## [param tilemap]: [TileMapLayer] di riferimento (tile_size + transform).[br]
+##[br]
+## [return]: rettangolo in world-space che racchiude l’area interna.[br]
 static func _compute_bounds(internal_cells: Array[Vector2i], tilemap: TileMapLayer) -> Rect2:
 	if internal_cells.is_empty():
 		return Rect2()
@@ -448,11 +474,11 @@ static func _compute_bounds(internal_cells: Array[Vector2i], tilemap: TileMapLay
 
 ## Calcola il grado di camminabilità in 4-dir:[br]
 ## numero di vicini che appartengono a [param inner_lookup].[br]
-##
-## [param cell] Cella da valutare.[br]
-## [param inner_lookup] Set di celle interne (lookup O(1)).[br]
-##
-## @return Numero di adiacenze interne (0..4).[br]
+##[br]
+## [param cell]: cella da valutare.[br]
+## [param inner_lookup]: set di celle interne (lookup O(1)).[br]
+##[br]
+## [return]: numero di adiacenze interne (0..4).[br]
 static func _walkable_degree(cell: Vector2i, inner_lookup: Dictionary[Vector2i, bool]) -> int:
 	var out: int = 0
 
@@ -468,11 +494,12 @@ static func _walkable_degree(cell: Vector2i, inner_lookup: Dictionary[Vector2i, 
 	return out
 
 
-## Ritorna true se la cella è adiacente ad un “muro” (cioè almeno un vicino 4-dir
-## non è interno).[br]
-##
-## [param cell] Cella da valutare.[br]
-## [param inner_lookup] Set di celle interne (lookup O(1)).[br]
+## Ritorna true se la cella è adiacente ad un “muro” (almeno un vicino 4-dir non è interno).[br]
+##[br]
+## [param cell]: cella da valutare.[br]
+## [param inner_lookup]: set di celle interne (lookup O(1)).[br]
+##[br]
+## [return]: true se almeno un lato è “non interno”, altrimenti false.[br]
 static func _is_near_wall(cell: Vector2i, inner_lookup: Dictionary[Vector2i, bool]) -> bool:
 	if not inner_lookup.has(cell + Vector2i.UP):
 		return true
@@ -487,18 +514,18 @@ static func _is_near_wall(cell: Vector2i, inner_lookup: Dictionary[Vector2i, boo
 
 
 ## Valuta e ordina una lista di candidati applicando punteggi topologici.[br]
-##
-## Note:[br]
-## - Evita un’area vicino all’entry per fairness ([param min_dist_from_entry]).[br]
+##[br]
+## [b]Note[/b]:[br]
+## - Fairness: evita l’area vicino all’entry ([param min_dist_from_entry]).[br]
 ## - Oversampling: restituisce ~ require_count * 4 per lasciare margine a filtri successivi.[br]
-##
-## [param room] Stanza di riferimento (tilemap + celle interne).[br]
-## [param candidates] Celle candidate da valutare.[br]
-## [param require_count] Numero base di punti richiesti (per calcolo oversampling).[br]
-## [param rng] Generatore randomico basato sul seed del livello.[br]
-## [param min_dist_from_entry] Distanza minima dall’entry in celle.[br]
-##
-## @return Lista ordinata di celle (dal punteggio più alto).[br]
+##[br]
+## [param room]: stanza di riferimento (tilemap + celle interne).[br]
+## [param candidates]: celle candidate da valutare.[br]
+## [param require_count]: numero base richiesto (serve per calcolare oversample).[br]
+## [param rng]: RNG della run (per rumore leggero sul punteggio).[br]
+## [param min_dist_from_entry]: distanza minima dall’entry in celle.[br]
+##[br]
+## [return]: lista ordinata di celle (punteggio più alto per prime).[br]
 static func score_list(
 	room: RoomTemplateMeta,
 	candidates: Array[Vector2i],
@@ -523,7 +550,7 @@ static func score_list(
 	var scored_positions: Array[PositionScore] = []
 
 	for candidate_cell in candidates:
-		## Guard: fairness - evita subito l’entry
+		# Guard: fairness - evita subito l’entry
 		if candidate_cell.distance_to(entry_cell) < min_dist_from_entry:
 			continue
 
@@ -542,7 +569,7 @@ static func score_list(
 		if near_wall:
 			score += SCORE_NEAR_WALL
 
-		## Randomness leggero per evitare pattern rigidi
+		# Rumore leggero per evitare pattern rigidi a parità di punteggi topologici
 		score += float(rng.randf_range(0.0, 0.25))
 
 		scored_positions.append(PositionScore.new(candidate_cell, score))
@@ -569,14 +596,15 @@ static func score_list(
 # TRAP CANDIDATES
 # ---------------------------------------------------------------------------
 
-## Calcola celle interne in rientranze a muro (“nicchie”):[br]
+## Calcola celle interne in rientranze a muro (“nicchie”).[br]
+## Requisiti:[br]
 ## - cella interna[br]
-## - con muro a sinistra o destra[br]
-## - con supporto sotto (interno)[br]
-##
-## [param room] Stanza di riferimento.[br]
-##
-## @return Array di celle nicchia.[br]
+## - muro a sinistra o a destra[br]
+## - supporto sotto (interno)[br]
+##[br]
+## [param room]: stanza di riferimento.[br]
+##[br]
+## [return]: array di celle nicchia.[br]
 static func get_wall_recesses(room: RoomTemplateMeta) -> Array[Vector2i]:
 	var inner_lookup: Dictionary[Vector2i, bool] = room.placement.spawnable_cells
 	var out: Array[Vector2i] = []
@@ -595,12 +623,15 @@ static func get_wall_recesses(room: RoomTemplateMeta) -> Array[Vector2i]:
 	return out
 
 
-## Ritorna true se [param cell] è una cella di shaft/pit:[br]
+## Ritorna true se [param cell] è una cella di shaft/pit.[br]
+## Requisiti:[br]
 ## - interna[br]
-## - chiusa da solidi su entrambi i lati (non interno a sx e dx).[br]
-##
-## [param cell] Cella da verificare.[br]
-## [param inner_lookup] Set di celle interne.[br]
+## - chiusa da solidi su entrambi i lati (non interno a sx e dx)[br]
+##[br]
+## [param cell]: cella da verificare.[br]
+## [param inner_lookup]: set di celle interne.[br]
+##[br]
+## [return]: true se è shaft, altrimenti false.[br]
 static func _is_shaft_cell(cell: Vector2i, inner_lookup: Dictionary[Vector2i, bool]) -> bool:
 	if not inner_lookup.has(cell):
 		return false
@@ -611,14 +642,14 @@ static func _is_shaft_cell(cell: Vector2i, inner_lookup: Dictionary[Vector2i, bo
 	return left_solid and right_solid
 
 
-## Calcola la profondità del pit partendo da [param cell] andando verso il basso
-## finché resta shaft.[br][br]
-##
-## [param cell] Cella di partenza.[br][br]
-## [param inner_lookup] Set di celle interne.[br][br]
-## [param max_depth] Limite di sicurezza della scansione.[br][br]
-##
-## @return Profondità in celle.[br][br]
+## Calcola la profondità del pit partendo da [param cell] andando verso il basso[br]
+## finché la colonna resta shaft.[br]
+##[br]
+## [param cell]: cella di partenza.[br]
+## [param inner_lookup]: set di celle interne.[br]
+## [param max_depth]: limite di sicurezza della scansione.[br]
+##[br]
+## [return]: profondità in celle.[br]
 static func _shaft_depth_from(
 	cell: Vector2i,
 	inner_lookup: Dictionary[Vector2i, bool],
@@ -636,12 +667,12 @@ static func _shaft_depth_from(
 
 ## Estrae celle target nei pit abbastanza profondi.[br]
 ## Ritorna una cella verso il fondo, con offset configurabile.[br]
-##
-## [param room] Stanza di riferimento.[br]
-## [param min_depth] Profondità minima per considerare un pit valido.[br]
-## [param bottom_offset] Offset verso l’alto dal fondo (1 = una cella sopra).[br]
-##
-## @return Array di celle pit target.[br]
+##[br]
+## [param room]: stanza di riferimento.[br]
+## [param min_depth]: profondità minima per considerare un pit valido.[br]
+## [param bottom_offset]: offset verso l’alto dal fondo (1 = una cella sopra il fondo).[br]
+##[br]
+## [return]: array di celle pit target.[br]
 static func get_pit_cells_local(
 	room: RoomTemplateMeta,
 	min_depth: int = 3,
@@ -678,10 +709,10 @@ static func get_pit_cells_local(
 
 
 ## Combina pit + niches per ottenere un set di candidati trappole.[br]
-##
-## [param room] Stanza di riferimento.[br]
-##
-## @return Array unico di celle candidate (senza duplicati).[br]
+##[br]
+## [param room]: stanza di riferimento.[br]
+##[br]
+## [return]: array unico di celle candidate (senza duplicati).[br]
 static func get_trap_candidates(room: RoomTemplateMeta) -> Array[Vector2i]:
 	var pits: Array[Vector2i] = get_pit_cells_local(room)
 	var niches: Array[Vector2i] = get_wall_recesses(room)
@@ -714,17 +745,17 @@ static func get_trap_candidates(room: RoomTemplateMeta) -> Array[Vector2i]:
 # ---------------------------------------------------------------------------
 
 ## Calcola celle interne “aria” con un solido sopra (soffitto).[br]
-##
-## [param room] Stanza di riferimento.[br]
-##
-## @return Array di celle candidate per decorazioni CEILING.[br]
+##[br]
+## [param room]: stanza di riferimento.[br]
+##[br]
+## [return]: array di celle candidate per decorazioni ceiling.[br]
 static func get_ceiling_air_cells(room: RoomTemplateMeta) -> Array[Vector2i]:
 	var tilemap: TileMapLayer = room.collision
 	var inner_lookup: Dictionary[Vector2i, bool] = room.placement.spawnable_cells
 	var out: Array[Vector2i] = []
 
 	if tilemap == null:
-		push_error("Room has no TileMapLayer named 'Collision'")
+		push_error("SmartPlacement: room senza TileMapLayer 'collision'")
 		return out
 
 	for cell: Vector2i in inner_lookup.keys():
@@ -745,13 +776,14 @@ static func get_ceiling_air_cells(room: RoomTemplateMeta) -> Array[Vector2i]:
 # ---------------------------------------------------------------------------
 
 ## Restituisce le celle occupate orizzontalmente da un footprint centrato su [param center].[br]
-## Nota deterministica:[br]
-## - se [param footprint] è pari, assegna una cella in più a destra.[br]
-##
-## [param center] Cella centrale.[br]
-## [param footprint] Numero totale di celle occupate orizzontalmente (>= 1).[br]
-##
-## @return Array ordinato di celle occupate.[br]
+##[br]
+## [b]Nota deterministica[/b]:[br]
+## - Se [param footprint] è pari, assegna una cella in più a destra.[br]
+##[br]
+## [param center]: cella centrale.[br]
+## [param footprint]: numero totale di celle occupate orizzontalmente (>= 1).[br]
+##[br]
+## [return]: array ordinato di celle occupate.[br]
 static func get_footprint_cells(center: Vector2i, footprint: int) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	footprint = max(1, footprint)
@@ -770,16 +802,17 @@ static func get_footprint_cells(center: Vector2i, footprint: int) -> Array[Vecto
 
 
 ## Filtra candidati mantenendo solo quelli piazzabili a terra con footprint orizzontale.[br]
+##[br]
 ## Requisiti:[br]
 ## - tutte le celle footprint sono interne[br]
 ## - sono aria (nessun tile)[br]
 ## - sotto ogni cella footprint c’è solido[br]
-##
-## [param room] Stanza di riferimento.[br]
-## [param candidates] Celle candidate da filtrare.[br]
-## [param footprint] Footprint orizzontale in celle (>= 1).[br]
-##
-## @return Array filtrato di celle center valide.[br]
+##[br]
+## [param room]: stanza di riferimento.[br]
+## [param candidates]: celle candidate da filtrare.[br]
+## [param footprint]: footprint orizzontale in celle (>= 1).[br]
+##[br]
+## [return]: array filtrato di celle center valide.[br]
 static func filter_candidates_by_footprint_ground(
 	room: RoomTemplateMeta,
 	candidates: Array[Vector2i],
@@ -823,16 +856,17 @@ static func filter_candidates_by_footprint_ground(
 
 
 ## Filtra candidati mantenendo solo quelli piazzabili a soffitto con footprint orizzontale.[br]
+##[br]
 ## Requisiti:[br]
 ## - tutte le celle footprint sono interne[br]
 ## - sono aria (nessun tile)[br]
 ## - sopra ogni cella footprint c’è solido[br]
-##
-## [param room] Stanza di riferimento.[br]
-## [param candidates] Celle candidate da filtrare.[br]
-## [param footprint] Footprint orizzontale in celle (>= 1).[br]
-##
-## @return Array filtrato di celle center valide.[br]
+##[br]
+## [param room]: stanza di riferimento.[br]
+## [param candidates]: celle candidate da filtrare.[br]
+## [param footprint]: footprint orizzontale in celle (>= 1).[br]
+##[br]
+## [return]: array filtrato di celle center valide.[br]
 static func filter_candidates_by_footprint_ceiling(
 	room: RoomTemplateMeta,
 	candidates: Array[Vector2i],
@@ -872,7 +906,7 @@ static func filter_candidates_by_footprint_ceiling(
 	return out
 
 
-## TODO:
-## Attualmente qui convivono anche funzioni necessarie per prevenire soft-lock
-## nella logica trappole. Una volta stabilizzata la policy, spostare tali metodi
-## in un modulo dedicato (es. TrapPlacementPolicy) per coerenza e modularità.
+## TODO:[br]
+## Attualmente qui convivono anche funzioni necessarie per prevenire soft-lock[br]
+## nella logica trappole. Una volta stabilizzata la policy, spostare tali metodi[br]
+## in un modulo dedicato (es. [TrapPlacementPolicy]) per coerenza e modularità.[br]

@@ -116,7 +116,7 @@
 		"attach": [
 			{"id": "K$", "lock": "ENEMIES_CLEARED", "back_lock": "ENEMIES_CLEARED"},
 			{"id": "C$", "lock": "ENEMIES_CLEARED", "back_lock": "ENEMIES_CLEARED"},
-			{"id": "R$", "lock": "FREE", "back_lock": "ENEMIES_CLEARED"}
+			{"id": "R$", "lock": "ENEMIES_CLEARED", "back_lock": "FREE"}
 		],
 	},
 	{

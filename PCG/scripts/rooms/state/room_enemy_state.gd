@@ -2,21 +2,23 @@
 # RoomEnemyState
 # ============================================================================
 ## Modulo che gestisce lo **stato runtime dei nemici** presenti in una stanza.[br]
-##
-## Questo nodo rappresenta **tutta la memoria del combattimento** di una stanza:[br]
+##[br]
+## Questo nodo rappresenta **tutta la memoria del combattimento** associata
+## a una singola stanza:[br]
 ## - pianificazione delle ondate[br]
 ## - nemici istanziati[br]
-## - nemici ancora vivi[br]
-## - avanzamento del combattimento[br]
+## - nemici attualmente vivi[br]
+## - avanzamento del combattimento (indici, stati)[br]
 ##
-## Note architetturali:[br]
+##[br]
+## [b]Note architetturali[/b]:[br]
 ## - Non istanzia direttamente i nemici.[br]
 ## - Viene letto e aggiornato da [EnemiesSpawner] e [RoomsManager].[br]
 ## - È contenuto all’interno di [RoomState].[br]
 ## - È progettato per supportare combattimenti a ondate.[br]
 # ============================================================================
 
-extends Node
+extends RefCounted
 class_name RoomEnemyState
 
 
@@ -25,7 +27,7 @@ class_name RoomEnemyState
 # ---------------------------------------------------------------------------
 
 ## Lista di celle ([Vector2i]) utilizzate come punti di spawn per i nemici.[br]
-##
+##[br]
 ## I punti vengono calcolati una sola volta e riutilizzati
 ## per tutte le ondate della stanza.
 var spawn_points: Array[Vector2i] = []
@@ -36,7 +38,7 @@ var spawn_points: Array[Vector2i] = []
 # ---------------------------------------------------------------------------
 
 ## Piano delle ondate di combattimento.[br]
-##
+##[br]
 ## Ogni elemento rappresenta il **numero di nemici** da spawnare
 ## in una specifica ondata.[br]
 ## La lunghezza dell’array indica il numero totale di ondate.
@@ -53,13 +55,13 @@ var wave_index: int = 0
 # ---------------------------------------------------------------------------
 
 ## Coda logica degli ID dei nemici da istanziare.[br]
-##
+##[br]
 ## L’ordine è deterministico ed è calcolato dallo spawner
-## in base a difficoltà, budget e peso.
+## in base a difficoltà, budget e pesi.
 var queue: Array[EnemiesRegistry.ID] = []
 
 ## Lista di **tutte** le istanze di nemici create nella stanza.[br]
-##
+##[br]
 ## Include nemici:[br]
 ## - non ancora attivi[br]
 ## - già uccisi[br]
@@ -67,9 +69,9 @@ var queue: Array[EnemiesRegistry.ID] = []
 var enemies_references: Array[EnemyEntity] = []
 
 ## Indice utilizzato per scorrere [member enemies_references].[br]
-##
-## Serve a sapere quale nemico attivare/spawnare
-## durante le ondate.
+##[br]
+## Serve a determinare quale nemico attivare
+## durante lo spawn delle ondate.
 var enemy_index: int = 0
 
 
@@ -78,9 +80,9 @@ var enemy_index: int = 0
 # ---------------------------------------------------------------------------
 
 ## Lista dei nemici **attualmente vivi** nella stanza.[br]
-##
+##[br]
 ## Viene aggiornata dinamicamente durante il combattimento
-## quando un nemico muore o viene attivato.
+## quando un nemico viene attivato o muore.
 var enemies_alive: Array[EnemyEntity] = []
 
 ## Numero totale di nemici che devono essere eliminati
@@ -88,13 +90,13 @@ var enemies_alive: Array[EnemyEntity] = []
 var to_eliminate: int = 0
 
 ## Indica se il combattimento è già iniziato.[br]
-##
-## Usato per evitare di riattivare il combattimento
-## quando il giocatore rientra nella stanza.
+##[br]
+## Serve a evitare riattivazioni del combattimento
+## quando il player rientra nella stanza.
 var started: bool = false
 
 ## Indica se la stanza è pronta per iniziare il combattimento.[br]
-##
+##[br]
 ## Diventa true quando:[br]
 ## - nemici[br]
 ## - ondate[br]
@@ -107,11 +109,11 @@ var prepared: bool = false
 # Init
 # ---------------------------------------------------------------------------
 
-## Costruttore dello stato dei nemici della stanza.[br]
-##
-## Permette di inizializzare lo stato con dati pre-calcolati
-## o di usare valori di default.[br]
-##
+## Costruisce lo stato runtime dei nemici della stanza.[br]
+##[br]
+## Permette di inizializzare lo stato con dati già calcolati
+## oppure con valori di default.[br]
+##[br]
 ## [param _spawn_points] Celle utilizzate per lo spawn dei nemici.[br]
 ## [param _wave_plan] Piano delle ondate.[br]
 ## [param _queue] Coda degli ID dei nemici da istanziare.[br]
