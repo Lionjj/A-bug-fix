@@ -318,6 +318,8 @@ script = ExtResource("5_0fs8s")
 level_path = NodePath("../level")
 platform_class = "wfc_platform"
 air_class = "wfc_air"
+props_class = "wfc_props"
+interactable_class = "wfc_interactable"
 classes_map = NodePath("")
 
 [sub_resource type="Resource" id="Resource_qupgo"]

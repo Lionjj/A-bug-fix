@@ -136,6 +136,7 @@ func _ready() -> void:
 	for room: RoomTemplateMeta in rooms:
 		room.player_entered.connect(_on_room_player_entered)
 		room.player_exited.connect(_on_room_player_exited)
+		room.placement.init_from_room(room)
 
 		# Popola contenuti stanza
 		_add_items(room)
