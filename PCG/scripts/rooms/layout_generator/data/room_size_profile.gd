@@ -29,14 +29,14 @@ class_name RoomSizeProfile
 ## Dimensione minima delle indentazioni
 @export var max_width_indent: int = 10
 
-## Dimensione minima delle indentazioni
+## Dimensione minima delle profondita
 @export var min_depth_indent: int = 4
 
-## Dimensione max delle indentazioni
+## Dimensione max delle profondita
 @export var max_depth_indent: int = 10
 
 ## Dimensione minima dei passaggi percorribili dal player
 @export var min_passage_tiles: int = 4
 
-## Margine estra attorno al connettore sul bordo
+## Margine extra attorno al connettore sul bordo
 @export var connector_guard: int = 1 

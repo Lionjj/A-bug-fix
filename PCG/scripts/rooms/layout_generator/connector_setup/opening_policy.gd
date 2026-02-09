@@ -1,27 +1,17 @@
 class_name OpeningPolicy
 extends Resource
 
-# ----- parametri base (espandibili) -----
-@export var min_width_tiles: int = 4
-
-# cap assoluto (hard cap)
-@export var max_width_abs: int = 12
-
-# cap relativo allo spazio utile (0..1). Es: 0.30 = max 30% del lato utile
-@export var max_width_ratio: float = 0.30
-
-# margine extra dai corner (oltre wall_thickness). Ti evita aperture troppo vicino agli angoli.
-@export var corner_margin_tiles: int = 1
-
-# se vuoi: evita aperture troppo vicine tra loro (su lati opposti o stesso lato, ecc.)
-@export var min_spacing_between_openings: int = 0
-
+var profile: ConnectorProfile = ConnectorProfile.new()
 
 # ----- API principale -----
 
 func usable_span(mask_size: Vector2i, wall_thickness: int, dir: int) -> int:
 	# spazio utile lungo il bordo, tolti muri e corner margin
 	var base: int
+	
+	var corner_margin_tiles: int = profile.corner_margin_tiles
+	var min_width_tiles: int = profile.min_width_tiles
+	
 	if dir == Dir4.D.N or dir == Dir4.D.S:
 		base = mask_size.x
 	else:
@@ -34,6 +24,10 @@ func usable_span(mask_size: Vector2i, wall_thickness: int, dir: int) -> int:
 
 func max_width_for(mask_size: Vector2i, wall_thickness: int, dir: int) -> int:
 	var usable: int = usable_span(mask_size, wall_thickness, dir)
+	
+	var max_width_ratio: float = profile.max_width_ratio
+	var max_width_abs: int = profile.max_width_abs
+	var min_width_tiles: int = profile.min_width_tiles
 
 	var cap_ratio: int = int(floor(float(usable) * max_width_ratio))
 	var cap: int = min(max_width_abs, cap_ratio)
@@ -43,6 +37,8 @@ func max_width_for(mask_size: Vector2i, wall_thickness: int, dir: int) -> int:
 
 
 func pick_width(rng: RandomNumberGenerator, mask_size: Vector2i, wall_thickness: int, dir: int) -> int:
+	var min_width_tiles: int = profile.min_width_tiles
+	
 	var lo: int = min_width_tiles
 	var hi: int = max_width_for(mask_size, wall_thickness, dir)
 	return rng.randi_range(lo, hi)
@@ -50,6 +46,8 @@ func pick_width(rng: RandomNumberGenerator, mask_size: Vector2i, wall_thickness:
 
 func margins_for(width_tiles: int) -> Vector2i:
 	# (neg, pos) = metà sinistra / metà destra (o up/down)
+	var min_width_tiles: int = profile.min_width_tiles
+	
 	width_tiles = max(min_width_tiles, width_tiles)
 	var neg: int = width_tiles / 2
 	var pos: int = width_tiles - neg
@@ -64,6 +62,8 @@ func pick_coord(
 	width_tiles: int
 ) -> int:
 	var m: Vector2i = margins_for(width_tiles)
+	
+	var corner_margin_tiles: int = profile.corner_margin_tiles
 
 	if dir == Dir4.D.N or dir == Dir4.D.S:
 		var min_x: int = wall_thickness + corner_margin_tiles + m.x
@@ -114,6 +114,7 @@ func _pick_coord_safe(
 ) -> int:
 	# stessa logica di pick_coord, ma con protezione se min>max
 	var m: Vector2i = margins_for(width_tiles)
+	var corner_margin_tiles: int = profile.corner_margin_tiles
 
 	if dir == Dir4.D.N or dir == Dir4.D.S:
 		var min_x: int = wall_thickness + corner_margin_tiles + m.x

@@ -3,10 +3,16 @@
 # ============================================================================
 extends Node
 
-var level_seed: int = 3
+var level_seed: int = 2
 var room_id: String = "S"
+@onready var text_edit: TextEdit = $TextEdit
 
-func _ready() -> void:
+
+
+
+
+func _on_button_pressed() -> void:
+	var seed = int(text_edit.text)
 	# -------------------------------------------------------
 	# FASE 1 — Selezione size
 	# -------------------------------------------------------
@@ -23,7 +29,7 @@ func _ready() -> void:
 	# FASE 2 — Seed iniziale
 	# -------------------------------------------------------
 	var rng := RandomNumberGenerator.new()
-	rng.seed = level_seed ^ hash(room_id)
+	rng.seed = seed ^ hash(room_id)
 
 	var policy := OpeningPolicy.new()
 	var rules := RoomLayoutRules.new(mask, rng, policy)
@@ -36,32 +42,22 @@ func _ready() -> void:
 	# FASE 3 — Indent (prima dei connettori)
 	# -------------------------------------------------------
 	# Qui fai layout “interessante” ma ancora senza connettori.
-	# Metti SEMPRE pochi indent (1-2) per evitare chiusure/strozzature inutili.
+	# Metti SEMPRE pochi indent (1-2) per evitare chiusure/strozzature inutili.c'è un problema però 
 	# Se vuoi, randomizza: lato, width, depth.
-	rules.apply_indent(Dir4.D.N, 4, 6)
-	rules.apply_indent(Dir4.D.S, 4, 6)
+	#rules.apply_indent(Dir4.D.N, 4, 6)
+	#rules.apply_indent(Dir4.D.S, 4, 6)
 	#rules.apply_indent(Dir4.D.E, 4, 6)
 	#rules.apply_indent(Dir4.D.W, 4, 6)
 
 	print("\n--- DOPO INDENT (pre-connector) ---")
+	var op := DividerOperator.new()
+	op.apply(mask, rng)
+	#var ro:= RingOperator.new()
+	#ro.apply(mask, rng)
+	#var io:= IndentOperator.new()
+	#io.apply(mask, rng)
+	var po:= PlatformOperator.new()
+	po.apply(mask, rng)
+	
+	ConnectivityOperator.new().apply(mask)
 	print(mask.to_ascii())
-
-	# -------------------------------------------------------
-	# FASE 4 — Connettori (sulla mask finale)
-	# -------------------------------------------------------
-	var required_dirs := PackedInt32Array([Dir4.D.N, Dir4.D.S, Dir4.D.E, Dir4.D.W])
-	mask.connector_plan = rules.build_connector_plan(required_dirs)
-
-	print("\n--- DOPO CONNETTORI (overlay) ---")
-	print(mask.to_ascii_with_connectors())
-
-	# -------------------------------------------------------
-	# (opzionale) FASE 4b — 1 indent extra protetto dai connettori
-	# -------------------------------------------------------
-	# Ora puoi usare constrained perché esiste il plan.
-	# Fai pochissime iterazioni altrimenti rovini la stanza.
-	# rules.apply_indent_constrained(Dir4.D.N, 4, 4)
-	# rules.apply_indent_constrained(Dir4.D.E, 4, 4)
-
-	# print("\n--- DOPO INDENT EXTRA PROTETTI ---")
-	# print(mask.to_ascii_with_connectors())
