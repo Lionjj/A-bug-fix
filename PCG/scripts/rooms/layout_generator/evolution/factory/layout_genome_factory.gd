@@ -5,10 +5,15 @@
 # ============================================================================
 
 class_name LayoutGenomeFactory
-extends RefCounted
+extends GenomeFactory
+
+var profile: RoomSizeProfile
+
+func _init(_profile: RoomSizeProfile) -> void:
+	profile = _profile
 
 
-static func random_genome( rng: RandomNumberGenerator, profile: RoomSizeProfile) -> LayoutGenome:
+func random_genome( rng: RandomNumberGenerator) -> LayoutGenome:
 	var g: LayoutGenome = LayoutGenome.new()
 
 	#----------------------------------------------------------------------

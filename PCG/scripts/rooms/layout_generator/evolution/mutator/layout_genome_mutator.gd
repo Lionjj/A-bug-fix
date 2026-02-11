@@ -5,28 +5,33 @@
 # ============================================================================
 
 class_name LayoutGenomeMutator
-extends RefCounted
+extends GenomeMutator
+
+var profile: RoomSizeProfile
+
+func _init(_profile: RoomSizeProfile):
+	profile = _profile
 
 
-static func mutate(
-	genome: LayoutGenome,
-	rng: RandomNumberGenerator
-) -> LayoutGenome:
-	var g := genome.clone()
-	if g.genes.is_empty():
-		return g
+func mutate(genome: Genome, rng: RandomNumberGenerator) -> Genome:
+	var g: LayoutGenome = genome as LayoutGenome
+	if g == null:
+		return genome
+
+	var clone: LayoutGenome = g.clone()
 
 	match rng.randi_range(0, 3):
 		0:
-			_mutate_param(g, rng)
+			_mutate_param(clone, rng)
 		1:
-			_add_gene(g, rng)
+			_add_gene(clone, rng)
 		2:
-			_remove_gene(g, rng)
+			_remove_gene(clone, rng)
 		3:
-			_swap_genes(g, rng)
+			_swap_genes(clone, rng)
 
-	return g
+	return clone
+
 
 static func _mutate_param(g: LayoutGenome, rng: RandomNumberGenerator) -> void:
 	var gene: LayoutGene = g.genes[rng.randi_range(0, g.genes.size() - 1)]
