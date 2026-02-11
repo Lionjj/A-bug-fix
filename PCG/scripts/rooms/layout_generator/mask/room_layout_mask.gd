@@ -7,16 +7,19 @@
 class_name RoomLayoutMask
 extends RefCounted
 
-@export var wall_thickness: int = 3
 
+var wall_thickness: int
 var size: Vector2i
 var solid: PackedByteArray
 
-func _init(sz: Vector2i) -> void:
-	size = sz
+func _init(context: LayoutContext) -> void:
+	size = context.size
+	wall_thickness = context.size_profile.wall_thickness
 	solid = PackedByteArray()
 	solid.resize(size.x * size.y)
-	solid.fill(1) # default: tutto muro
+	solid.fill(1)
+	
+	_seed_base()
 
 
 # ---------------------------------------------------------------------------
@@ -58,6 +61,16 @@ func get_all_empty_cells() -> Array[Vector2i]:
 
 	return out
 
+func pick_spawn() -> Vector2i:
+	var center: Vector2i = Vector2i(size.x / 2, size.y / 2)
+	if is_empty(center.x, center.y):
+		return center
+
+	var empties: Array[Vector2i] = get_all_empty_cells()
+	if empties.is_empty():
+		return Vector2i(-1, -1)
+
+	return empties[0]
 
 
 # ---------------------------------------------------------------------------
@@ -91,79 +104,29 @@ func to_ascii() -> String:
 
 	return "\n".join(lines)
 
-### Debug: ASCII con i connettori marcati sul bordo
-### - '#' muro
-### - '.' vuoto
-### - 'N','E','S','W' = celle bordo coperte dal varco
-#func to_ascii_with_connectors() -> String:
-	#var lines: Array[String] = []
-#
-	## 1) griglia base
-	#for y in range(size.y):
-		#var line := ""
-		#for x in range(size.x):
-			#line += "#" if is_solid(x, y) else "."
-		#lines.append(line)
-#
-	#if connector_plan == null:
-		#return "\n".join(lines)
-#
-	## 2) overlay varchi (N,E,S,W) - ordine stabile
-	#for d in Dir4.ORDER:
-		#if not connector_plan.is_enabled(d):
-			#continue
-#
-		#var c: int = connector_plan.get_coord(d)
-		#var w: int = connector_plan.get_width(d)
-#
-		#for cell: Vector2i in _connector_cells(d, c, w):
-			#if not in_bounds(cell.x, cell.y):
-				#continue
-			#var ch := _dir_char(d)
-			#var row: String = lines[cell.y]
-			#lines[cell.y] = row.substr(0, cell.x) + ch + row.substr(cell.x + 1)
-#
-	#return "\n".join(lines)
-#
-#
-#func _dir_char(d: int) -> String:
-	#match d:
-		#Dir4.D.N: return "N"
-		#Dir4.D.E: return "E"
-		#Dir4.D.S: return "S"
-		#Dir4.D.W: return "W"
-		#_: return "?"
-#
-#
-### Celle del bordo coperte dal varco:
-### - N/S: coord = X centrale
-### - E/W: coord = Y centrale
-#func _connector_cells(d: int, coord: int, width_tiles: int) -> Array[Vector2i]:
-	#var out: Array[Vector2i] = []
-#
-	#var w: int = max(4, width_tiles)
-	#var neg: int = w / 2
-	#var pos: int = w - neg
-#
-	#match d:
-		#Dir4.D.N:
-			#var y: int = 0
-			#for dx in range(-neg, pos):
-				#out.append(Vector2i(coord + dx, y))
-#
-		#Dir4.D.S:
-			#var y: int = size.y - 1
-			#for dx in range(-neg, pos):
-				#out.append(Vector2i(coord + dx, y))
-#
-		#Dir4.D.W:
-			#var x: int = 0
-			#for dy in range(-neg, pos):
-				#out.append(Vector2i(x, coord + dy))
-#
-		#Dir4.D.E:
-			#var x: int = size.x - 1
-			#for dy in range(-neg, pos):
-				#out.append(Vector2i(x, coord + dy))
-#
-	#return out
+
+# ---------------------------------------------------------------------------
+# Costruisci una stanza valida
+# ---------------------------------------------------------------------------
+
+
+## Crea una stanza base sempre valida:
+## - perimetro solido
+## - interno vuoto
+func _seed_base() -> void:
+	var w: int = size.x
+	var h: int = size.y
+
+	for y in range(h):
+		for x in range(w):
+			var is_border: bool = (
+				x < wall_thickness or
+				y < wall_thickness or
+				x >= w - wall_thickness or
+				y >= h - wall_thickness
+			)
+
+			if is_border:
+				set_solid(x, y)
+			else:
+				set_empty(x, y)
