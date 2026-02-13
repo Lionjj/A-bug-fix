@@ -26,11 +26,16 @@ class_name SplitCornerOperator
 extends LayoutOperator
 
 
+func _init() -> void:
+	type = Type.SPLIT_CORNER
+	weight = 0.3
+	role = Role.PRIMARY
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
-static func apply(
+func apply(
 	mask: RoomLayoutMask, 
 	context: LayoutContext, 
 	params: Dictionary = {}
@@ -39,12 +44,12 @@ static func apply(
 	var rng: RandomNumberGenerator = context.rng
 
 	# larghezza del taglio
-	var width: int = params.get("corner_depth", profile.min_width_split_corner)
+	var width: int = params.get("corner_width", profile.min_width_split_corner)
 	
 	# profondità del taglio
 	var depth: int = params.get("corner_depth", profile.min_depth_split_corner) 
 	
-	var corner_index: int = params.get("corner_index", 0)
+	var corner_index: int = params.get("corner_count", profile.min_split_corner_count)
 
 
 	# scelta angolo usando Dir4 (coppie)
@@ -61,6 +66,44 @@ static func apply(
 
 	return _apply_corner(mask, profile, corner[0], corner[1], width, depth)
 
+
+func create_random_params(rng: RandomNumberGenerator, profile: RoomSizeProfile) -> Dictionary:
+
+	return {
+		"corner_width": rng.randi_range(
+			profile.min_width_split_corner,
+			profile.max_width_split_corner
+		),
+		
+		"corner_depth": rng.randi_range(
+			profile.min_depth_split_corner,
+			profile.max_depth_split_corner
+		),
+		
+		"corner_count": rng.randi_range(
+			profile.min_split_corner_count,
+			profile.max_split_corner_count
+		),
+	}
+
+func mutate_params(params: Dictionary, rng: RandomNumberGenerator, profile: RoomSizeProfile) -> void:
+	params["corner_width"] = clamp(
+		params["corner_width"] + rng.randi_range(-1, 1),
+		profile.min_width_split_corner,
+		profile.max_width_split_corner
+	)
+	
+	params["corner_depth"] = clamp(
+		params["corner_depth"] + rng.randi_range(-1, 1),
+		profile.min_depth_split_corner,
+		profile.max_depth_split_corner
+	)
+	
+	params["corner_count"] = clamp(
+		params["corner_count"] + rng.randi_range(-1, 1),
+		profile.min_split_corner_count,
+		profile.max_split_corner_count
+	)
 
 # ---------------------------------------------------------------------------
 # Applicazione angolo

@@ -8,6 +8,7 @@ extends Resource
 @export var coord: PackedInt32Array = PackedInt32Array([0,0,0,0])
 @export var width: PackedInt32Array = PackedInt32Array([4,4,4,4]) # default min=4
 
+
 func enable(d: int) -> void:
 	mask = Dir4.add(mask, d)
 

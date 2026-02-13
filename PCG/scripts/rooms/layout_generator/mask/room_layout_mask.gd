@@ -11,9 +11,11 @@ extends RefCounted
 var wall_thickness: int
 var size: Vector2i
 var solid: PackedByteArray
+var rng: RandomNumberGenerator
 
 func _init(context: LayoutContext) -> void:
 	size = context.size
+	rng = context.rng
 	wall_thickness = context.size_profile.wall_thickness
 	solid = PackedByteArray()
 	solid.resize(size.x * size.y)
@@ -62,15 +64,17 @@ func get_all_empty_cells() -> Array[Vector2i]:
 	return out
 
 func pick_spawn() -> Vector2i:
-	var center: Vector2i = Vector2i(size.x / 2, size.y / 2)
-	if is_empty(center.x, center.y):
-		return center
+	var candidates: Array[Vector2i] = []
 
-	var empties: Array[Vector2i] = get_all_empty_cells()
-	if empties.is_empty():
+	for y in range(1, size.y - 1):
+		for x in range(1, size.x - 1):
+			if is_empty(x, y) and is_solid(x, y + 1):
+				candidates.append(Vector2i(x, y))
+
+	if candidates.is_empty():
 		return Vector2i(-1, -1)
 
-	return empties[0]
+	return candidates[rng.randi() % candidates.size()]
 
 
 # ---------------------------------------------------------------------------

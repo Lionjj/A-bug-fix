@@ -186,3 +186,9 @@ class_name RoomSizeProfile
 
 ## Profondità massima del angolo
 @export var max_depth_split_corner: int = 8
+
+## Numero minimo di angoli
+@export var min_split_corner_count: int = 1
+
+## Numero massimo di angoli
+@export var max_split_corner_count: int = 4

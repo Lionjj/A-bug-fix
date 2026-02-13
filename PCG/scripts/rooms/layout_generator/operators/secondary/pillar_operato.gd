@@ -25,11 +25,16 @@ class_name PillarOperator
 extends LayoutOperator
 
 
+func _init() -> void:
+	type = Type.PILLAR
+	weight = 0.25
+	weight = Role.SECONDARY
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
-static func apply(
+func apply(
 	mask: RoomLayoutMask, 
 	context: LayoutContext,
 	params: Dictionary = {}
@@ -50,6 +55,44 @@ static func apply(
 			placed += 1
 
 	return placed > 0
+
+
+func create_random_params(rng: RandomNumberGenerator, profile: RoomSizeProfile) -> Dictionary:
+	return {
+		"pillar_count": rng.randi_range(
+			profile.min_pillar_count, 
+			profile.max_pillar_count
+		),
+		
+		"pillar_width": rng.randi_range(
+			profile.min_pillar_width, 
+			profile.max_pillar_width
+		),
+		
+		"pillar_height": rng.randi_range(
+			profile.min_pillar_height, 
+			profile.max_pillar_height
+		),
+	}
+
+func mutate_params(params: Dictionary, rng: RandomNumberGenerator, profile: RoomSizeProfile) -> void:
+	params["pillar_count"] = clamp(
+		rng.randi_range(-1, 1),
+		profile.min_pillar_count, 
+		profile.max_pillar_count
+	)
+	
+	params["pillar_width"] = clamp(
+		rng.randi_range(-1, 1),
+		profile.min_pillar_width, 
+		profile.max_pillar_width
+	)
+	
+	params["pillar_height"] = clamp(
+		rng.randi_range(-1, 1),
+		profile.min_pillar_height, 
+		profile.max_pillar_height
+	)
 
 
 # ---------------------------------------------------------------------------

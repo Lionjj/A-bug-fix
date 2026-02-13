@@ -7,13 +7,13 @@
 class_name LayoutGene
 extends RefCounted
 
-## Identificatore operatore (es. "divider", "indent", "platform")
-var operator_id: String
+## Identificatore operatore
+var type: LayoutOperator.Type
 
 ## Parametri specifici dell’operatore
 ## (contenuto libero, dipende dall’operatore)
 var params: Dictionary = {}
 
-func _init(_operator_id: String, _params: Dictionary = {}):
-	operator_id = _operator_id
+func _init(_type: LayoutOperator.Type, _params: Dictionary = {}):
+	type = _type
 	params = _params

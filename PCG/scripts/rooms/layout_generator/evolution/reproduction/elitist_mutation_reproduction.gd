@@ -27,7 +27,7 @@ func reproduce(
 		var child: Genome = parent.clone()
 
 		if rng.randf() < mutation_rate:
-			child = mutator.mutate(child, rng)
+			child = mutator.mutate(child)
 
 		next.append(child)
 

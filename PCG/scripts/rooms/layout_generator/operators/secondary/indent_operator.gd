@@ -25,25 +25,78 @@
 class_name IndentOperator
 extends LayoutOperator
 
+func _init() -> void:
+	type = Type.INDENT
+	weight = 0.25
+	role = Role.SECONDARY
 
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
-static func apply(mask: RoomLayoutMask, context: LayoutContext, params: Dictionary = {}) -> bool:
+func apply(mask: RoomLayoutMask, context: LayoutContext, params: Dictionary = {}) -> bool:
 	var profile: RoomSizeProfile = context.size_profile
 	var rng: RandomNumberGenerator = context.rng
 	
 	# -----------------------------------------------------------------------
 	# Parametri evolvibili
 	# -----------------------------------------------------------------------
-	var width: int = params.get("width", 0)
+	var width: int = params.get("indet_width", profile.min_width_indent)
 	
-	var depth: int = params.get("depth", 0)
+	var depth: int = params.get("indet_depth", profile.min_depth_indent)
 	
-	var side: Dir4.D = params.get("side", 0)
+	var count: int = params.get("indet_count", profile.min_indent_count)
+	
+	var side: Dir4.D = params.get("indet_side", 0)
 
 	return _indent_from_dir(mask, profile, rng, side, width, depth)
+
+func create_random_params(rng: RandomNumberGenerator, profile: RoomSizeProfile) -> Dictionary:
+	var indent_count: int = rng.randi_range(
+			profile.min_indent_count, 
+			profile.max_indent_count
+	)
+	
+	var mask: int = Dir4.get_random_mask(rng, indent_count)
+		
+	return {
+		"indet_width": rng.randi_range(
+			profile.min_width_indent, 
+			profile.max_width_indent
+		),
+		
+		"indet_depth": rng.randi_range(
+			profile.min_depth_indent, 
+			profile.max_depth_indent
+		),
+		
+		"indet_count": indent_count,
+		
+		"indet_side": mask
+	}
+
+func mutate_params(params: Dictionary, rng: RandomNumberGenerator, profile: RoomSizeProfile) -> void:
+	params["indet_width"] = clamp(
+		params["indet_width"] + rng.randi_range(-1, 1),
+		profile.min_width_indent,
+		profile.max_width_indent
+	)
+	
+	params["indet_depth"] = clamp(
+		params["indet_depth"] + rng.randi_range(-1, 1),
+		profile.min_depth_indent, 
+		profile.max_depth_indent
+	)
+	
+	params["indet_count"] = clamp(
+		params["indet_count"] + rng.randi_range(-1, 1),
+		profile.min_indent_count, 
+		profile.max_indent_count
+	)
+	
+	var mask: int = params["indet_side"]
+	params["indet_side"] = _mute_mask(rng, mask)
+
 
 
 # ---------------------------------------------------------------------------
@@ -167,3 +220,33 @@ static func _indent_rect(mask: RoomLayoutMask, rect: Rect2i) -> bool:
 			mask.set_empty(x, y)
 
 	return true
+	
+
+# ---------------------------------------------------------------------------
+# Helper
+# ---------------------------------------------------------------------------
+
+func _mute_mask(rng: RandomNumberGenerator, mask: int) -> int:
+	var _mask: int = mask
+	match rng.randi_range(0, 2):
+
+		0:
+			# aggiungi lato
+			var side: int = Dir4.get_random_side_not_in_mask(rng, mask)
+			_mask = Dir4.add(mask, side)
+
+		1:
+			# rimuovi lato (solo se >1)
+			if Dir4.bit_count(mask) > 1:
+				var side: int = Dir4.get_random_side_in_mask(rng, mask)
+				_mask = Dir4.remove(mask, side)
+
+		2:
+			# toggle lato
+			var side: int = Dir4.get_random_side(rng)
+			if Dir4.has(mask, side):
+				_mask = Dir4.remove(mask, side)
+			else:
+				_mask = Dir4.add(mask, side)
+	
+	return _mask

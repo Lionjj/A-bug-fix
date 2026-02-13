@@ -12,13 +12,35 @@
 class_name LayoutOperator
 extends RefCounted
 
+enum Type {DEFAULT, DIVIDER, RING, SPLIT_CORNER, INDENT, PILLAR, PLATFORM}
+enum Role {DEFAULT, PRIMARY, SECONDARY}
+
+var type: Type = Type.DEFAULT
+
+var role: Role = Role.DEFAULT:
+	get:
+		return role
+
+## Peso dell'operatore (valori compresi tra 0.0 e 1.0)
+var weight: float = 0.0:
+	set(w):
+		weight = clampf(w, 0.0, 1.0)
+
+
 ## Applica l'operatore alla mask.
 ## Ritorna true se applicato con successo, false se non applicabile.
-static func apply(mask: RoomLayoutMask, context: LayoutContext, params: Dictionary) -> bool:
+func apply(mask: RoomLayoutMask, context: LayoutContext, params: Dictionary) -> bool:
 	push_error("LayoutOperator.apply() not implemented")
 	return false
 
-static func _carve_rect_transaction(
+func create_random_params(rng: RandomNumberGenerator, profile: RoomSizeProfile) -> Dictionary:
+	push_error("create_random_params non implementato")
+	return {}
+
+func mutate_params(params: Dictionary, rng: RandomNumberGenerator, profile: RoomSizeProfile) -> void:
+	push_error("mutate_params non implementato")
+
+func _carve_rect_transaction(
 	mask: RoomLayoutMask,
 	rect: Rect2i
 ) -> Array[Vector2i]:
@@ -31,7 +53,7 @@ static func _carve_rect_transaction(
 				changed.append(Vector2i(x, y))
 
 	return changed
-
-static func _rollback(mask: RoomLayoutMask, cells: Array[Vector2i]) -> void:
+ 
+func _rollback(mask: RoomLayoutMask, cells: Array[Vector2i]) -> void:
 	for c in cells:
 		mask.set_empty(c.x, c.y)

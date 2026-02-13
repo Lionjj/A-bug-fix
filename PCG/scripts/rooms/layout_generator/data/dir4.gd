@@ -34,3 +34,56 @@ static func axis_step(d: int) -> Vector2i:
 		D.S: return Vector2i.DOWN
 		D.W: return Vector2i.LEFT
 	return Vector2i.ZERO
+
+static func get_random_side(rng: RandomNumberGenerator, exept: int = -1) -> int:
+	var candidates: Array[int] = []
+	
+	for d in Dir4.ORDER:
+		if d == exept: continue
+		candidates.append(d)
+		
+	var idx: int = rng.randi() % candidates.size()
+	return candidates[idx]
+	
+static func get_random_side_not_in_mask(rng, mask: int) -> int:
+	var candidates: Array[int] = []
+	for d in ORDER:
+		if not has(mask, d):
+			candidates.append(d)
+	return candidates[rng.randi() % candidates.size()]
+
+static func get_random_side_in_mask(rng, mask: int) -> int:
+	var candidates: Array[int] = []
+	for d in ORDER:
+		if has(mask, d):
+			candidates.append(d)
+	return candidates[rng.randi() % candidates.size()]
+
+static func bit_count(mask: int) -> int:
+	var c := 0
+	for d in ORDER:
+		if has(mask, d):
+			c += 1
+	return c
+	
+static func get_random_mask(
+	rng: RandomNumberGenerator,
+	count: int
+) -> int:
+
+	if count <= 0:
+		return 0
+	
+	var dirs: Array[int] = []
+	for d in ORDER:
+		dirs.append(d)
+		
+	dirs.shuffle()
+
+	var mask: int = 0
+	var limit: int = min(count, dirs.size())
+
+	for i in range(limit):
+		mask = add(mask, dirs[i])
+
+	return mask

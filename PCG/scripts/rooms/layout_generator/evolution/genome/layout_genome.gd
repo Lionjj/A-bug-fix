@@ -16,7 +16,7 @@ func clone() -> LayoutGenome:
 	for gene in genes:
 		g.genes.append(
 			LayoutGene.new(
-				gene.operator_id,
+				gene.type,
 				gene.params.duplicate(true)
 			)
 		)

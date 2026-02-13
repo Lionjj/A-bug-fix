@@ -18,12 +18,17 @@
 class_name PlatformOperator
 extends LayoutOperator
 
+func _init() -> void:
+	type = Type.PLATFORM
+	weight = 0.5
+	role = Role.SECONDARY
+
 
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
-static func apply(
+func apply(
 	mask: RoomLayoutMask, 
 	context: LayoutContext,
 	params: Dictionary = {}
@@ -34,9 +39,9 @@ static func apply(
 	# -----------------------------------------------------------------------
 	# Parametri evolvibili
 	# -----------------------------------------------------------------------
-	var count: int = params.get("platform_count", 0)
-	var width: int = params.get("platform_width", 0)
-	var thickness: int = params.get("platform_thickness", 0)
+	var count: int = params.get("platform_count", profile.min_platform_count)
+	var width: int = params.get("platform_width", profile.min_width_platform)
+	var thickness: int = params.get("platform_thickness", profile.min_thickness_platform)
 
 	var placed: int = 0
 	var attempts: int = count * 6
@@ -48,6 +53,43 @@ static func apply(
 
 	return placed > 0
 
+
+func create_random_params(rng: RandomNumberGenerator, profile: RoomSizeProfile) -> Dictionary:
+	return {
+		"platform_count": rng.randi_range(
+			profile.min_platform_count, 
+			profile.max_platform_count
+		),
+		
+		"platform_width": rng.randi_range(
+			profile.min_width_platform, 
+			profile.max_width_platform
+		),
+		
+		"platform_thickness": rng.randi_range(
+			profile.min_thickness_platform, 
+			profile.max_thickness_platform
+		),
+	}
+
+func mutate_params(params: Dictionary, rng: RandomNumberGenerator, profile: RoomSizeProfile) -> void:
+	params["platform_count"] = clamp(
+		rng.randi_range(-1, 1),
+		profile.min_thickness_platform, 
+		profile.max_thickness_platform
+	)
+	
+	params["platform_width"] = clamp(
+		rng.randi_range(-1, 1),
+		profile.min_thickness_platform, 
+		profile.max_thickness_platform
+	)
+	
+	params["platform_thickness"] = clamp(
+		rng.randi_range(-1, 1),
+		profile.min_thickness_platform, 
+		profile.max_thickness_platform
+	)
 
 # ---------------------------------------------------------------------------
 # Placement

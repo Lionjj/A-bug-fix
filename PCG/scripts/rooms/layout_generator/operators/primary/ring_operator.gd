@@ -21,11 +21,16 @@ class_name RingOperator
 extends LayoutOperator
 
 
+func _init() -> void:
+	type = Type.RING
+	weight = 0.3
+	role = Role.PRIMARY
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
-static func apply(
+func apply(
 	mask: RoomLayoutMask, 
 	context: LayoutContext, 
 	params:Dictionary = {}
@@ -110,6 +115,55 @@ static func apply(
 
 	return true
 
+
+func create_random_params(rng: RandomNumberGenerator, profile: RoomSizeProfile) -> Dictionary:
+	return {
+		"ring_offset": rng.randi_range(
+			profile.min_ring_offset,
+			profile.max_ring_offset
+		),
+		
+		"ring_thickness": rng.randi_range(
+			profile.min_ring_thickness,
+			profile.max_ring_thickness
+		),
+		
+		"ring_gate_width": rng.randi_range(
+			profile.min_ring_gate_width,
+			profile.max_ring_gate_width
+		),
+		
+		"ring_gate_count": rng.randi_range(
+			profile.min_ring_gate_count,
+			profile.max_ring_gate_count
+		)
+	}
+
+func mutate_params(params: Dictionary, rng: RandomNumberGenerator, profile: RoomSizeProfile) -> void:
+	
+	params["ring_offset"] = clamp( 
+			params["ring_offset"] + rng.randi_range(-1, 1),
+			profile.min_ring_offset,
+			profile.max_ring_offset
+	)
+	
+	params["ring_thickness"] = clamp(
+		params["ring_thickness"] + rng.randi_range(-1, 1),
+		profile.min_ring_thickness,
+		profile.max_ring_thickness
+	)
+	
+	params["ring_gate_width"] = clamp(
+		params["ring_gate_width"] + rng.randi_range(-1, 1),
+		profile.min_ring_gate_width,
+		profile.max_ring_gate_width
+	)
+	
+	params["ring_gate_width"] = clamp(
+		params["ring_gate_width"] + rng.randi_range(-1, 1),
+		profile.min_ring_gate_count,
+		profile.max_ring_gate_count
+	)
 
 # ---------------------------------------------------------------------------
 # Apertura varco su direzione Dir4

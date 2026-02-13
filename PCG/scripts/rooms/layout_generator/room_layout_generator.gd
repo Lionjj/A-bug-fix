@@ -29,79 +29,19 @@
 class_name RoomLayoutGenerator
 extends RefCounted
 
-static var OPERATOR_REGISTRY := {
-	## --- operatori primari ---
-	"divider": DividerOperator,
-	"ring": RingOperator,
-	"split_corner": SplitCornerOperator,
-	
-	## --- operatori secondari ---
-	"platform": PlatformOperator,
-	"indent": IndentOperator,
-	"pillar": PillarOperator
-}
-
-
-
-# ---------------------------------------------------------------------------
-# Entry point pubblico
-# ---------------------------------------------------------------------------
-
-static func generate(context: LayoutContext) -> RoomLayoutMask:
-	# ------------------------------------------------------------
-	# 0) Validazione contesto
-	# ------------------------------------------------------------
-	if context == null:
-		return null
-	if context.size_profile == null:
-		return null
-	if context.rng == null:
-		return null
-
-	# ------------------------------------------------------------
-	# 1) Creazione mask base
-	# ------------------------------------------------------------
-	var mask: RoomLayoutMask = RoomLayoutMask.new(context)
-	if mask == null:
-		return null
-
-	# ------------------------------------------------------------
-	# 2) Applicazione operatori (fail-soft)
-	# ------------------------------------------------------------
-
-	# Divider (primario)
-	DividerOperator.apply(mask, context)
-
-	# Indent (locale)
-	IndentOperator.apply(mask, context)
-
-	# Platform (secondario)
-	PlatformOperator.apply(mask, context)
-
-	# Ring (strutturale, opzionale)
-	RingOperator.apply(mask, context)
-
-	## Connector (ultimo, se presente)
-	#if Engine.has_singleton("ConnectorOperator"):
-		#ConnectorOperator.apply(mask, context)
-
-	return mask
-
 
 static func generate_from_genome(
 	genome: LayoutGenome,
 	context: LayoutContext
 ) -> RoomLayoutMask:
-	# 0) validazione minima
+
 	if genome == null or context == null:
 		return null
 
-	# 1) crea la mask base (come prima)
-	var mask: RoomLayoutMask = RoomLayoutMask.new(context)
+	var mask := RoomLayoutMask.new(context)
 	if mask == null:
 		return null
 
-	# 2) applica i geni IN ORDINE
 	for gene in genome.genes:
 		_apply_gene(mask, gene, context)
 
@@ -113,7 +53,13 @@ static func _apply_gene(
 	gene: LayoutGene,
 	context: LayoutContext
 ) -> void:
-	if not OPERATOR_REGISTRY.has(gene.operator_id):
+
+	var registry := context.operator_registry
+	if registry == null:
 		return
 
-	OPERATOR_REGISTRY[gene.operator_id].apply(mask, context, gene.params)
+	var op: LayoutOperator = registry.get_operator(gene.type)
+	if op == null:
+		return
+
+	op.apply(mask, context, gene.params)

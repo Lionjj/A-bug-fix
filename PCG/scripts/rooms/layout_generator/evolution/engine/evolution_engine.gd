@@ -18,7 +18,7 @@ var rng: RandomNumberGenerator
 var population_size: int = 32
 var generations: int = 10
 var survival_rate: float = 0.25
-var mutation_rate: float = 0.9
+var mutation_rate: float = 0.8
 
 func _init(
 	_factory: GenomeFactory,

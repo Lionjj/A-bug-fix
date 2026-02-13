@@ -14,11 +14,16 @@ class_name DividerOperator
 extends LayoutOperator
 
 
+func _init() -> void:
+	type = Type.DIVIDER
+	weight = 0.3
+	role = Role.PRIMARY
+
 # ---------------------------------------------------------------------------
-# Entry point
+# API
 # ---------------------------------------------------------------------------
 
-static func apply(
+func apply(
 	mask: RoomLayoutMask, 
 	context: LayoutContext, 
 	params: Dictionary = {}
@@ -34,6 +39,37 @@ static func apply(
 	var count: int = params.get("divider_count", 0)
 	
 	return _apply_multi(mask, context, vertical, count)
+
+func create_random_params(rng: RandomNumberGenerator, profile: RoomSizeProfile) -> Dictionary:
+	var vertical_bias: float = rng.randf_range(
+			profile.min_divider_vertical,
+			profile.max_divider_vertical
+		)
+	return {
+		"divider_count": rng.randi_range(
+			profile.min_divider_count,
+			profile.max_divider_count
+		),
+		
+		"vertical_bias": vertical_bias,
+		
+		"is_vertical": vertical_bias < profile.divider_threshold_vertical
+	}
+
+func mutate_params(params: Dictionary, rng: RandomNumberGenerator, profile: RoomSizeProfile) -> void:
+	params["divider_count"] = clamp(
+		params["divider_count"] + rng.randi_range(-1, 1),
+		profile.min_divider_count,
+		profile.max_divider_count
+	)
+	
+	params["vertical_bias"] = clamp(
+		params["vertical_bias"] + rng.randf_range(-0.1, 0.1),
+		profile.min_divider_vertical,
+		profile.max_divider_vertical
+	)
+	
+	params["is_vertical"] = params["vertical_bias"] < profile.divider_threshold_vertical
 
 
 # ---------------------------------------------------------------------------
