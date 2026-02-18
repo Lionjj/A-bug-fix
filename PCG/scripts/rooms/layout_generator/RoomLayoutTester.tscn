@@ -18,4 +18,12 @@ offset_top = 272.0
 offset_right = 672.0
 offset_bottom = 400.0
 
+[node name="muta" type="Button" parent="."]
+offset_left = 736.0
+offset_top = 144.0
+offset_right = 896.0
+offset_bottom = 208.0
+text = "Muta"
+
 [connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="muta" to="." method="_on_muta_pressed"]

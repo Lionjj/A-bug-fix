@@ -12,8 +12,10 @@ var wall_thickness: int
 var size: Vector2i
 var solid: PackedByteArray
 var rng: RandomNumberGenerator
+var context: LayoutContext
 
-func _init(context: LayoutContext) -> void:
+func _init(_context: LayoutContext) -> void:
+	context = _context
 	size = context.size
 	rng = context.rng
 	wall_thickness = context.size_profile.wall_thickness
@@ -21,7 +23,7 @@ func _init(context: LayoutContext) -> void:
 	solid.resize(size.x * size.y)
 	solid.fill(1)
 	
-	_seed_base()
+	#_seed_base()
 
 
 # ---------------------------------------------------------------------------
@@ -134,3 +136,19 @@ func _seed_base() -> void:
 				set_solid(x, y)
 			else:
 				set_empty(x, y)
+
+
+# ---------------------------------------------------------------------------
+# Duplica la mask
+# ---------------------------------------------------------------------------
+
+func duplicate() -> RoomLayoutMask:
+	var copy: RoomLayoutMask = RoomLayoutMask.new(context)
+
+	copy.size = size
+	copy.wall_thickness = wall_thickness
+
+	# Copia profonda dell'array
+	copy.solid = solid.duplicate()
+
+	return copy

@@ -4,17 +4,19 @@ extends RefCounted
 var operators: Dictionary[LayoutOperator.Type, LayoutOperator] = {}
 var primary: Dictionary[LayoutOperator.Type, LayoutOperator] = {}			
 var secondary: Dictionary[LayoutOperator.Type, LayoutOperator] = {}
+var context: OperatorContext
 
-func _init():
+func _init(_context: OperatorContext):
+	context = _context
 	## Operatori primari
-	register(DividerOperator.new())
-	register(RingOperator.new())
-	register(SplitCornerOperator.new())
-	
-	## Operatori secondari
-	register(IndentOperator.new())
-	register(PlatformOperator.new())
-	register(PillarOperator.new())
+	register(DividerOperator.new(context))
+	#register(RingOperator.new(_context))
+	#register(SplitCornerOperator.new(_context))
+	#
+	### Operatori secondari
+	#register(IndentOperator.new(_context))
+	register(PlatformOperator.new(context))
+	register(PillarOperator.new(_context))
 	
 
 func register(op: LayoutOperator) -> void:

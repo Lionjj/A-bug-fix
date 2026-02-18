@@ -1,7 +1,10 @@
 class_name ConnectorProfile
 extends Resource
 
-# ----- parametri base (espandibili) -----
+#----------------------------------------------------------------
+# Parametri dei connettori
+#----------------------------------------------------------------
+
 @export var min_width_tiles: int = 4
 
 # cap assoluto (hard cap)

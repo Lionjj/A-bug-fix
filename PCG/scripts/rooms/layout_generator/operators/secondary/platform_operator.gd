@@ -18,21 +18,17 @@
 class_name PlatformOperator
 extends LayoutOperator
 
-func _init() -> void:
+func _init(_context: OperatorContext, _params: Dictionary = {}) -> void:
+	super._init(_context, _params)
 	type = Type.PLATFORM
 	weight = 0.5
 	role = Role.SECONDARY
-
 
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
-func apply(
-	mask: RoomLayoutMask, 
-	context: LayoutContext,
-	params: Dictionary = {}
-) -> bool:
+func apply() -> bool:
 	var profile: RoomSizeProfile = context.size_profile
 	var rng: RandomNumberGenerator = context.rng
 	
@@ -44,17 +40,20 @@ func apply(
 	var thickness: int = params.get("platform_thickness", profile.min_thickness_platform)
 
 	var placed: int = 0
-	var attempts: int = count * 6
+	var attempts: int = count * 20
 
 	while placed < count and attempts > 0:
 		attempts -= 1
-		if _try_place_platform(mask, profile, rng, width, thickness):
+		if _try_place_platform(width, thickness):
 			placed += 1
 
 	return placed > 0
 
 
-func create_random_params(rng: RandomNumberGenerator, profile: RoomSizeProfile) -> Dictionary:
+func create_random_params() -> Dictionary:
+	var rng: RandomNumberGenerator = context.rng
+	var profile: RoomSizeProfile = context.size_profile
+	
 	return {
 		"platform_count": rng.randi_range(
 			profile.min_platform_count, 
@@ -72,22 +71,25 @@ func create_random_params(rng: RandomNumberGenerator, profile: RoomSizeProfile) 
 		),
 	}
 
-func mutate_params(params: Dictionary, rng: RandomNumberGenerator, profile: RoomSizeProfile) -> void:
+func mutate_params() -> void:
+	var rng: RandomNumberGenerator = context.rng
+	var profile: RoomSizeProfile = context.size_profile
+	
 	params["platform_count"] = clamp(
-		rng.randi_range(-1, 1),
-		profile.min_thickness_platform, 
-		profile.max_thickness_platform
+		params.get("platform_count", profile.min_platform_count) + rng.randi_range(-1, 1),
+		profile.min_platform_count,
+		profile.max_platform_count
 	)
-	
+
 	params["platform_width"] = clamp(
-		rng.randi_range(-1, 1),
-		profile.min_thickness_platform, 
-		profile.max_thickness_platform
+		params.get("platform_width", profile.min_width_platform) + rng.randi_range(-1, 1),
+		profile.min_width_platform,
+		profile.max_width_platform
 	)
-	
+
 	params["platform_thickness"] = clamp(
-		rng.randi_range(-1, 1),
-		profile.min_thickness_platform, 
+		params.get("platform_thickness", profile.min_thickness_platform) + rng.randi_range(-1, 1),
+		profile.min_thickness_platform,
 		profile.max_thickness_platform
 	)
 
@@ -95,57 +97,95 @@ func mutate_params(params: Dictionary, rng: RandomNumberGenerator, profile: Room
 # Placement
 # ---------------------------------------------------------------------------
 
-static func _try_place_platform(
-	mask: RoomLayoutMask,
-	profile: RoomSizeProfile,
-	rng: RandomNumberGenerator,
-	width: int,
-	thickness: int
-) -> bool:
+func _try_place_platform(width: int, thickness: int) -> bool:
+	var rng := context.rng
+	var profile := context.size_profile
+	var mask := context.mask
 
-
-	# limiti orizzontali
-	var x_min: int = profile.border_margin_wall
-	var x_max: int = mask.size.x - profile.border_margin_wall - width
-	if x_min >= x_max:
-		return false
-
-	# limiti verticali (aria sopra/sotto)
-	var y_min: int = profile.border_margin_ceil_flor + profile.min_passage_tiles
-	var y_max: int = mask.size.y \
-		- profile.border_margin_ceil_flor \
-		- profile.min_passage_tiles \
-		- thickness
-
-	if y_min >= y_max:
-		return false
-
-	var x0: int = rng.randi_range(x_min, x_max)
-	var y0: int = rng.randi_range(y_min, y_max)
-
-	var rect := Rect2i(
-		Vector2i(x0, y0),
-		Vector2i(width, thickness)
-	)
-
-	# 1) tutte le celle devono essere EMPTY
-	for y in range(rect.position.y, rect.end.y):
-		for x in range(rect.position.x, rect.end.x):
-			if mask.is_solid(x, y):
-				return false
-
-	# 2) distanza minima da SOLID esistenti
+	var wall_margin := profile.border_margin_wall
+	var floor_margin := profile.border_margin_ceil_flor
 	var spacing := profile.min_passage_tiles
-	for y in range(rect.position.y - spacing, rect.end.y + spacing):
-		for x in range(rect.position.x - spacing, rect.end.x + spacing):
+
+	var empty_cells := mask.get_all_empty_cells()
+	if empty_cells.is_empty():
+		return false
+	
+	empty_cells.shuffle()
+
+	for cell in empty_cells:
+
+		var x0 := cell.x
+		var y0 := cell.y
+
+		# controlli base bounds
+		if x0 < wall_margin:
+			continue
+		if x0 + width >= mask.size.x - wall_margin:
+			continue
+
+		if y0 < floor_margin + spacing:
+			continue
+		if y0 + thickness >= mask.size.y - floor_margin - spacing:
+			continue
+
+		var rect := Rect2i(Vector2i(x0, y0), Vector2i(width, thickness))
+
+		if _can_place_platform(rect):
+			
+			# scrittura finale
+			for y in range(rect.position.y, rect.end.y):
+				for x in range(rect.position.x, rect.end.x):
+					mask.set_solid(x, y)
+
+			return true
+
+	return false
+
+
+func _can_place_platform(rect: Rect2i) -> bool:
+	var mask := context.mask
+
+	var vertical_clear := context.size_profile.border_margin_ceil_flor
+	var horizontal_clear := context.size_profile.border_margin_wall
+
+	# 1) area piattaforma deve essere vuota
+	for y in range(rect.position.y, rect.end.y):
+		for x in range(rect.position.x, rect.end.x):
 			if not mask.in_bounds(x, y):
-				continue
+				return false
 			if mask.is_solid(x, y):
 				return false
 
-	# 3) scrittura finale (atomica)
-	for y in range(rect.position.y, rect.end.y):
+	# 2) spazio sopra
+	for y in range(rect.position.y - vertical_clear, rect.position.y):
 		for x in range(rect.position.x, rect.end.x):
-			mask.set_solid(x, y)
+			if not mask.in_bounds(x, y):
+				return false
+			if mask.is_solid(x, y):
+				return false
+
+	# 3) spazio sotto
+	for y in range(rect.end.y, rect.end.y + vertical_clear):
+		for x in range(rect.position.x, rect.end.x):
+			if not mask.in_bounds(x, y):
+				return false
+			if mask.is_solid(x, y):
+				return false
+
+	# 4) spazio sinistra
+	for x in range(rect.position.x - horizontal_clear, rect.position.x):
+		for y in range(rect.position.y, rect.end.y):
+			if not mask.in_bounds(x, y):
+				return false
+			if mask.is_solid(x, y):
+				return false
+
+	# 5) spazio destra
+	for x in range(rect.end.x, rect.end.x + horizontal_clear):
+		for y in range(rect.position.y, rect.end.y):
+			if not mask.in_bounds(x, y):
+				return false
+			if mask.is_solid(x, y):
+				return false
 
 	return true

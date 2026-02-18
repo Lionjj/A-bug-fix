@@ -22,21 +22,16 @@ func evaluate(genome: Genome) -> float:
 	if mask == null:
 		return -INF
 	
-
+	var plan: ConnectorPlan = ConnectorPlanner.build(mask, context.rng)
+	if plan == null:
+		return -INF
+	print(debug_print_with_connectors(mask, plan), "\n\n")
+	
+	#BackboneBuilder.apply(mask, plan, context.rng)
+	
 	var validation: LayoutValidatorContext = LayoutValidator.validate(mask)
 	if not validation.is_valid:
 		return -INF
-	
-	var plan: ConnectorPlan = ConnectorPlanner.build(mask)
-	if plan == null:
-		return -INF
-	print(debug_print_with_connectors(mask, plan))
-	
-	var traversal : float = TraversalAnalyzer._evaluate_traversal(mask, plan)
-	print(traversal)
-	if traversal < 0:
-		return -INF
-	
 
 	return LayoutScorer.score(mask) + validation.score
 

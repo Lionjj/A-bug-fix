@@ -14,7 +14,8 @@ class_name DividerOperator
 extends LayoutOperator
 
 
-func _init() -> void:
+func _init(_context: OperatorContext, params: Dictionary = {}):
+	super._init(_context, params)
 	type = Type.DIVIDER
 	weight = 0.3
 	role = Role.PRIMARY
@@ -23,11 +24,7 @@ func _init() -> void:
 # API
 # ---------------------------------------------------------------------------
 
-func apply(
-	mask: RoomLayoutMask, 
-	context: LayoutContext, 
-	params: Dictionary = {}
-) -> bool:
+func apply() -> bool:
 	var profile: RoomSizeProfile = context.size_profile
 	var rng: RandomNumberGenerator = context.rng
 	
@@ -38,9 +35,12 @@ func apply(
 	
 	var count: int = params.get("divider_count", 0)
 	
-	return _apply_multi(mask, context, vertical, count)
+	return _apply_multi(vertical, count)
 
-func create_random_params(rng: RandomNumberGenerator, profile: RoomSizeProfile) -> Dictionary:
+func create_random_params() -> Dictionary:
+	var profile := context.size_profile
+	var rng := context.rng
+	
 	var vertical_bias: float = rng.randf_range(
 			profile.min_divider_vertical,
 			profile.max_divider_vertical
@@ -56,7 +56,10 @@ func create_random_params(rng: RandomNumberGenerator, profile: RoomSizeProfile) 
 		"is_vertical": vertical_bias < profile.divider_threshold_vertical
 	}
 
-func mutate_params(params: Dictionary, rng: RandomNumberGenerator, profile: RoomSizeProfile) -> void:
+func mutate_params() -> void:
+	var profile := context.size_profile
+	var rng := context.rng
+	
 	params["divider_count"] = clamp(
 		params["divider_count"] + rng.randi_range(-1, 1),
 		profile.min_divider_count,
@@ -76,30 +79,25 @@ func mutate_params(params: Dictionary, rng: RandomNumberGenerator, profile: Room
 # Multi-divider (stesso asse)
 # ---------------------------------------------------------------------------
 
-static func _apply_multi(
-	mask: RoomLayoutMask,
-	context: LayoutContext,
-	vertical: bool,
-	count: int
-) -> bool:
+func _apply_multi(vertical: bool, count: int) -> bool:
 	var profile := context.size_profile
 	var rng := context.rng
 
-	var max_dividers := _max_dividers_for_size(mask, profile, vertical)
+	var max_dividers := _max_dividers_for_size(vertical)
 	if max_dividers <= 0:
 		return false
 
 	count = clamp(count, context.size_profile.min_divider_count, max_dividers)
-	var positions := _pick_divider_positions(mask, profile, rng, vertical, count)
+	var positions := _pick_divider_positions(vertical, count)
 
 	if positions.is_empty():
 		return false
 
 	for pos in positions:
 		if vertical:
-			_apply_vertical_at(mask, context, pos)
+			_apply_vertical_at(pos)
 		else:
-			_apply_horizontal_at(mask, context, pos)
+			_apply_horizontal_at(pos)
 
 	return true
 
@@ -108,12 +106,10 @@ static func _apply_multi(
 # Divider verticale
 # ---------------------------------------------------------------------------
 
-static func _apply_vertical_at(
-	mask: RoomLayoutMask,
-	context: LayoutContext,
-	x0: int
-) -> void:
+func _apply_vertical_at(x0: int) -> void:
 	var profile := context.size_profile
+	var mask := context.mask
+	
 	var wt := profile.wall_thickness
 
 	var margin := profile.border_margin_wall
@@ -125,7 +121,7 @@ static func _apply_vertical_at(
 			mask.set_solid(x0 + dx, y)
 
 	var passages := _build_passages(
-		y0, y1, x0, wt, context, true
+		y0, y1, x0, wt, true
 	)
 
 	_carve_passages(mask, passages)
@@ -135,12 +131,12 @@ static func _apply_vertical_at(
 # Divider orizzontale
 # ---------------------------------------------------------------------------
 
-static func _apply_horizontal_at(
-	mask: RoomLayoutMask,
-	context: LayoutContext,
+func _apply_horizontal_at(
 	y0: int
 ) -> void:
 	var profile := context.size_profile
+	var mask := context.mask
+	
 	var wt := profile.wall_thickness
 
 	var margin := profile.border_margin_ceil_flor
@@ -152,7 +148,7 @@ static func _apply_horizontal_at(
 			mask.set_solid(x, y0 + dy)
 
 	var passages := _build_passages(
-		x0, x1, y0, wt, context, false
+		x0, x1, y0, wt, false
 	)
 
 	_carve_passages(mask, passages)
@@ -162,12 +158,11 @@ static func _apply_horizontal_at(
 # Costruzione passaggi (identica all'originale)
 # ---------------------------------------------------------------------------
 
-static func _build_passages(
+func _build_passages(
 	main_min: int,
 	main_max: int,
 	fixed_pos: int,
 	wall_thickness: int,
-	context: LayoutContext,
 	vertical: bool
 ) -> Array[Rect2i]:
 	var profile := context.size_profile
@@ -232,11 +227,10 @@ static func _carve_passages(mask: RoomLayoutMask, passages: Array[Rect2i]) -> vo
 # Numero massimo divider (come prima)
 # ---------------------------------------------------------------------------
 
-static func _max_dividers_for_size(
-	mask: RoomLayoutMask,
-	profile: RoomSizeProfile,
-	vertical: bool
-) -> int:
+func _max_dividers_for_size(vertical: bool) -> int:
+	var mask := context.mask
+	var profile := context.size_profile
+	
 	var axis := mask.size.x if vertical else mask.size.y
 	var sep := profile.min_divider_separator
 
@@ -251,13 +245,11 @@ static func _max_dividers_for_size(
 # Selezione posizioni divider
 # ---------------------------------------------------------------------------
 
-static func _pick_divider_positions(
-	mask: RoomLayoutMask,
-	profile: RoomSizeProfile,
-	rng: RandomNumberGenerator,
-	vertical: bool,
-	count: int
-) -> Array[int]:
+func _pick_divider_positions(vertical: bool, count: int) -> Array[int]:
+	var mask := context.mask
+	var profile := context.size_profile
+	var rng := context.rng
+	
 	var axis := mask.size.x if vertical else mask.size.y
 
 	var border := (

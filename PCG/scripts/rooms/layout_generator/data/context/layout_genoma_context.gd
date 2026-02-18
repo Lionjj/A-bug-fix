@@ -1,19 +1,19 @@
 # ============================================================================
-# LayoutContext
+# LayoutGenomaContext
 # ============================================================================
 
-class_name LayoutContext
+class_name LayoutGenomaContext
 extends RefCounted
 
 var size_profile: RoomSizeProfile
 var rng: RandomNumberGenerator
-var size: Vector2i
+var operator_registry: OperatorRegistry
 
 func _init(
 	_size_profile: RoomSizeProfile,
 	_rng: RandomNumberGenerator,
+	_operator_registry: OperatorRegistry,
 ) -> void:
 	size_profile = _size_profile
 	rng = _rng
-	
-	size = RoomSizePicker.new(size_profile, rng).pick()
+	operator_registry = _operator_registry

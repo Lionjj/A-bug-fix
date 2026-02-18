@@ -1,19 +1,22 @@
 # ============================================================================
-# LayoutContext
+# OperatorContext
 # ============================================================================
 
-class_name LayoutContext
+class_name OperatorContext
 extends RefCounted
 
 var size_profile: RoomSizeProfile
 var rng: RandomNumberGenerator
-var size: Vector2i
+var connector_plan: ConnectorPlan
+var mask: RoomLayoutMask
 
 func _init(
 	_size_profile: RoomSizeProfile,
 	_rng: RandomNumberGenerator,
+	_connector_plan: ConnectorPlan,
+	_mask: RoomLayoutMask
 ) -> void:
 	size_profile = _size_profile
 	rng = _rng
-	
-	size = RoomSizePicker.new(size_profile, rng).pick()
+	connector_plan = _connector_plan
+	mask = _mask

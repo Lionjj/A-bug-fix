@@ -13,7 +13,7 @@ var profile: RoomSizeProfile
 var registry: OperatorRegistry
 var rng: RandomNumberGenerator
 
-func _init(_context: LayoutContext):
+func _init(_context: LayoutGenomaContext):
 	profile = _context.size_profile
 	registry = _context.operator_registry
 	rng = _context.rng
@@ -49,7 +49,7 @@ func _mutate_param(g: LayoutGenome) -> void:
 	if op == null:
 		return
 	
-	op.mutate_params(gene.params, rng, profile)
+	op.mutate_params()
 
 
 func _add_gene(g: LayoutGenome) -> void:
@@ -65,7 +65,7 @@ func _add_gene(g: LayoutGenome) -> void:
 		return
 	
 	var op: LayoutOperator = registry.get_operator(type)
-	var params: Dictionary = op.create_random_params(rng, profile)
+	var params: Dictionary = op.create_random_params()
 
 	var idx: int = rng.randi_range(0, g.genes.size())
 	g.genes.insert(idx, LayoutGene.new(type, params))

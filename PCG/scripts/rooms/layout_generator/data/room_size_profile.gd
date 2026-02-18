@@ -26,6 +26,20 @@ class_name RoomSizeProfile
 
 
 #--------------------------------------------------------
+# Metriche operatore: Platform
+#--------------------------------------------------------
+
+@export var threshold_loop_back_bone: float = 0.4
+
+@export var min_width_back_bone: int = 4
+
+@export var max_width_back_bone: int = 8
+
+@export var min_jitter_back_bone: float = 0.0
+
+@export var max_jitter_back_bone: float = 0.4
+
+#--------------------------------------------------------
 # Metriche codivise dagli operatori
 #--------------------------------------------------------
 
@@ -139,7 +153,7 @@ class_name RoomSizeProfile
 @export var min_thickness_platform: int = 2
 
 ## Massimo spessore delle piattaforme
-@export var max_thickness_platform: int = 4
+@export var max_thickness_platform: int = 3
 
 
 #--------------------------------------------------------
