@@ -1,9 +1,9 @@
 extends RefCounted
 class_name LayoutValidatorContext
 
-var score: float
-var is_valid: bool
+var mask: RoomLayoutMask
+var plan: ConnectorPlan
 
-func _init(_score: float, _is_valid: bool) -> void:
-	score = _score
-	is_valid = _is_valid
+func _init(_mask: RoomLayoutMask, _plan: ConnectorPlan) -> void:
+	mask = _mask
+	plan = _plan

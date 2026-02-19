@@ -32,34 +32,39 @@ extends RefCounted
 
 static func generate_from_genome(
 	genome: LayoutGenome,
-	context: LayoutContext
-) -> RoomLayoutMask:
-
-	if genome == null or context == null:
+	genome_context: LayoutGenomaContext
+) -> LayoutValidatorContext:
+	
+	if genome == null or genome_context == null:
 		return null
-
-	var mask := RoomLayoutMask.new(context)
+	
+	var size_profile := genome_context.size_profile
+	var rng := genome_context.rng
+	var registry := genome_context.operator_registry
+	
+	var layout_context: LayoutContext = LayoutContext.new(size_profile, rng)
+	
+	var mask := RoomLayoutMask.new(layout_context)
 	if mask == null:
 		return null
+		
+	var operator_context: OperatorContext = OperatorContext.new(size_profile, rng, mask)
 
 	for gene in genome.genes:
-		_apply_gene(mask, gene, context)
+		_apply_gene(gene, registry, operator_context)
 
-	return mask
+	return LayoutValidatorContext.new(mask, operator_context.connector_plan)
 
 
 static func _apply_gene(
-	mask: RoomLayoutMask,
 	gene: LayoutGene,
-	context: LayoutContext
+	registry: OperatorRegistry,
+	context: OperatorContext
 ) -> void:
-
-	var registry := context.operator_registry
-	if registry == null:
-		return
-
-	var op: LayoutOperator = registry.get_operator(gene.type)
-	if op == null:
-		return
-
-	op.apply(mask, context, gene.params)
+	var operator: LayoutOperator = registry.istanziate(
+		gene.type,
+		context,
+		gene.params
+	)
+	
+	operator.apply()

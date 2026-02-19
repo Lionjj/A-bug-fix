@@ -24,12 +24,13 @@ func _init(_context: OperatorContext, params: Dictionary = {}):
 
 func apply() -> bool:
 
-	if not context.connector_plan:
+	if not context.connector_plan == null:
 		return false
 
 	var rng := context.rng
 	var plan := context.connector_plan
 	var mask := context.mask
+	
 
 	var mode: int = params.get("mode", Mode.CENTRAL)
 	var allow_loops: bool = params.get("allow_loops", false)

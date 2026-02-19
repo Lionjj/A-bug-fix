@@ -41,7 +41,7 @@ func evolve() -> Genome:
 	var population: Array[Genome] = []
 
 	for i in range(population_size):
-		population.append(factory.random_genome(rng))
+		population.append(factory.random_genome())
 
 	var best_genome: Genome = null
 	var best_score: float = -INF
@@ -53,7 +53,7 @@ func evolve() -> Genome:
 		if evaluated.is_empty():
 			population.clear()
 			for i in range(population_size):
-				population.append(factory.random_genome(rng))
+				population.append(factory.random_genome())
 			continue
 
 		if evaluated[0].score > best_score:

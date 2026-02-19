@@ -36,9 +36,9 @@ static func has_path(
 	mask: RoomLayoutMask,
 	profile: PlayerTraversalProfile,
 	start: Vector2i,
-	target: Vector2i
+	target_cells: Array[Vector2i]
 ) -> bool:
-	return not find_path(mask, profile, start, [target]).is_empty()
+	return not find_path(mask, profile, start, target_cells).is_empty()
 
 
 static func find_path(
@@ -52,16 +52,6 @@ static func find_path(
 	var path: Array = result["path"]
 	if path.is_empty(): return []
 	return result["path"]
-
-
-static func find_path_debug(
-	mask: RoomLayoutMask,
-	profile: PlayerTraversalProfile,
-	start: Vector2i,
-	target_cells: Array[Vector2i]
-) -> Dictionary:
-
-	return _bfs(mask, profile, start, target_cells)
 
 
 # ==========================================================

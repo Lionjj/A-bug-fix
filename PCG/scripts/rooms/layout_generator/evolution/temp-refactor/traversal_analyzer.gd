@@ -1,309 +1,172 @@
 # ============================================================================
 # TraversalAnalyzer
 # ============================================================================
+## Questa classe verifica che la stanza genererata sia giocabile dal gioctore.
+##
+## In particolare deve verificare che il giocatore possa arrivare secondo i 
+## movimenti stabiliti alle: [br]
+## - Uscite delle stanze (connettori N/S/E/W);
+## - Tutte le celle calpestabili.
 class_name TraversalAnalyzer
 extends RefCounted
 
-
-# ============================================================================
+# ----------------------------------------------------------------------------
 # API
-# ============================================================================
+# ----------------------------------------------------------------------------
 
-static func analyze(
-	mask: RoomLayoutMask,
-	profile: PlayerTraversalProfile,
-	spawn: Vector2i
-) -> TraversalResult:
-
-	if not _is_standable(mask, spawn):
-		return null
-
-	var reachable := _forward_reach(mask, profile, spawn)
-	var returnable := _backward_reach(mask, profile, spawn, reachable)
-
-	return TraversalResult.new(reachable, returnable)
-
-
-# ============================================================================
-# FORWARD REACH
-# ============================================================================
-
-static func _forward_reach(
-	mask: RoomLayoutMask,
-	profile: PlayerTraversalProfile,
-	spawn: Vector2i
-) -> Dictionary[Vector2i, bool]:
-
-	var visited: Dictionary[Vector2i, bool] = {}
-	var queue: Array[Vector2i] = [spawn]
-	visited[spawn] = true
-
-	while not queue.is_empty():
-		var cur: Vector2i = queue.pop_front()
-
-		for nxt in _possible_moves(mask, profile, cur):
-			if visited.has(nxt):
-				continue
-			visited[nxt] = true
-			queue.append(nxt)
-
-	return visited
-
-
-# ============================================================================
-# BACKWARD REACH
-# ============================================================================
-
-static func _backward_reach(
-	mask: RoomLayoutMask,
-	profile: PlayerTraversalProfile,
-	spawn: Vector2i,
-	reachable: Dictionary[Vector2i, bool]
-) -> Dictionary[Vector2i, bool]:
-
-	var returnable: Dictionary[Vector2i, bool] = {}
-	var queue: Array[Vector2i] = [spawn]
-	returnable[spawn] = true
-
-	while not queue.is_empty():
-		var cur: Vector2i = queue.pop_front()
-
-		for prev in _reverse_moves(mask, profile, cur):
-			if not reachable.has(prev):
-				continue
-			if returnable.has(prev):
-				continue
-			returnable[prev] = true
-			queue.append(prev)
-
-	return returnable
-
-
-# ============================================================================
-# POSSIBLE MOVES (FORWARD)
-# ============================================================================
-
-static func _possible_moves(
-	mask: RoomLayoutMask,
-	profile: PlayerTraversalProfile,
-	pos: Vector2i
-) -> Array[Vector2i]:
-
-	var out: Array[Vector2i] = []
-
-	# ------------------------------------------------
-	# 1) Camminata orizzontale
-	# ------------------------------------------------
-	for dir in [Vector2i.LEFT, Vector2i.RIGHT]:
-		var p: Vector2i = pos + dir
-		if _is_standable(mask, p):
-			out.append(p)
-
-	# ------------------------------------------------
-	# 2) Caduta (sempre consentita)
-	# ------------------------------------------------
-	var fall_pos: Vector2i = pos
-	var fall_count: int = 0
-
-	while fall_count < profile.max_fall_tiles:
-		var next: Vector2i = fall_pos + Vector2i.DOWN
-		if not _is_empty(mask, next):
-			break
-		fall_pos = next
-		fall_count += 1
-
-	if fall_pos != pos:
-		if _is_standable(mask, fall_pos):
-			out.append(fall_pos)
-
-
-	# ------------------------------------------------
-	# 3) Salto verticale libero
-	# ------------------------------------------------
-	for dy in range(1, profile.max_jump_tiles + 1):
-		var p := pos + Vector2i(0, -dy)
-
-		if not _is_empty(mask, p):
-			break
-
-		out.append(p)
-
-	# ------------------------------------------------
-	# 4) Climb infinito su muro
-	# ------------------------------------------------
-	if profile.can_climb:
-		for side in [Vector2i.LEFT, Vector2i.RIGHT]:
-			var wall: Vector2i = pos + side
-
-			if _is_wall(mask, wall):
-				var climb_pos := pos
-
-				while true:
-					climb_pos += Vector2i.UP
-					if not _is_empty(mask, climb_pos):
-						break
-					out.append(climb_pos)
-
-	# ------------------------------------------------
-	# 5) Wall jump chain
-	# ------------------------------------------------
-	if profile.can_wall_jump:
-		for side in [Vector2i.LEFT, Vector2i.RIGHT]:
-			if _is_wall(mask, pos + side):
-
-				for dy in range(1, profile.wall_jump_tiles + 1):
-					var p := pos + Vector2i(-side.x, -dy)
-
-					if not _is_empty(mask, p):
-						break
-
-					out.append(p)
-
-	return out
-
-
-# ============================================================================
-# REVERSE MOVES (SIMMETRICO)
-# ============================================================================
-
-static func _reverse_moves(
-	mask: RoomLayoutMask,
-	profile: PlayerTraversalProfile,
-	pos: Vector2i
-) -> Array[Vector2i]:
-
-	var out: Array[Vector2i] = []
-
-	# ------------------------------------------------
-	# 1) Inverso camminata
-	# ------------------------------------------------
-	for dir in [Vector2i.LEFT, Vector2i.RIGHT]:
-		var p: Vector2i = pos + dir
-		if _is_standable(mask, p):
-			out.append(p)
-
-	# ------------------------------------------------
-	# 2) Inverso salto (cioè caduta dall'alto)
-	# ------------------------------------------------
-	for dy in range(1, profile.max_jump_tiles + 1):
-		var p := pos + Vector2i(0, dy)
-
-		if not _is_empty(mask, p):
-			break
-
-		out.append(p)
-
-	# ------------------------------------------------
-	# 3) Reverse climb infinito
-	# ------------------------------------------------
-	if profile.can_climb:
-		for side in [Vector2i.LEFT, Vector2i.RIGHT]:
-			var wall: Vector2i = pos + side
-
-			if _is_wall(mask, wall):
-				var down_pos := pos
-
-				while true:
-					down_pos += Vector2i.DOWN
-					if not _is_empty(mask, down_pos):
-						break
-					out.append(down_pos)
-
-	# ------------------------------------------------
-	# 4) Reverse wall jump
-	# ------------------------------------------------
-	if profile.can_wall_jump:
-		for side in [Vector2i.LEFT, Vector2i.RIGHT]:
-			for dy in range(1, profile.wall_jump_tiles + 1):
-				var p := pos + Vector2i(side.x, dy)
-
-				if not _is_empty(mask, p):
-					break
-
-				out.append(p)
-
-	return out
-
-
-# ============================================================================
-# GEOMETRY HELPERS
-# ============================================================================
-
-static func _is_empty(mask: RoomLayoutMask, p: Vector2i) -> bool:
-	return mask.in_bounds(p.x, p.y) and mask.is_empty(p.x, p.y)
-
-static func _is_wall(mask: RoomLayoutMask, p: Vector2i) -> bool:
-	return mask.in_bounds(p.x, p.y) and mask.is_solid(p.x, p.y)
-
-static func _is_standable(mask: RoomLayoutMask, p: Vector2i) -> bool:
-	if not _is_empty(mask, p):
+## Verifica che eista un percorso che colleghi tutti i connettori secondo i 
+## movimenti consenitit al player. [br]
+## [param mask]: Rappresentazione semplificata di una stanza in cui si muove il player;
+## [param plan]: Informazioni dei connettori;
+## [param profile]: Dati euristici rappresentati i movimenti del player semplificati;
+static func are_connectors_reacable(mask: RoomLayoutMask, plan: ConnectorPlan, profile: PlayerTraversalProfile) -> bool:
+	var active := _carve_all_opening(mask, plan)
+	
+	if active.size() <= 1:
+		return true
+	
+	var connector: int = active[0]
+	var root: Vector2i = PlayerReachability.get_connector_entry_cell(mask, plan, connector)
+	
+	if root.x == -1:
+		printerr("TraversalAnalyzer: Connector root invalido:", connector)
 		return false
-
-	var below := p + Vector2i.DOWN
-	return mask.in_bounds(below.x, below.y) and mask.is_solid(below.x, below.y)
-
-static func _evaluate_traversal(
-	mask: RoomLayoutMask,
-	plan: ConnectorPlan,
-) -> float:
-	var profile: PlayerTraversalProfile = PlayerTraversalProfile.new()
-
-	var spawn_points := {}
-
-	for d in Dir4.ORDER:
-		spawn_points[d] = _internal_spawn(mask, plan, d)
-
-	var first_dir = Dir4.ORDER[0]
-
-	var result := TraversalAnalyzer.analyze(
-		mask,
-		profile,
-		spawn_points[first_dir]
+	
+	#--------------------------------------------------------------------------
+	# Verifica che si puo arrivare dal connettore root agli altri connettori
+	#--------------------------------------------------------------------------
+	
+	for i in range(1, active.size()):
+		var target: int = active[i]
+		
+		var solution_area: Array[Vector2i] = PlayerReachability.get_connector_volume_cells(
+			mask, plan, target
+		)
+		
+		if not PlayerReachability.has_path(
+			mask, profile, root, solution_area
+		): 
+			printerr("TraversalAnalyzer: Non vi è alcun percorso: ", connector, " -> ", target)
+			return false
+	
+	var root_area: Array[Vector2i] = PlayerReachability.get_connector_volume_cells(
+			mask, plan, connector
 	)
+		
+	for i in range(1, active.size()):
+		var start_dir: int = active[i]
+		var start: Vector2i = PlayerReachability.get_connector_entry_cell(mask, plan, start_dir)
+		
+		if not PlayerReachability.has_path(
+			mask, profile, start, root_area
+		): 
+			printerr("TraversalAnalyzer: Non vi è alcun percorso: ", start_dir, " -> ", connector)
+			return false
+	
+	#for i in range(active.size()):
+		#var dir: int = active[i]
+		#var start: Vector2i = PlayerReachability.get_connector_entry_cell(mask, plan, dir)
+		#
+		#if start.x == -1:
+			#print("ERRORE start invalido:", dir)
+			#return false
+		#
+		#for j in range(active.size()):
+			#if i == j: continue
+			#
+			#var target: int = active[j]
+			#var solution_area: Array[Vector2i] = PlayerReachability.get_connector_volume_cells(
+				#mask, plan, target
+			#)
+			#
+			#if not PlayerReachability.has_path(
+				#mask, profile, start, solution_area
+			#): 
+				#print("Non vi è alcun percorso: ", start, " -> ", target)
+				#return false
+		
+	return true
 
-	if result == null:
-		return -1
+## Verifica che eista un percorso che colleghi tutte le celle paviment secondo i 
+## movimenti consenitit al player. [br]
+## [param mask]: Rappresentazione semplificata di una stanza in cui si muove il player;
+## [param profile]: Dati euristici rappresentati i movimenti del player semplificati;
+static func are_floor_tile_reacable(mask: RoomLayoutMask, profile: PlayerTraversalProfile) -> bool:
+	var floor_clusters: Dictionary[Vector2i, Array] = _build_walk_graph(mask)
+	
+	if floor_clusters.size() <= 1:
+		return true
+	
+	var root: Vector2i = floor_clusters.keys()[0]
+	
+	for kay in floor_clusters.keys():
+		if kay == root: continue
+		
+		var target: Array[Vector2i] = floor_clusters[kay]
+		if not PlayerReachability.has_path(
+			mask, profile, root, target
+		): 
+			printerr("TraversalAnalyzer: path invalido:", root, "->", kay)
+			return false
+	
+	var root_cluster: Array[Vector2i] = floor_clusters[root]
+	
+	for kay in floor_clusters.keys():
+		if kay == root: continue
+		
+		var target: Array[Vector2i] = floor_clusters[kay]
+		if not PlayerReachability.has_path(
+			mask, profile, kay, root_cluster
+		): 
+			printerr("TraversalAnalyzer: path invalido:", kay, "->", root)
+			return false
+	
+	return true
 
-	# Verifica raggiungibilità bidirezionale
-	for d in Dir4.ORDER:
-		print("from:", d , "to", spawn_points[d])
-		if not result.reachable.has(spawn_points[d]):
-			return -1
-		#if not result.returnable.has(spawn_points[d]):
-			#return -1
 
-	# --------------------------------------------------
-	# Scoring traversal avanzato
-	# --------------------------------------------------
+# ----------------------------------------------------------------------------
+# Helper
+# ----------------------------------------------------------------------------
 
-	var reach_ratio := float(result.reachable.size()) / float(mask.get_all_empty_cells().size())
+## Scava le aperture rispettando le informanzioni conetune nel [b] plan [\b].[br]
+## [param mask]: Rappresentazione semplificata di una stanza;
+## [param plan]: Informazioni dei connettori;
+static func _carve_all_opening(mask: RoomLayoutMask, plan: ConnectorPlan) -> Array[int]:
+	var out: Array[int] = []
+	
+	for dir in Dir4.ORDER:
+		if not plan.is_enabled(dir):
+			continue
+		
+		PlayerReachability.carve_connector_volume(mask, plan, dir)
+		out.append(dir)
+	
+	return out
 
-	# penalizza stanze troppo banali (100% trivial reach)
-	var diversity_bonus :float= 1.0 - abs(reach_ratio - 0.75)
+## Costruisce un dizoonario di cluster tale che come chiave abiamo una cella 
+## pavimento di quel cluster, come valore il cluster stesso. [br]
+## Le condizioni che permetto ad una cella di far parte di un cluster sono: [br]
+## - Deve essere una cella sul pavimento; [br]
+## - a sinstra o a destra o entrambe le direzioni deve avere una cella facente 
+## già parte di quel cluster; [br]
+## [param mask]: Rappresentazione semplificata di una stanza;
+static func _build_walk_graph(mask: RoomLayoutMask) -> Dictionary[Vector2i, Array]:
 
-	return reach_ratio * 10.0 + diversity_bonus * 5.0
-
-static func _internal_spawn(
-	mask: RoomLayoutMask,
-	plan: ConnectorPlan,
-	dir: int
-) -> Vector2i:
-
-	var wall := mask.wall_thickness
-	var coord := plan.get_coord(dir)
-
-	match dir:
-
-		Dir4.D.N:
-			return Vector2i(coord, wall)
-
-		Dir4.D.S:
-			return Vector2i(coord, mask.size.y - wall - 1)
-
-		Dir4.D.W:
-			return Vector2i(wall, coord)
-
-		Dir4.D.E:
-			return Vector2i(mask.size.x - wall - 1, coord)
-
-	return Vector2i(-1, -1)
+	var floors = mask.collect_floor_tiles()
+	var floor_set := {}
+	
+	for f in floors:
+		floor_set[f] = true
+	
+	var graph := {}
+	
+	for f in floors:
+		graph[f] = []
+		
+		for dir in [Vector2i.LEFT, Vector2i.RIGHT]:
+			var n = f + dir
+			
+			if floor_set.has(n):
+				graph[f].append(n)
+	
+	return graph

@@ -13,6 +13,8 @@ var profile: RoomSizeProfile
 var registry: OperatorRegistry
 var rng: RandomNumberGenerator
 
+var _unchangable_operator_idx: int = 2
+
 func _init(_context: LayoutGenomaContext):
 	profile = _context.size_profile
 	registry = _context.operator_registry
@@ -66,8 +68,10 @@ func _add_gene(g: LayoutGenome) -> void:
 	
 	var op: LayoutOperator = registry.get_operator(type)
 	var params: Dictionary = op.create_random_params()
-
-	var idx: int = rng.randi_range(0, g.genes.size())
+	
+	#I primi due sono riservati in quanto i connettori e la backbone 
+	#Devono essere sempre presenti
+	var idx: int = rng.randi_range(_unchangable_operator_idx, g.genes.size())
 	g.genes.insert(idx, LayoutGene.new(type, params))
 
 func _remove_gene(g: LayoutGenome) -> void:
@@ -89,11 +93,11 @@ func _remove_gene(g: LayoutGenome) -> void:
 
 	
 func _swap_genes(g: LayoutGenome) -> void:
-	if g.genes.size() < 2:
+	if g.genes.size() < 4:
 		return
 
-	var a: int = rng.randi_range(0, g.genes.size() - 1)
-	var b: int = rng.randi_range(0, g.genes.size() - 1)
+	var a: int = rng.randi_range(_unchangable_operator_idx, g.genes.size() - 1)
+	var b: int = rng.randi_range(_unchangable_operator_idx, g.genes.size() - 1)
 
 	if a == b:
 		return

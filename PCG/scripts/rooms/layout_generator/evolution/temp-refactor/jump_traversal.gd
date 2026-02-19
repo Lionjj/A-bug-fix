@@ -33,7 +33,7 @@ static func build_jump_graph(
 	# Nodo = floor tile
 	# Edge = salto possibile
 
-	var floors: Array[Vector2i] = _collect_floor_tiles(mask)
+	var floors: Array[Vector2i] = mask.collect_floor_tiles()
 	var graph: Dictionary[Vector2i, Array] = {}
 
 	for a in floors:
@@ -43,18 +43,10 @@ static func build_jump_graph(
 			if a == b:
 				continue
 			
-			if _can_walk(a, b):
-				graph[a].append(b)
+			if not _can_walk(a, b):
 				continue
 			
-			if _can_fall(mask, profile, a, b):
-				graph[a].append(b)
-				continue
-			
-			var is_valid: bool = _can_jump(mask, profile, a, b) or _can_wall_jump(mask, profile, a, b)
-			
-			if is_valid:
-				graph[a].append(b)
+			graph[a].append(b)
 
 	return graph
 

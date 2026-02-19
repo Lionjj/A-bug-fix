@@ -10,7 +10,7 @@ func _init(_operator_registry: OperatorRegistry, _rng: RandomNumberGenerator) ->
 	
 
 func pick_operator(role: LayoutOperator.Role) -> int:
-	var bucket: Dictionary[LayoutOperator.Type, LayoutOperator] = {}
+	var bucket: Array[LayoutOperator.Type] = []
 	
 	match role:
 		
@@ -28,10 +28,10 @@ func pick_operator(role: LayoutOperator.Role) -> int:
 	return _weighted_pick(bucket)
 	
 
-func _weighted_pick(bucket: Dictionary[LayoutOperator.Type, LayoutOperator]) -> LayoutOperator.Type:
+func _weighted_pick(bucket: Array[LayoutOperator.Type]) -> LayoutOperator.Type:
 	var total_weight: float = 0.0
 
-	for op in bucket.values():
+	for op in bucket:
 		total_weight += op.weight
 
 	var r: float = rng.randf() * total_weight

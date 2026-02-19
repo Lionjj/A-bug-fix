@@ -4,10 +4,6 @@
 ## Rappresenta le capacità di movimento del player
 ## in termini DISCRETI (tile-based).
 ##
-## Usato ESCLUSIVAMENTE da:
-## - TraversalAnalyzer
-## - LayoutScorer
-##
 ## NON simula la fisica.
 # ============================================================================
 
@@ -25,9 +21,3 @@ extends Resource
 
 ## Può usare wall jump?
 @export var can_wall_jump: bool = true
-
-## Può arrampicarsi liberamente?
-@export var can_climb: bool = true
-
-## Caduta massima consentita (INF = sempre ok)
-@export var max_fall_tiles: int = 999

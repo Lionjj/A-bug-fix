@@ -7,9 +7,9 @@
 class_name LayoutFitnessEvaluator
 extends FitnessEvaluator
 
-var context: LayoutContext
+var context: LayoutGenomaContext
 
-func _init(_context: LayoutContext) -> void:
+func _init(_context: LayoutGenomaContext) -> void:
 	context = _context
 	
 
@@ -18,22 +18,15 @@ func evaluate(genome: Genome) -> float:
 	if g == null:
 		return -INF
 
-	var mask: RoomLayoutMask = RoomLayoutGenerator.generate_from_genome(g, context)
-	if mask == null:
+	var validator_context: LayoutValidatorContext = RoomLayoutGenerator.generate_from_genome(g, context)
+	if validator_context.mask == null:
 		return -INF
 	
-	var plan: ConnectorPlan = ConnectorPlanner.build(mask, context.rng)
-	if plan == null:
-		return -INF
-	print(debug_print_with_connectors(mask, plan), "\n\n")
-	
-	#BackboneBuilder.apply(mask, plan, context.rng)
-	
-	var validation: LayoutValidatorContext = LayoutValidator.validate(mask)
-	if not validation.is_valid:
+	var profile := context.traversal_profile
+	if not LayoutValidator.validate(validator_context, profile):
 		return -INF
 
-	return LayoutScorer.score(mask) + validation.score
+	return LayoutScorer.score(validator_context.mask)
 
 static func debug_print_with_connectors(
 	mask: RoomLayoutMask,

@@ -60,68 +60,73 @@ static func debug_print_with_connectors(
 
 	return "\n".join(lines)
 
-#func gen_genome():
-	#
-	#var seed: int = int(text_edit.text)
-#
-	#var rng := RandomNumberGenerator.new()
-	#rng.seed = seed
-#
-	#print("=== START EVOLUTION | SEED:", seed, "===")
-#
-	## --------------------------------------------------
-	## Context
-	## --------------------------------------------------
-#
-	#var size_profile := RoomSizeProfile.new()
-	#var operator_registry := OperatorRegistry.new()
-	#var context := LayoutContext.new(size_profile, rng, operator_registry)
-#
-	## --------------------------------------------------
-	## Core Components
-	## --------------------------------------------------
-#
-	#var factory := LayoutGenomeFactory.new(context)
-	#var mutator := LayoutGenomeMutator.new(context)
-	#var evaluator := LayoutFitnessEvaluator.new(context)
-	#var selection := TopKSelection.new()
-	#var reproduction := ElitistMutationReproduction.new()
-#
-	## --------------------------------------------------
-	## Engine
-	## --------------------------------------------------
-#
-	#var engine := EvolutionEngine.new(
-		#factory,
-		#mutator,
-		#evaluator,
-		#selection,
-		#reproduction,
-		#rng
-	#)
-#
-	## --------------------------------------------------
-	## Evolve
-	## --------------------------------------------------
-#
-	#var best_genome: Genome = engine.evolve()
-#
-	#if best_genome == null:
-		#print("❌ Nessun genome valido trovato")
-		#return
-#
-	## Generiamo la mask finale
-	#var best_layout := RoomLayoutGenerator.generate_from_genome(
-		#best_genome,
-		#context
-	#)
-#
-	#if best_layout == null:
-		#print("❌ Layout nullo")
-		#return
-#
-	#print("=== BEST LAYOUT ===")
-	#print(best_layout.to_ascii())
+func gen_genome():
+	
+	var seed: int = int(text_edit.text)
+
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed
+
+	print("=== START EVOLUTION | SEED:", seed, "===")
+
+	# --------------------------------------------------
+	# Context
+	# --------------------------------------------------
+
+	var size_profile := RoomSizeProfile.new()
+	var operator_registry := OperatorRegistry.new()
+	var traversal_profile := PlayerTraversalProfile.new()
+	var context := LayoutGenomaContext.new(
+		size_profile, rng, operator_registry, traversal_profile
+	)
+	
+
+	# --------------------------------------------------
+	# Core Components
+	# --------------------------------------------------
+
+	var factory := LayoutGenomeFactory.new(context)
+	var mutator := LayoutGenomeMutator.new(context)
+	## TODO: Aggiustare il validatore tramite PlayerReachability e la fitness
+	var evaluator := LayoutFitnessEvaluator.new(context)
+	var selection := TopKSelection.new()
+	var reproduction := ElitistMutationReproduction.new()
+
+	# --------------------------------------------------
+	# Engine
+	# --------------------------------------------------
+
+	var engine := EvolutionEngine.new(
+		factory,
+		mutator,
+		evaluator,
+		selection,
+		reproduction,
+		rng
+	)
+
+	# --------------------------------------------------
+	# Evolve
+	# --------------------------------------------------
+
+	var best_genome: Genome = engine.evolve()
+
+	if best_genome == null:
+		print("❌ Nessun genome valido trovato")
+		return
+
+	# Generiamo la mask finale
+	var best_layout := RoomLayoutGenerator.generate_from_genome(
+		best_genome,
+		context
+	)
+
+	if best_layout == null:
+		print("❌ Layout nullo")
+		return
+
+	print("=== BEST LAYOUT ===")
+	print(best_layout.to_ascii())
 
 func debug():
 	var seed: int = int(text_edit.text)
@@ -141,7 +146,7 @@ func debug():
 	
 	var plan: ConnectorPlan = ConnectorPlanner.build(mask, context.rng)
 	
-	var context_op := OperatorContext.new(size_profile, rng, plan, mask)
+	var context_op := OperatorContext.new(size_profile, rng, mask, plan)
 	var operator_registry := OperatorRegistry.new(context_op)
 	var backbone_op := BackboneOperator.new(context_op)
 	backbone_op.params = backbone_op.create_random_params()
@@ -169,10 +174,6 @@ func debug():
 			#e.ensure_connector_access(d)
 	#
 	
-		
-	print(debug_print_with_connectors(mask, plan))
-	var graph := JumpTraversal.build_jump_graph(mask, PlayerTraversalProfile.new())
-	print("è forward connected?: ", JumpTraversal.is_fully_connected(graph))
 	 
 	print(validate_all_connectors(mask, plan, PlayerTraversalProfile.new()))
 	#for i in range(0, 3):

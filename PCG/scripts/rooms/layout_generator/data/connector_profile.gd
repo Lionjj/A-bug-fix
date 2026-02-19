@@ -15,6 +15,3 @@ extends Resource
 
 # margine extra dai corner (oltre wall_thickness). Ti evita aperture troppo vicino agli angoli.
 @export var corner_margin_tiles: int = 3
-
-# se vuoi: evita aperture troppo vicine tra loro (su lati opposti o stesso lato, ecc.)
-@export var min_spacing_between_openings: int = 3

@@ -46,6 +46,18 @@ func is_solid(x: int, y: int) -> bool:
 		return true
 	return solid[_idx(x, y)] == 1
 
+func get_all_solid_cells() -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+
+	for y in range(size.y):
+		for x in range(size.x):
+			if not is_solid(x, y):
+				continue
+				
+			out.append(Vector2i(x, y))
+
+	return out
+
 func is_empty(x: int, y: int) -> bool:
 	return not is_solid(x, y)
 
@@ -60,23 +72,40 @@ func get_all_empty_cells() -> Array[Vector2i]:
 
 	for y in range(size.y):
 		for x in range(size.x):
-			if is_empty(x, y):
-				out.append(Vector2i(x, y))
+			if not is_empty(x, y):
+				continue
+				
+			out.append(Vector2i(x, y))
 
 	return out
 
-func pick_spawn() -> Vector2i:
-	var candidates: Array[Vector2i] = []
 
-	for y in range(1, size.y - 1):
-		for x in range(1, size.x - 1):
-			if is_empty(x, y) and is_solid(x, y + 1):
-				candidates.append(Vector2i(x, y))
+func collect_floor_tiles() -> Array[Vector2i]:
 
-	if candidates.is_empty():
-		return Vector2i(-1, -1)
+	var floors: Array[Vector2i] = []
 
-	return candidates[rng.randi() % candidates.size()]
+	for y in range(size.y):
+		for x in range(size.x):
+
+			var p := Vector2i(x, y)
+
+			if _is_floor(p):
+				floors.append(p)
+
+	return floors
+
+
+func _is_floor(p: Vector2i) -> bool:
+
+	if not in_bounds(p.x, p.y):
+		return false
+
+	if is_solid(p.x, p.y):
+		return false
+
+	var below := p + Vector2i.DOWN
+
+	return in_bounds(below.x, below.y) and is_solid(below.x, below.y)
 
 
 # ---------------------------------------------------------------------------
