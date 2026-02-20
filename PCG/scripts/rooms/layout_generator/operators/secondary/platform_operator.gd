@@ -143,7 +143,7 @@ func _try_place_platform(width: int, thickness: int) -> bool:
 	var floor_margin := profile.border_margin_ceil_flor
 	var spacing := profile.min_passage_tiles
 
-	var empty_cells := mask.get_all_empty_cells()
+	var empty_cells := mask.empty_cells
 	if empty_cells.is_empty():
 		return false
 	
@@ -181,9 +181,10 @@ func _try_place_platform(width: int, thickness: int) -> bool:
 			for y in range(rect.position.y, rect.end.y):
 				for x in range(rect.position.x, rect.end.x):
 					mask.set_solid(x, y)
-
+			
+			print("Platform applied")
 			return true
-
+	print("not Platform applied")
 	return false
 
 

@@ -14,6 +14,10 @@ var solid: PackedByteArray
 var rng: RandomNumberGenerator
 var context: LayoutContext
 
+var walkable_cells: Array[Vector2i]
+var empty_cells: Array[Vector2i]
+
+
 func _init(_context: LayoutContext) -> void:
 	context = _context
 	size = context.size
@@ -22,6 +26,9 @@ func _init(_context: LayoutContext) -> void:
 	solid = PackedByteArray()
 	solid.resize(size.x * size.y)
 	solid.fill(1)
+	
+	walkable_cells = _get_all_walckable_cell()
+	empty_cells = _get_all_empty_cells()
 	
 	#_seed_base()
 
@@ -67,7 +74,7 @@ func is_empty(x: int, y: int) -> bool:
 ## - flood fill[br]
 ## - verifica connettività[br]
 ## - analisi topologica
-func get_all_empty_cells() -> Array[Vector2i]:
+func _get_all_empty_cells() -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 
 	for y in range(size.y):
@@ -80,7 +87,7 @@ func get_all_empty_cells() -> Array[Vector2i]:
 	return out
 
 
-func collect_floor_tiles() -> Array[Vector2i]:
+func _get_all_walckable_cell() -> Array[Vector2i]:
 
 	var floors: Array[Vector2i] = []
 

@@ -54,6 +54,42 @@ static func find_path(
 	return result["path"]
 
 
+static func can_reach_all_floor_tiles(
+	mask: RoomLayoutMask, 
+	profile: PlayerTraversalProfile
+) -> bool:
+	var floors: Array[Vector2i] = mask.walkable_cells
+	if floors.is_empty():
+		return true
+
+	var start: Vector2i = floors[0]
+	
+	# Trovo il punto più, in questo modo mi garantisce che se c'è una via per
+	# salire c'è anche per scendere.
+	for f in floors:
+		if f.y <= start.y:
+			continue
+		start = f
+
+	var bfs_result: Dictionary = _bfs(
+		mask,
+		profile,
+		start,
+		[]  # nessun target → esplora tutto
+	)
+
+	var visited: Dictionary = bfs_result["visited"]
+
+	for f in floors:
+		var key_surface = [f, PlayerState.SURFACE]
+		var key_air = [f, PlayerState.AIR]
+
+		if not visited.has(key_surface) and not visited.has(key_air):
+			return false
+
+	return true
+
+
 # ==========================================================
 # BFS CORE (multi-target)
 # ==========================================================
@@ -65,25 +101,30 @@ static func _bfs(
 	target_cells: Array
 ) -> Dictionary:
 
+	var has_targets := not target_cells.is_empty()
 	var target_set := {}
-	for t in target_cells:
-		target_set[t] = true
+
+	if has_targets:
+		for t in target_cells:
+			target_set[t] = true
 
 	var start_state: int = _resolve_state(mask, start)
-	var start_node: ReachNode = ReachNode.new(start, start_state)
+	var start_node := ReachNode.new(start, start_state)
 
 	var queue: Array[ReachNode] = [start_node]
-	var visited: Dictionary = {}
-	var parent: Dictionary = {}
+	var head: int = 0
 
-	visited[start_node.key()] = true
+	var visited := {}
+	var parent := {}
 
-	while not queue.is_empty():
+	visited[[start, start_state]] = true
 
-		var current: ReachNode = queue.pop_front()
+	while head < queue.size():
 
-		# 🎯 Se raggiunge QUALSIASI cella del volume
-		if target_set.has(current.pos):
+		var current: ReachNode = queue[head]
+		head += 1
+
+		if has_targets and target_set.has(current.pos):
 			return {
 				"path": _reconstruct(parent, current),
 				"visited": visited,
@@ -92,7 +133,7 @@ static func _bfs(
 
 		for next in _expand(mask, profile, current):
 
-			var key: String = next.key()
+			var key = [next.pos, next.state]
 
 			if visited.has(key):
 				continue
@@ -106,6 +147,7 @@ static func _bfs(
 		"visited": visited,
 		"parent": parent
 	}
+
 
 
 # ==========================================================

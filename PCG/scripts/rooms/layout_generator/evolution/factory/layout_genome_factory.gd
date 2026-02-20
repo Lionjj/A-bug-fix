@@ -61,12 +61,18 @@ func random_genome() -> LayoutGenome:
 	
 	var picker := OperatorPicker.new(registry, rng)
 	
-	var secondary_type: int = picker.pick_secondary()
-	
-	if secondary_type != -1:
+	# Numero casuale di secondari
+	var secondary_count := rng.randi_range(1, 3)
+
+	for i in secondary_count:
+		var secondary_type := picker.pick_secondary()
+
+		if secondary_type == -1:
+			print("LayoutGenomeFactory.random_genome: nessun operatore secondario scelto")
+			continue
+
 		_add_operator(genome, secondary_type)
-	
-	
+
 	return genome
 
 

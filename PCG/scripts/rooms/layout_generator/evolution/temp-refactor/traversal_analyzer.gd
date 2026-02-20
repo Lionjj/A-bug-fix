@@ -10,6 +10,14 @@
 class_name TraversalAnalyzer
 extends RefCounted
 
+class Root:
+	var dir: int
+	var cell: Vector2i
+	
+	func _init(_dir: int, _cell: Vector2i) -> void:
+		dir = _dir
+		cell = _cell
+
 # ----------------------------------------------------------------------------
 # API
 # ----------------------------------------------------------------------------
@@ -25,65 +33,31 @@ static func are_connectors_reacable(mask: RoomLayoutMask, plan: ConnectorPlan, p
 	if active.size() <= 1:
 		return true
 	
-	var connector: int = active[0]
-	var root: Vector2i = PlayerReachability.get_connector_entry_cell(mask, plan, connector)
+	var root: Root = _find_lowest_active_connector(mask, plan, active)
 	
-	if root.x == -1:
-		printerr("TraversalAnalyzer: Connector root invalido:", connector)
+	if root.dir == -1:
+		printerr("TraversalAnalyzer.are_connectors_reacable: Nessun connettore valido")
 		return false
 	
 	#--------------------------------------------------------------------------
 	# Verifica che si puo arrivare dal connettore root agli altri connettori
 	#--------------------------------------------------------------------------
 	
-	for i in range(1, active.size()):
+	for i in range(active.size()):
 		var target: int = active[i]
+		
+		if root.dir == target:
+			continue
 		
 		var solution_area: Array[Vector2i] = PlayerReachability.get_connector_volume_cells(
 			mask, plan, target
 		)
 		
 		if not PlayerReachability.has_path(
-			mask, profile, root, solution_area
+			mask, profile, root.cell, solution_area
 		): 
-			printerr("TraversalAnalyzer: Non vi è alcun percorso: ", connector, " -> ", target)
+			printerr("TraversalAnalyzer: Non vi è alcun percorso: ", root.dir, " -> ", target)
 			return false
-	
-	var root_area: Array[Vector2i] = PlayerReachability.get_connector_volume_cells(
-			mask, plan, connector
-	)
-		
-	for i in range(1, active.size()):
-		var start_dir: int = active[i]
-		var start: Vector2i = PlayerReachability.get_connector_entry_cell(mask, plan, start_dir)
-		
-		if not PlayerReachability.has_path(
-			mask, profile, start, root_area
-		): 
-			printerr("TraversalAnalyzer: Non vi è alcun percorso: ", start_dir, " -> ", connector)
-			return false
-	
-	#for i in range(active.size()):
-		#var dir: int = active[i]
-		#var start: Vector2i = PlayerReachability.get_connector_entry_cell(mask, plan, dir)
-		#
-		#if start.x == -1:
-			#print("ERRORE start invalido:", dir)
-			#return false
-		#
-		#for j in range(active.size()):
-			#if i == j: continue
-			#
-			#var target: int = active[j]
-			#var solution_area: Array[Vector2i] = PlayerReachability.get_connector_volume_cells(
-				#mask, plan, target
-			#)
-			#
-			#if not PlayerReachability.has_path(
-				#mask, profile, start, solution_area
-			#): 
-				#print("Non vi è alcun percorso: ", start, " -> ", target)
-				#return false
 		
 	return true
 
@@ -92,36 +66,7 @@ static func are_connectors_reacable(mask: RoomLayoutMask, plan: ConnectorPlan, p
 ## [param mask]: Rappresentazione semplificata di una stanza in cui si muove il player;
 ## [param profile]: Dati euristici rappresentati i movimenti del player semplificati;
 static func are_floor_tile_reacable(mask: RoomLayoutMask, profile: PlayerTraversalProfile) -> bool:
-	var floor_clusters: Dictionary[Vector2i, Array] = _build_walk_graph(mask)
-	
-	if floor_clusters.size() <= 1:
-		return true
-	
-	var root: Vector2i = floor_clusters.keys()[0]
-	
-	for kay in floor_clusters.keys():
-		if kay == root: continue
-		
-		var target := floor_clusters[kay]
-		if not PlayerReachability.has_path(
-			mask, profile, root, target
-		): 
-			printerr("TraversalAnalyzer: path invalido:", root, "->", kay)
-			return false
-	
-	var root_cluster := floor_clusters[root]
-	
-	for kay in floor_clusters.keys():
-		if kay == root: continue
-		
-		var target := floor_clusters[kay]
-		if not PlayerReachability.has_path(
-			mask, profile, kay, root_cluster
-		): 
-			printerr("TraversalAnalyzer: path invalido:", kay, "->", root)
-			return false
-	
-	return true
+	return PlayerReachability.can_reach_all_floor_tiles(mask, profile)
 
 
 # ----------------------------------------------------------------------------
@@ -143,30 +88,33 @@ static func _carve_all_opening(mask: RoomLayoutMask, plan: ConnectorPlan) -> Arr
 	
 	return out
 
-## Costruisce un dizoonario di cluster tale che come chiave abiamo una cella 
-## pavimento di quel cluster, come valore il cluster stesso. [br]
-## Le condizioni che permetto ad una cella di far parte di un cluster sono: [br]
-## - Deve essere una cella sul pavimento; [br]
-## - a sinstra o a destra o entrambe le direzioni deve avere una cella facente 
-## già parte di quel cluster; [br]
-## [param mask]: Rappresentazione semplificata di una stanza;
-static func _build_walk_graph(mask: RoomLayoutMask) -> Dictionary[Vector2i, Array]:
 
-	var floors: Array[Vector2i] = mask.collect_floor_tiles()
-	var floor_set: Dictionary[Vector2i, bool]= {}
-	
-	for f in floors:
-		floor_set[f] = true
-	
-	var graph: Dictionary[Vector2i, Array] = {}
-	
-	for f in floors:
-		graph[f] = [f]
+## Trova il connettore con il punto più basso rispetto ai connettori attivi 
+## nella stanza
+## [param mask]: Rappresentazione semplificata di una stanza;
+## [param plan]: Informazioni dei connettori;
+## [param active]: Rappresenta quali connettori sono attivi
+static func _find_lowest_active_connector(
+	mask: RoomLayoutMask,
+	plan: ConnectorPlan,
+	active: Array[int]
+) -> Root:
+
+	var best_pos := Vector2i(-1, -1)
+	var best_dir := -1
+	var best_y := -INF
+
+	for dir in active:
+		var entry := PlayerReachability.get_connector_entry_cell(mask, plan, dir)
+
+		if entry.x == -1:
+			continue
+
+		if entry.y <= best_y:
+			continue
 		
-		for dir in [Vector2i.LEFT, Vector2i.RIGHT]:
-			var n: Vector2i = f + dir
-			
-			if floor_set.has(n):
-				graph[f].append(n)
+		best_dir = dir
+		best_y = entry.y
+		best_pos = entry
 	
-	return graph
+	return Root.new(best_dir, best_pos)

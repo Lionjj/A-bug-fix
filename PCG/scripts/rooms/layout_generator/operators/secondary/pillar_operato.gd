@@ -139,7 +139,7 @@ func _try_place_pillar(width: int, height: int) -> bool:
 	var margin := profile.border_margin_wall
 	var spacing := profile.min_passage_tiles
 
-	var empty_cells := mask.get_all_empty_cells()
+	var empty_cells := mask.empty_cells
 	if empty_cells.is_empty():
 		return false
 

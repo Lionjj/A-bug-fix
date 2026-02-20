@@ -131,8 +131,8 @@ func gen_genome():
 		print("❌ Layout nullo")
 		return
 
-	#print("=== BEST LAYOUT ===")
-	#print(best_layout.mask.to_ascii())
+	print("=== BEST LAYOUT ===")
+	print(debug_print_with_connectors(best_layout.mask, best_layout.plan))
 
 #func debug():
 	#var seed: int = int(text_edit.text)
