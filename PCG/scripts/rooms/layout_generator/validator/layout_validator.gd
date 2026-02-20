@@ -34,18 +34,15 @@ static func validate(context: LayoutValidatorContext, profile: PlayerTraversalPr
 	# ------------------------------------------------------------
 	# Analisi traversal
 	# ------------------------------------------------------------
-	var t0 := Time.get_ticks_msec()
+	
 	if not TraversalAnalyzer.are_floor_tile_reacable(mask, profile):
 		printerr("LayoutValidator: le celle pavimento non sono tutte raggiungibili!")
 		return false
-	
-	print("TraversalAnalyzer.are_floor_tile_reacable TIME:", Time.get_ticks_msec() - t0, "ms")
 
-	t0 = Time.get_ticks_msec()
 	var mask_copy := mask.duplicate()
 	if not TraversalAnalyzer.are_connectors_reacable(mask_copy, plan, profile):
 		printerr("LayoutValidator: Uno dei connettori non è raggiungibile!")
 		return false
-	print("TraversalAnalyzer.are_connectors_reacable TIME:", Time.get_ticks_msec() - t0, "ms")
+		
 	return true
 	

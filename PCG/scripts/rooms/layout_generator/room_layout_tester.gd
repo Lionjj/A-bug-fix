@@ -89,10 +89,9 @@ func gen_genome():
 
 	var factory := LayoutGenomeFactory.new(context)
 	var mutator := LayoutGenomeMutator.new(context)
-	## TODO: Aggiustare il validatore tramite PlayerReachability e la fitness
 	var evaluator := LayoutFitnessEvaluator.new(context)
 	var selection := TopKSelection.new()
-	var reproduction := ElitistMutationReproduction.new()
+	var reproduction := ElitistHybridReproduction.new()
 
 	# --------------------------------------------------
 	# Engine
@@ -121,7 +120,7 @@ func gen_genome():
 	
 	t0 = Time.get_ticks_msec()
 	# Generiamo la mask finale
-	var best_layout := RoomLayoutGenerator.generate_from_genome(
+	var best_layout := LayoutPhenotypeBuilder.build(
 		best_genome,
 		context
 	)

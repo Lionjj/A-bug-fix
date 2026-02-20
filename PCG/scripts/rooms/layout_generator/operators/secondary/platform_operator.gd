@@ -1,21 +1,22 @@
 # ============================================================================
 # PlatformOperator
 # ============================================================================
-## Operatore SECONDARIO per la generazione di piattaforme sospese.
+## Operatore SECONDARIO per l’inserimento di piattaforme sospese.
 ##
 ## RESPONSABILITÀ:
-## - Inserire superfici solide rettangolari interne.
-## - Garantire spazio libero sopra e sotto.
-## - Rispettare margini da pareti e pavimento.
+## - Inserire rettangoli solidi interni alla stanza.
+## - Garantire spazio libero sopra, sotto e lateralmente.
+## - Rispettare i margini strutturali globali.
 ##
-## VINCOLI:
-## - Non modifica macro-topologia.
-## - Non interagisce con Connector o Backbone.
-## - Non crea rollback complessi.
+## FILOSOFIA IMPLEMENTATIVA:
+## - Nessun retry loop.
+## - Nessuna scansione ripetuta.
+## - Si calcolano prima tutte le posizioni valide.
+## - Si sceglie casualmente tra esse.
 ##
-## RUOLO NEL SISTEMA:
-## - Introduce verticalità e varietà.
-## - Aumenta complessità di navigazione.
+## COMPLESSITÀ:
+## - Deterministica O(n)
+## - Nessun comportamento esplosivo
 # ============================================================================
 
 class_name PlatformOperator
@@ -26,8 +27,8 @@ extends LayoutOperator
 # METADATO STATICO
 # ----------------------------------------------------------------------------
 
+## Peso di selezione evolutiva.
 static func get_weight() -> float:
-	## Peso medio → più frequente del Pillar.
 	return 0.5
 
 
@@ -44,33 +45,40 @@ func _init(_context: OperatorContext, _params: Dictionary = {}) -> void:
 # APPLY
 # ----------------------------------------------------------------------------
 
+## Applica le piattaforme richieste dal genome.
+##
+## return: true se almeno una piattaforma è stata inserita.
 func apply() -> bool:
 
-	var profile := context.size_profile
-	var rng := context.rng
-	
 	var count: int = params.get(
 		"platform_count",
-		profile.min_platform_count
+		context.size_profile.min_platform_count
 	)
 
 	var width: int = params.get(
 		"platform_width",
-		profile.min_width_platform
+		context.size_profile.min_width_platform
 	)
 
 	var thickness: int = params.get(
 		"platform_thickness",
-		profile.min_thickness_platform
+		context.size_profile.min_thickness_platform
 	)
 
-	var placed: int = 0
-	var attempts: int = count * 20
+	var placed := 0
 
-	while placed < count and attempts > 0:
-		attempts -= 1
-		if _try_place_platform(width, thickness):
-			placed += 1
+	for i in range(count):
+
+		var candidates := _compute_valid_rects(width, thickness)
+
+		if candidates.is_empty():
+			break
+
+		var rng := context.rng
+		var rect := candidates[rng.randi_range(0, candidates.size() - 1)]
+
+		_write_rect(rect)
+		placed += 1
 
 	return placed > 0
 
@@ -79,22 +87,25 @@ func apply() -> bool:
 # PARAMETRI GENETICI
 # ----------------------------------------------------------------------------
 
+## Genera parametri random coerenti con il profilo stanza.
+##
+## return: Dictionary con parametri genetici.
 func create_random_params() -> Dictionary:
 
 	var rng := context.rng
 	var profile := context.size_profile
-	
+
 	return {
 		"platform_count": rng.randi_range(
 			profile.min_platform_count,
 			profile.max_platform_count
 		),
-		
+
 		"platform_width": rng.randi_range(
 			profile.min_width_platform,
 			profile.max_width_platform
 		),
-		
+
 		"platform_thickness": rng.randi_range(
 			profile.min_thickness_platform,
 			profile.max_thickness_platform
@@ -102,11 +113,12 @@ func create_random_params() -> Dictionary:
 	}
 
 
+## Mutazione controllata dei parametri genetici.
 func mutate_params() -> void:
 
 	var rng := context.rng
 	var profile := context.size_profile
-	
+
 	params["platform_count"] = clampi(
 		params.get("platform_count", profile.min_platform_count)
 		+ rng.randi_range(-1, 1),
@@ -130,79 +142,61 @@ func mutate_params() -> void:
 
 
 # ----------------------------------------------------------------------------
-# PLACEMENT LOGIC
+# CALCOLO POSIZIONI VALIDE
 # ----------------------------------------------------------------------------
 
-func _try_place_platform(width: int, thickness: int) -> bool:
+## Calcola tutte le posizioni valide per una piattaforma
+## con dimensioni specificate.
+##
+## [param width]: larghezza piattaforma.
+## [param thickness]: spessore verticale.
+##
+## return: Array di Rect2i validi.
+func _compute_valid_rects(width: int, thickness: int) -> Array[Rect2i]:
 
-	var rng := context.rng
-	var profile := context.size_profile
+	var result: Array[Rect2i] = []
+
 	var mask := context.mask
+	var profile := context.size_profile
+	var bounds := mask.get_operable_bounds(profile)
 
-	var wall_margin := profile.border_margin_wall
-	var floor_margin := profile.border_margin_ceil_flor
-	var spacing := profile.min_passage_tiles
+	for y in range(bounds.position.y, bounds.end.y - thickness):
+		for x in range(bounds.position.x, bounds.end.x - width):
 
-	var empty_cells := mask.empty_cells
-	if empty_cells.is_empty():
-		return false
-	
-	empty_cells.shuffle()
+			var rect := Rect2i(
+				Vector2i(x, y),
+				Vector2i(width, thickness)
+			)
 
-	for cell in empty_cells:
+			if not bounds.encloses(rect):
+				continue
 
-		var x0 := cell.x
-		var y0 := cell.y
+			if _can_place(rect):
+				result.append(rect)
 
-		# ----------------------------
-		# Boundaries rispetto ai muri
-		# ----------------------------
-		if x0 < wall_margin:
-			continue
-		if x0 + width >= mask.size.x - wall_margin:
-			continue
-
-		# ----------------------------
-		# Boundaries verticali
-		# ----------------------------
-		if y0 < floor_margin + spacing:
-			continue
-		if y0 + thickness >= mask.size.y - floor_margin - spacing:
-			continue
-
-		var rect := Rect2i(
-			Vector2i(x0, y0),
-			Vector2i(width, thickness)
-		)
-
-		if _can_place_platform(rect):
-
-			# Scrittura effettiva
-			for y in range(rect.position.y, rect.end.y):
-				for x in range(rect.position.x, rect.end.x):
-					mask.set_solid(x, y)
-			
-			print("Platform applied")
-			return true
-	print("not Platform applied")
-	return false
+	return result
 
 
 # ----------------------------------------------------------------------------
 # VALIDAZIONE POSIZIONAMENTO
 # ----------------------------------------------------------------------------
 
-func _can_place_platform(rect: Rect2i) -> bool:
+## Verifica se un rettangolo può essere inserito.
+##
+## [param rect]: area candidata.
+##
+## return: true se posizionabile.
+func _can_place(rect: Rect2i) -> bool:
 
 	var mask := context.mask
-	var vertical_clear := context.size_profile.border_margin_ceil_flor
-	var horizontal_clear := context.size_profile.border_margin_wall
+	var profile := context.size_profile
+
+	var vertical_clear := profile.border_margin_ceil_flor
+	var horizontal_clear := profile.border_margin_wall
 
 	# Area piattaforma deve essere vuota
 	for y in range(rect.position.y, rect.end.y):
 		for x in range(rect.position.x, rect.end.x):
-			if not mask.in_bounds(x, y):
-				return false
 			if mask.is_solid(x, y):
 				return false
 
@@ -235,3 +229,19 @@ func _can_place_platform(rect: Rect2i) -> bool:
 				return false
 
 	return true
+
+
+# ----------------------------------------------------------------------------
+# SCRITTURA MASK
+# ----------------------------------------------------------------------------
+
+## Scrive il rettangolo nella mask.
+##
+## [param rect]: area da rendere solida.
+func _write_rect(rect: Rect2i) -> void:
+
+	var mask := context.mask
+
+	for y in range(rect.position.y, rect.end.y):
+		for x in range(rect.position.x, rect.end.x):
+			mask.set_solid(x, y)

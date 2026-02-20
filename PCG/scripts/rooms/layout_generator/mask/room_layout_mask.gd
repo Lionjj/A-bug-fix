@@ -14,9 +14,6 @@ var solid: PackedByteArray
 var rng: RandomNumberGenerator
 var context: LayoutContext
 
-var walkable_cells: Array[Vector2i]
-var empty_cells: Array[Vector2i]
-
 
 func _init(_context: LayoutContext) -> void:
 	context = _context
@@ -26,9 +23,6 @@ func _init(_context: LayoutContext) -> void:
 	solid = PackedByteArray()
 	solid.resize(size.x * size.y)
 	solid.fill(1)
-	
-	walkable_cells = _get_all_walckable_cell()
-	empty_cells = _get_all_empty_cells()
 	
 	#_seed_base()
 
@@ -74,7 +68,7 @@ func is_empty(x: int, y: int) -> bool:
 ## - flood fill[br]
 ## - verifica connettività[br]
 ## - analisi topologica
-func _get_all_empty_cells() -> Array[Vector2i]:
+func get_all_empty_cells() -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 
 	for y in range(size.y):
@@ -83,11 +77,11 @@ func _get_all_empty_cells() -> Array[Vector2i]:
 				continue
 				
 			out.append(Vector2i(x, y))
-
+			
 	return out
 
 
-func _get_all_walckable_cell() -> Array[Vector2i]:
+func get_all_walckable_cell() -> Array[Vector2i]:
 
 	var floors: Array[Vector2i] = []
 
@@ -113,6 +107,20 @@ func _is_floor(p: Vector2i) -> bool:
 	var below := p + Vector2i.DOWN
 
 	return in_bounds(below.x, below.y) and is_solid(below.x, below.y)
+	
+	
+func get_operable_bounds(profile: RoomSizeProfile) -> Rect2i:
+
+	var wall_margin := profile.border_margin_wall
+	var floor_margin := profile.border_margin_ceil_flor
+
+	return Rect2i(
+		Vector2i(wall_margin, floor_margin),
+		Vector2i(
+			size.x - wall_margin * 2,
+			size.y - floor_margin * 2
+		)
+	)
 
 
 # ---------------------------------------------------------------------------

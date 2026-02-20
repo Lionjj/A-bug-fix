@@ -17,10 +17,10 @@ func evaluate(genome: Genome) -> float:
 	var g: LayoutGenome = genome as LayoutGenome
 	if g == null:
 		return -INF
-		
+	print("GENE COUNT:", genome.genes.size())
 	var t0 := Time.get_ticks_msec()
 
-	var validator_context: LayoutValidatorContext = RoomLayoutGenerator.generate_from_genome(g, context)
+	var validator_context: LayoutValidatorContext = LayoutPhenotypeBuilder.build(g, context)
 	if validator_context.mask == null:
 		return -INF
 	

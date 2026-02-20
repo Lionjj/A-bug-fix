@@ -1,21 +1,22 @@
 # ============================================================================
 # PillarOperator
 # ============================================================================
-## Operatore SECONDARIO.
+## Operatore SECONDARIO per l’inserimento di colonne solide isolate.
 ##
 ## RESPONSABILITÀ:
-## - Inserire colonne solide rettangolari isolate.
+## - Inserire rettangoli solidi verticali interni alla stanza.
+## - Mantenere distanza minima dai muri.
+## - Garantire spazio laterale di passaggio.
 ##
-## VINCOLI:
-## - Non tocca i muri perimetrali.
-## - Non divide la stanza.
-## - Non crea chiusure laterali.
-## - Mantiene distanza minima da altri solidi.
+## FILOSOFIA IMPLEMENTATIVA:
+## - Nessun retry loop.
+## - Nessuna scansione casuale delle celle.
+## - Si calcolano prima tutte le posizioni valide.
+## - Si sceglie casualmente tra esse.
 ##
-## RUOLO ARCHITETTURALE:
-## - Arricchimento spaziale.
-## - Introduce cover / ostacoli.
-## - Non altera la macro-topologia (Backbone).
+## COMPLESSITÀ:
+## - Deterministica O(n)
+## - Nessuna crescita esponenziale
 # ============================================================================
 
 class_name PillarOperator
@@ -26,8 +27,8 @@ extends LayoutOperator
 # METADATO STATICO
 # ----------------------------------------------------------------------------
 
+## Peso di selezione evolutiva.
 static func get_weight() -> float:
-	## Peso basso → operatore decorativo.
 	return 0.25
 
 
@@ -44,33 +45,40 @@ func _init(_context: OperatorContext, _params: Dictionary = {}) -> void:
 # APPLY
 # ----------------------------------------------------------------------------
 
+## Applica le colonne richieste dal genome.
+##
+## return: true se almeno una colonna è stata inserita.
 func apply() -> bool:
-
-	var profile := context.size_profile
-	var rng := context.rng
 
 	var count: int = params.get(
 		"pillar_count",
-		profile.min_pillar_count
+		context.size_profile.min_pillar_count
 	)
 
 	var width: int = params.get(
 		"pillar_width",
-		profile.min_pillar_width
+		context.size_profile.min_pillar_width
 	)
 
 	var height: int = params.get(
 		"pillar_height",
-		profile.min_pillar_height
+		context.size_profile.min_pillar_height
 	)
 
-	var placed: int = 0
-	var attempts: int = count * 6
+	var placed := 0
 
-	while placed < count and attempts > 0:
-		attempts -= 1
-		if _try_place_pillar(width, height):
-			placed += 1
+	for i in range(count):
+
+		var candidates := _compute_valid_rects(width, height)
+
+		if candidates.is_empty():
+			break
+
+		var rng := context.rng
+		var rect := candidates[rng.randi_range(0, candidates.size() - 1)]
+
+		_write_rect(rect)
+		placed += 1
 
 	return placed > 0
 
@@ -79,22 +87,25 @@ func apply() -> bool:
 # PARAMETRI GENETICI
 # ----------------------------------------------------------------------------
 
+## Genera parametri random coerenti con il profilo stanza.
+##
+## return: Dictionary con parametri genetici.
 func create_random_params() -> Dictionary:
 
 	var rng := context.rng
 	var profile := context.size_profile
-	
+
 	return {
 		"pillar_count": rng.randi_range(
 			profile.min_pillar_count,
 			profile.max_pillar_count
 		),
-		
+
 		"pillar_width": rng.randi_range(
 			profile.min_pillar_width,
 			profile.max_pillar_width
 		),
-		
+
 		"pillar_height": rng.randi_range(
 			profile.min_pillar_height,
 			profile.max_pillar_height
@@ -102,118 +113,118 @@ func create_random_params() -> Dictionary:
 	}
 
 
+## Mutazione controllata dei parametri genetici.
 func mutate_params() -> void:
 
 	var rng := context.rng
 	var profile := context.size_profile
-	
+
 	params["pillar_count"] = clampi(
-		params["pillar_count"] + rng.randi_range(-1, 1),
+		params.get("pillar_count", profile.min_pillar_count)
+		+ rng.randi_range(-1, 1),
 		profile.min_pillar_count,
 		profile.max_pillar_count
 	)
-	
+
 	params["pillar_width"] = clampi(
-		params["pillar_width"] + rng.randi_range(-1, 1),
+		params.get("pillar_width", profile.min_pillar_width)
+		+ rng.randi_range(-1, 1),
 		profile.min_pillar_width,
 		profile.max_pillar_width
 	)
-	
+
 	params["pillar_height"] = clampi(
-		params["pillar_height"] + rng.randi_range(-1, 1),
+		params.get("pillar_height", profile.min_pillar_height)
+		+ rng.randi_range(-1, 1),
 		profile.min_pillar_height,
 		profile.max_pillar_height
 	)
 
 
 # ----------------------------------------------------------------------------
-# PLACEMENT LOGIC
+# CALCOLO POSIZIONI VALIDE
 # ----------------------------------------------------------------------------
 
-func _try_place_pillar(width: int, height: int) -> bool:
+## Calcola tutte le posizioni valide per un pillar.
+##
+## [param width]: larghezza del pillar.
+## [param height]: altezza del pillar.
+##
+## return: Array di Rect2i validi.
+func _compute_valid_rects(width: int, height: int) -> Array[Rect2i]:
 
-	var rng := context.rng
+	var result: Array[Rect2i] = []
+
+	var mask := context.mask
 	var profile := context.size_profile
-	var mask := context.mask
+	var bounds := mask.get_operable_bounds(profile)
 
-	var margin := profile.border_margin_wall
-	var spacing := profile.min_passage_tiles
+	# Spazio laterale minimo richiesto per garantire passaggio
+	var lateral_clear := profile.min_passage_tiles
 
-	var empty_cells := mask.empty_cells
-	if empty_cells.is_empty():
-		return false
+	for y in range(bounds.position.y, bounds.end.y - height):
+		for x in range(bounds.position.x, bounds.end.x - width):
 
-	empty_cells.shuffle()
+			var rect := Rect2i(
+				Vector2i(x, y),
+				Vector2i(width, height)
+			)
 
-	var candidates: Array[Vector2i] = []
+			if not bounds.encloses(rect):
+				continue
 
-	for cell in empty_cells:
+			if _can_place(rect, lateral_clear):
+				result.append(rect)
 
-		var x0 := cell.x
-		var y0 := cell.y
-
-		# ----------------------------
-		# Boundaries rispetto ai muri
-		# ----------------------------
-		if x0 < margin + spacing:
-			continue
-		if x0 + width >= mask.size.x - margin - spacing:
-			continue
-
-		if y0 < margin + spacing:
-			continue
-		if y0 + height >= mask.size.y - margin - spacing:
-			continue
-
-		var rect := Rect2i(Vector2i(x0, y0), Vector2i(width, height))
-
-		if _can_place_pillar(rect):
-			candidates.append(Vector2i(x0, y0))
-
-	if candidates.is_empty():
-		return false
-
-	var chosen := candidates[rng.randi() % candidates.size()]
-	var rect := Rect2i(chosen, Vector2i(width, height))
-
-	# Scrittura effettiva
-	for y in range(rect.position.y, rect.end.y):
-		for x in range(rect.position.x, rect.end.x):
-			mask.set_solid(x, y)
-
-	return true
+	return result
 
 
 # ----------------------------------------------------------------------------
-# VALIDAZIONE PLACEMENT
+# VALIDAZIONE POSIZIONAMENTO
 # ----------------------------------------------------------------------------
 
-func _can_place_pillar(rect: Rect2i) -> bool:
+## Verifica se il rettangolo può essere inserito.
+##
+## [param rect]: area candidata.
+## [param lateral_clear]: spazio minimo laterale richiesto.
+##
+## return: true se posizionabile.
+func _can_place(rect: Rect2i, lateral_clear: int) -> bool:
 
 	var mask := context.mask
-	var lateral_clear := 3  # distanza minima laterale
 
-	# ----------------------------
-	# Area deve essere vuota
-	# ----------------------------
+	# Area pillar deve essere vuota
 	for y in range(rect.position.y, rect.end.y):
 		for x in range(rect.position.x, rect.end.x):
-			if not mask.in_bounds(x, y):
-				return false
 			if mask.is_solid(x, y):
 				return false
 
-	# ----------------------------
-	# Distanza laterale da solidi
-	# ----------------------------
+	# Spazio laterale sinistro
 	for x in range(rect.position.x - lateral_clear, rect.position.x):
 		for y in range(rect.position.y, rect.end.y):
 			if mask.in_bounds(x, y) and mask.is_solid(x, y):
 				return false
 
+	# Spazio laterale destro
 	for x in range(rect.end.x, rect.end.x + lateral_clear):
 		for y in range(rect.position.y, rect.end.y):
 			if mask.in_bounds(x, y) and mask.is_solid(x, y):
 				return false
 
 	return true
+
+
+# ----------------------------------------------------------------------------
+# SCRITTURA MASK
+# ----------------------------------------------------------------------------
+
+## Scrive il rettangolo nella mask.
+##
+## [param rect]: area da rendere solida.
+func _write_rect(rect: Rect2i) -> void:
+
+	var mask := context.mask
+
+	for y in range(rect.position.y, rect.end.y):
+		for x in range(rect.position.x, rect.end.x):
+			mask.set_solid(x, y)

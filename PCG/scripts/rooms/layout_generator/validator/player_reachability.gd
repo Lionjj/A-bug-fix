@@ -58,7 +58,7 @@ static func can_reach_all_floor_tiles(
 	mask: RoomLayoutMask, 
 	profile: PlayerTraversalProfile
 ) -> bool:
-	var floors: Array[Vector2i] = mask.walkable_cells
+	var floors: Array[Vector2i] = mask.get_all_walckable_cell()
 	if floors.is_empty():
 		return true
 
