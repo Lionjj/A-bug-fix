@@ -26,20 +26,6 @@ class_name RoomSizeProfile
 
 
 #--------------------------------------------------------
-# Metriche operatore: Platform
-#--------------------------------------------------------
-
-@export var threshold_loop_back_bone: float = 0.4
-
-@export var min_width_back_bone: int = 4
-
-@export var max_width_back_bone: int = 8
-
-@export var min_jitter_back_bone: float = 0.0
-
-@export var max_jitter_back_bone: float = 0.4
-
-#--------------------------------------------------------
 # Metriche codivise dagli operatori
 #--------------------------------------------------------
 
@@ -62,6 +48,37 @@ class_name RoomSizeProfile
 ## Margine tra un oggetto geomterico fiscio nella stanza
 ## e soffitto/pavimento
 @export var border_margin_ceil_flor: int = 3
+
+
+#--------------------------------------------------------
+# Metriche operatore: backbone
+#--------------------------------------------------------
+
+@export var threshold_loop_back_bone: float = 0.4
+
+@export var min_width_back_bone: int = 4
+
+@export var max_width_back_bone: int = 8
+
+@export var min_jitter_back_bone: float = 0.0
+
+@export var max_jitter_back_bone: float = 0.4
+
+
+#----------------------------------------------------------------
+# Parametri dei connettori
+#----------------------------------------------------------------
+
+@export var min_width_tiles: int = 4
+
+# cap assoluto (hard cap)
+@export var max_width_abs: int = 12
+
+# cap relativo allo spazio utile (0..1). Es: 0.30 = max 30% del lato utile
+@export var max_width_ratio: float = 0.30
+
+# margine extra dai corner (oltre wall_thickness). Ti evita aperture troppo vicino agli angoli.
+@export var corner_margin_tiles: int = 3
 
 
 #--------------------------------------------------------
@@ -111,29 +128,6 @@ class_name RoomSizeProfile
 
 
 #--------------------------------------------------------
-# Metriche operatore: Divider
-#--------------------------------------------------------
-
-## Numero minimo di divisori della stanza
-@export var min_divider_count: int = 1
-
-## Numero massimo di divisori della stanza
-@export var max_divider_count: int = 3
-
-## Valore minimo di divisione tra un seapartore e l'altro
-@export var min_divider_separator: int = min_passage_tiles + wall_thickness
-
-## Probabilità minima che i divisori siano verticali
-@export var min_divider_vertical: float = 0.2
-
-## Probabilità massima che i divisori siano verticali
-@export var max_divider_vertical: float = 0.8
-
-## Soglia per essere verticale
-@export var divider_threshold_vertical: float = 0.5
-
-
-#--------------------------------------------------------
 # Metriche operatore: Platform
 #--------------------------------------------------------
 
@@ -154,55 +148,3 @@ class_name RoomSizeProfile
 
 ## Massimo spessore delle piattaforme
 @export var max_thickness_platform: int = 3
-
-
-#--------------------------------------------------------
-# Metriche operatore: Ring
-#--------------------------------------------------------
-
-## Minima distanza del ring dai bordi della stanza
-@export var min_ring_offset: int = 3
-
-## Massima distanza del ring dai bordi della stanza
-@export var max_ring_offset: int = 8
-
-## Spessore minimo del ring
-@export var min_ring_thickness: int = 2
-
-## Spessore massimo del ring
-@export var max_ring_thickness: int = 4
-
-## Dimensione minima dell'apertura del ring 
-@export var min_ring_gate_width: int = 4
-
-## Dimensione massima dell'apertura del ring 
-@export var max_ring_gate_width: int = 6
-
-## Numero minimo di aperture del ring
-@export var min_ring_gate_count: int = 1
-
-## Numero massimo di aperture del ring
-@export var max_ring_gate_count: int = 3
-
-
-#--------------------------------------------------------
-# Metriche operatore: SplitCorner 
-#--------------------------------------------------------
-
-## Largezza minima del angolo
-@export var min_width_split_corner: int = 4
-
-## Largezza massima del angolo
-@export var max_width_split_corner: int = 8
-
-## Profondità minima del angolo
-@export var min_depth_split_corner: int = 4
-
-## Profondità massima del angolo
-@export var max_depth_split_corner: int = 8
-
-## Numero minimo di angoli
-@export var min_split_corner_count: int = 1
-
-## Numero massimo di angoli
-@export var max_split_corner_count: int = 4

@@ -41,14 +41,15 @@ static func generate_from_genome(
 	var size_profile := genome_context.size_profile
 	var rng := genome_context.rng
 	var registry := genome_context.operator_registry
+	var size := genome_context.size
 	
-	var layout_context: LayoutContext = LayoutContext.new(size_profile, rng)
+	var layout_context: LayoutContext = LayoutContext.new(size_profile, rng, size)
 	
 	var mask := RoomLayoutMask.new(layout_context)
 	if mask == null:
 		return null
 		
-	var operator_context: OperatorContext = OperatorContext.new(size_profile, rng, mask)
+	var operator_context: OperatorContext = OperatorContext.new(size_profile, rng, size, mask)
 
 	for gene in genome.genes:
 		_apply_gene(gene, registry, operator_context)
@@ -61,7 +62,7 @@ static func _apply_gene(
 	registry: OperatorRegistry,
 	context: OperatorContext
 ) -> void:
-	var operator: LayoutOperator = registry.istanziate(
+	var operator: LayoutOperator = registry.instantiate(
 		gene.type,
 		context,
 		gene.params

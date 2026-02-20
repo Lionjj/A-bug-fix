@@ -1,9 +1,38 @@
 # ============================================================================
 # BackboneOperator
 # ============================================================================
+## Operatore strutturale principale.
+##
+## RESPONSABILITÀ:
+## - Costruire la struttura portante interna della stanza.
+## - Collegare i connettori tramite corridoi.
+## - Definire la macro-topologia del layout.
+##
+## STRATEGIE SUPPORTATE:
+## - CENTRAL      → tutti convergono a un pivot centrale
+## - LINEAR       → collegamenti sequenziali
+## - MULTI_PIVOT  → doppio hub con smistamento
+##
+## Questo operatore:
+## - Modifica direttamente la mask
+## - Deve essere applicato DOPO il ConnectorOperator
+# ============================================================================
+
 class_name BackboneOperator
 extends LayoutOperator
 
+
+# ----------------------------------------------------------------------------
+# METADATI STATICI
+# ----------------------------------------------------------------------------
+
+static func get_weight() -> float:
+	return 1.0
+
+
+# ----------------------------------------------------------------------------
+# MODALITÀ STRUTTURALI
+# ----------------------------------------------------------------------------
 
 enum Mode {
 	CENTRAL,
@@ -11,30 +40,35 @@ enum Mode {
 	MULTI_PIVOT
 }
 
-func _init(_context: OperatorContext, params: Dictionary = {}):
-	super._init(_context, params)
+
+# ----------------------------------------------------------------------------
+# COSTRUTTORE
+# ----------------------------------------------------------------------------
+
+func _init(_context: OperatorContext, _params: Dictionary = {}):
+	super(_context, _params)
 	type = Type.BACKBONE
-	role = Role.PRIMARY
-	weight = 1.0
 
 
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # APPLY
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
 func apply() -> bool:
 
-	if not context.connector_plan == null:
+	# Backbone richiede un connector_plan già definito
+	if context.connector_plan == null:
 		return false
 
-	var rng := context.rng
-	var plan := context.connector_plan
 	var mask := context.mask
-	
+	var rng := context.rng
 
 	var mode: int = params.get("mode", Mode.CENTRAL)
 	var allow_loops: bool = params.get("allow_loops", false)
-	var width: int = params.get("width", context.size_profile.min_width_back_bone)
+	var width: int = params.get(
+		"width",
+		context.size_profile.min_width_back_bone
+	)
 	var jitter: float = params.get("jitter", 0.0)
 
 	var changed: Array[Vector2i] = []
@@ -52,19 +86,16 @@ func apply() -> bool:
 	if allow_loops:
 		changed += _inject_loop(width)
 
-	if changed.is_empty():
-		return false
-
-	return true
+	return not changed.is_empty()
 
 
-# ---------------------------------------------------------------------------
-# PARAMS
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# PARAMETRI GENETICI
+# ----------------------------------------------------------------------------
 
 func create_random_params() -> Dictionary:
-	var rng: RandomNumberGenerator = context.rng
-	var profile: RoomSizeProfile = context.size_profile
+	var rng := context.rng
+	var profile := context.size_profile
 	
 	return {
 		"mode": rng.randi() % Mode.size(),
@@ -72,25 +103,24 @@ func create_random_params() -> Dictionary:
 		"width": rng.randi_range(
 			profile.min_width_back_bone,
 			profile.max_width_back_bone
-			),
+		),
 		"jitter": rng.randf_range(
 			profile.min_jitter_back_bone,
 			profile.max_jitter_back_bone
-			),
+		)
 	}
 
 
 func mutate_params() -> void:
-	var params: Dictionary = params
-	var rng: RandomNumberGenerator = context.rng
-	var profile: RoomSizeProfile = context.size_profile
+	var rng := context.rng
+	var profile := context.size_profile
 	
-	params["mode"] = clamp(
+	params["mode"] = clampi(
 		params["mode"] + rng.randi_range(-1, 1),
 		0,
-		Mode.size()
+		Mode.size() - 1
 	)
-	
+
 	params["allow_loops"] = rng.randf() < profile.threshold_loop_back_bone
 
 	params["width"] = clampi(
@@ -100,25 +130,24 @@ func mutate_params() -> void:
 	)
 
 	params["jitter"] = clampf(
-		params["jitter"] + rng.randf_range(-0.1, 0.1), 
+		params["jitter"] + rng.randf_range(-0.1, 0.1),
 		profile.min_jitter_back_bone,
-		profile.max_jitter_back_bone,
+		profile.max_jitter_back_bone
 	)
 
 
-# ---------------------------------------------------------------------------
-# CENTRAL
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# CENTRAL MODE
+# ----------------------------------------------------------------------------
 
 func _apply_central(width: int, jitter: float) -> Array[Vector2i]:
-	var changed: Array[Vector2i] = []
-	var mask := context.mask
 
+	var changed: Array[Vector2i] = []
 	var pivot := _pick_pivot()
 
 	for d in Dir4.ORDER:
 		var start := _internal_spawn(d)
-		if not mask.in_bounds(start.x, start.y):
+		if not context.mask.in_bounds(start.x, start.y):
 			continue
 
 		changed += _carve_corridor(start, pivot, width, jitter)
@@ -126,19 +155,18 @@ func _apply_central(width: int, jitter: float) -> Array[Vector2i]:
 	return changed
 
 
-# ---------------------------------------------------------------------------
-# LINEAR
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# LINEAR MODE
+# ----------------------------------------------------------------------------
 
 func _apply_linear(width: int, jitter: float) -> Array[Vector2i]:
+
 	var changed: Array[Vector2i] = []
-	var mask := context.mask
-	
 	var points := []
 
 	for d in Dir4.ORDER:
 		var p := _internal_spawn(d)
-		if mask.in_bounds(p.x, p.y):
+		if context.mask.in_bounds(p.x, p.y):
 			points.append(p)
 
 	if points.size() < 2:
@@ -152,23 +180,25 @@ func _apply_linear(width: int, jitter: float) -> Array[Vector2i]:
 	return changed
 
 
-# ---------------------------------------------------------------------------
-# MULTI PIVOT
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# MULTI PIVOT MODE
+# ----------------------------------------------------------------------------
 
 func _apply_multi_pivot(width: int, jitter: float) -> Array[Vector2i]:
-	var changed: Array[Vector2i] = []
-	var mask := context.mask
 
+	var changed: Array[Vector2i] = []
 	var pivot_a := _pick_pivot()
 	var pivot_b := _pick_pivot()
 
 	for d in Dir4.ORDER:
+
 		var start := _internal_spawn(d)
-		if not mask.in_bounds(start.x, start.y):
+		if not context.mask.in_bounds(start.x, start.y):
 			continue
 
-		var target := pivot_a if start.distance_squared_to(pivot_a) < start.distance_squared_to(pivot_b) else pivot_b
+		var target := pivot_a
+		if start.distance_squared_to(pivot_b) < start.distance_squared_to(pivot_a):
+			target = pivot_b
 
 		changed += _carve_corridor(start, target, width, jitter)
 
@@ -177,19 +207,19 @@ func _apply_multi_pivot(width: int, jitter: float) -> Array[Vector2i]:
 	return changed
 
 
-# ---------------------------------------------------------------------------
-# CORRIDOR
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# CORRIDOR CARVING
+# ----------------------------------------------------------------------------
 
 func _carve_corridor(
-	from: Vector2i, 
-	to: Vector2i, 
-	width: int, 
+	from: Vector2i,
+	to: Vector2i,
+	width: int,
 	jitter: float
 ) -> Array[Vector2i]:
+
 	var changed: Array[Vector2i] = []
 	var rng := context.rng
-	
 	var current := from
 
 	while current != to:
@@ -210,16 +240,15 @@ func _carve_corridor(
 	return changed
 
 
-# ---------------------------------------------------------------------------
-# LOOP
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# LOOP INJECTION
+# ----------------------------------------------------------------------------
 
 func _inject_loop(width: int) -> Array[Vector2i]:
+
 	var changed: Array[Vector2i] = []
-	var rng := context.rng
+	var empties: Array[Vector2i] = []
 	var mask := context.mask
-	
-	var empties := []
 
 	for x in range(mask.size.x):
 		for y in range(mask.size.y):
@@ -229,6 +258,7 @@ func _inject_loop(width: int) -> Array[Vector2i]:
 	if empties.size() < 2:
 		return changed
 
+	var rng := context.rng
 	var a: Vector2i = empties[rng.randi() % empties.size()]
 	var b: Vector2i = empties[rng.randi() % empties.size()]
 
@@ -240,13 +270,15 @@ func _inject_loop(width: int) -> Array[Vector2i]:
 	return changed
 
 
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # UTILS
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
 func _pick_pivot() -> Vector2i:
+
 	var wall := context.mask.wall_thickness
 	var size := context.mask.size
+
 	return Vector2i(
 		context.rng.randi_range(wall+2, size.x-wall-3),
 		context.rng.randi_range(wall+2, size.y-wall-3)
@@ -254,6 +286,7 @@ func _pick_pivot() -> Vector2i:
 
 
 func _internal_spawn(dir: int) -> Vector2i:
+
 	var wall := context.mask.wall_thickness
 	var size := context.mask.size
 	var coord := context.connector_plan.get_coord(dir)
@@ -268,6 +301,7 @@ func _internal_spawn(dir: int) -> Vector2i:
 
 
 func _carve_with_width(center: Vector2i, width: int) -> Array[Vector2i]:
+
 	var changed: Array[Vector2i] = []
 	var mask := context.mask
 	var wall := mask.wall_thickness
@@ -276,6 +310,7 @@ func _carve_with_width(center: Vector2i, width: int) -> Array[Vector2i]:
 
 	for dx in range(-half, half+1):
 		for dy in range(-half, half+1):
+
 			var p := Vector2i(center.x+dx, center.y+dy)
 
 			if p.x < wall: continue

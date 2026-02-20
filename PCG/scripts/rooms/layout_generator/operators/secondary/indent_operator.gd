@@ -28,7 +28,6 @@ extends LayoutOperator
 func _init() -> void:
 	type = Type.INDENT
 	weight = 0.25
-	role = Role.SECONDARY
 
 # ---------------------------------------------------------------------------
 # Entry point

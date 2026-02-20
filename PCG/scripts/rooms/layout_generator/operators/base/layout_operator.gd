@@ -1,54 +1,148 @@
 # ============================================================================
 # LayoutOperator
 # ============================================================================
-## Operatore di shape grammar.
-## Applica una trasformazione locale alla RoomLayoutMask.
-## Deve essere:
-## - stateless
-## - fallibile
-## - rollback-safe
+## Classe base per tutti gli operatori di shape grammar.
+##
+## RESPONSABILITÀ:
+## - Definire l'interfaccia comune degli operatori.
+## - Fornire metodi per:
+##     • Generazione parametri (fase genetica)
+##     • Mutazione parametri (fase genetica)
+##     • Applicazione su mask (fase costruttiva)
+##
+## FILOSOFIA ARCHITETTURALE:
+## - La fase genetica NON usa la mask.
+## - La fase applicativa USA la mask.
+## - Il peso è una proprietà del tipo operatore (static).
+##
+## Ogni operatore concreto deve:
+## - Override get_weight()
+## - Implementare create_random_params()
+## - Implementare mutate_params()
+## - Implementare apply()
 # ============================================================================
 
 class_name LayoutOperator
 extends RefCounted
 
-enum Type {DEFAULT, DIVIDER, RING, SPLIT_CORNER, INDENT, PILLAR, PLATFORM, BACKBONE, CONNECTOR}
-enum Role {DEFAULT, PRIMARY, SECONDARY}
 
+# ----------------------------------------------------------------------------
+# ENUMERATORI
+# ----------------------------------------------------------------------------
+
+## Tipologie di operatori disponibili nel sistema.
+enum Type {
+	DEFAULT,
+	BACKBONE,
+	CONNECTOR,
+	INDENT,
+	PILLAR,
+	PLATFORM
+}
+
+
+# ----------------------------------------------------------------------------
+# METADATI OPERATORE
+# ----------------------------------------------------------------------------
+
+## Tipo dell'operatore (assegnato nei figli).
 var type: Type = Type.DEFAULT
 
-var role: Role = Role.DEFAULT:
-	get:
-		return role
 
-## Peso dell'operatore (valori compresi tra 0.0 e 1.0)
-var weight: float = 0.0:
-	set(w):
-		weight = clampf(w, 0.0, 1.0)
-		
+# ----------------------------------------------------------------------------
+# PESO STATICO
+# ----------------------------------------------------------------------------
+
+## Peso statico utilizzato durante la selezione pesata.
+##
+## NOTA:
+## - È statico perché rappresenta una proprietà del TIPO,
+##   non della singola istanza.
+## - Deve essere ridefinito negli operatori concreti.
+static func get_weight() -> float:
+	return 1.0
+
+
+# ----------------------------------------------------------------------------
+# STATO DI ISTANZA
+# ----------------------------------------------------------------------------
+
+## Contesto operativo.
+## Contiene:
+## - size
+## - wall_thickness
+## - size_profile
+## - rng
+## - mask (solo in fase apply)
 var context: OperatorContext
+
+## Parametri genetici dell'operatore.
 var params: Dictionary
 
-func _init(_context: OperatorContext, _params: Dictionary = {}) -> void:
+
+# ----------------------------------------------------------------------------
+# COSTRUTTORE
+# ----------------------------------------------------------------------------
+
+func _init(
+	_context: OperatorContext,
+	_params: Dictionary = {}
+) -> void:
 	context = _context
 	params = _params
 
-## Applica l'operatore alla mask.
-## Ritorna true se applicato con successo, false se non applicabile.
+
+# ----------------------------------------------------------------------------
+# INTERFACCIA GENETICA
+# ----------------------------------------------------------------------------
+
+## Genera parametri casuali.
+## Deve usare SOLO:
+## - context.size
+## - context.size_profile
+## - context.rng
+##
+## NON deve usare context.mask.
+func create_random_params() -> Dictionary:
+	push_error("LayoutOperator.create_random_params() not implemented")
+	return {}
+
+
+## Mutazione dei parametri genetici.
+## NON deve usare context.mask.
+func mutate_params() -> void:
+	push_error("LayoutOperator.mutate_params() not implemented")
+
+
+# ----------------------------------------------------------------------------
+# INTERFACCIA APPLICATIVA
+# ----------------------------------------------------------------------------
+
+## Applica la trasformazione sulla mask.
+##
+## Questa è l'unica fase in cui è consentito usare:
+## - context.mask
+##
+## Deve essere:
+## - fallibile
+## - rollback-safe
 func apply() -> bool:
 	push_error("LayoutOperator.apply() not implemented")
 	return false
 
-func create_random_params() -> Dictionary:
-	push_error("create_random_params non implementato")
-	return {}
 
-func mutate_params() -> void:
-	push_error("mutate_params non implementato")
+# ----------------------------------------------------------------------------
+# UTILITIES TRANSAZIONALI
+# ----------------------------------------------------------------------------
 
+## Carve rettangolare con tracciamento modifiche.
+## Utilizzato dagli operatori concreti.
+##
+## Ritorna le celle modificate per eventuale rollback.
 func _carve_rect_transaction(
 	rect: Rect2i
 ) -> Array[Vector2i]:
+
 	var changed: Array[Vector2i] = []
 
 	for y in range(rect.position.y, rect.end.y):
@@ -58,7 +152,9 @@ func _carve_rect_transaction(
 				changed.append(Vector2i(x, y))
 
 	return changed
- 
+
+
+## Ripristina le celle precedentemente modificate.
 func _rollback(cells: Array[Vector2i]) -> void:
 	for c in cells:
-		context.mask.set_empty(c.x, c.y)
+		context.mask.set_solid(c.x, c.y)

@@ -17,6 +17,8 @@ func evaluate(genome: Genome) -> float:
 	var g: LayoutGenome = genome as LayoutGenome
 	if g == null:
 		return -INF
+		
+	var t0 := Time.get_ticks_msec()
 
 	var validator_context: LayoutValidatorContext = RoomLayoutGenerator.generate_from_genome(g, context)
 	if validator_context.mask == null:
@@ -25,8 +27,10 @@ func evaluate(genome: Genome) -> float:
 	var profile := context.traversal_profile
 	if not LayoutValidator.validate(validator_context, profile):
 		return -INF
-
-	return LayoutScorer.score(validator_context.mask)
+	
+	var score: float = LayoutScorer.score(validator_context.mask)
+	print("Single genome evaluate:", Time.get_ticks_msec() - t0, "ms")
+	return score
 
 static func debug_print_with_connectors(
 	mask: RoomLayoutMask,

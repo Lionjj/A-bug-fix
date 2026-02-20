@@ -102,19 +102,19 @@ static func are_floor_tile_reacable(mask: RoomLayoutMask, profile: PlayerTravers
 	for kay in floor_clusters.keys():
 		if kay == root: continue
 		
-		var target: Array[Vector2i] = floor_clusters[kay]
+		var target := floor_clusters[kay]
 		if not PlayerReachability.has_path(
 			mask, profile, root, target
 		): 
 			printerr("TraversalAnalyzer: path invalido:", root, "->", kay)
 			return false
 	
-	var root_cluster: Array[Vector2i] = floor_clusters[root]
+	var root_cluster := floor_clusters[root]
 	
 	for kay in floor_clusters.keys():
 		if kay == root: continue
 		
-		var target: Array[Vector2i] = floor_clusters[kay]
+		var target := floor_clusters[kay]
 		if not PlayerReachability.has_path(
 			mask, profile, kay, root_cluster
 		): 
@@ -152,19 +152,19 @@ static func _carve_all_opening(mask: RoomLayoutMask, plan: ConnectorPlan) -> Arr
 ## [param mask]: Rappresentazione semplificata di una stanza;
 static func _build_walk_graph(mask: RoomLayoutMask) -> Dictionary[Vector2i, Array]:
 
-	var floors = mask.collect_floor_tiles()
-	var floor_set := {}
+	var floors: Array[Vector2i] = mask.collect_floor_tiles()
+	var floor_set: Dictionary[Vector2i, bool]= {}
 	
 	for f in floors:
 		floor_set[f] = true
 	
-	var graph := {}
+	var graph: Dictionary[Vector2i, Array] = {}
 	
 	for f in floors:
-		graph[f] = []
+		graph[f] = [f]
 		
 		for dir in [Vector2i.LEFT, Vector2i.RIGHT]:
-			var n = f + dir
+			var n: Vector2i = f + dir
 			
 			if floor_set.has(n):
 				graph[f].append(n)
