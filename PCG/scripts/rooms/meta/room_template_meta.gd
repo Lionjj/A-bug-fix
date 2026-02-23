@@ -151,6 +151,7 @@ signal player_exited(room: RoomTemplateMeta)
 func _ready() -> void:
 	## Inizializza il PlacementManager a partire dalla stanza.
 	add_child(placement)
+	placement.name = "Placement"
 
 
 # ---------------------------------------------------------------------------

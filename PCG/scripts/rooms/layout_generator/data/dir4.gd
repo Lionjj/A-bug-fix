@@ -87,3 +87,15 @@ static func get_random_mask(
 		mask = add(mask, dirs[i])
 
 	return mask
+
+static func to_label(dir: int) -> String:
+	match dir:
+		D.N:
+			return "N"
+		D.E:
+			return "E"
+		D.S:
+			return "S"
+		D.W:
+			return "W"
+	return ""
