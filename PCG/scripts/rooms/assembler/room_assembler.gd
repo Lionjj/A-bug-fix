@@ -26,6 +26,7 @@ extends RefCounted
 class_name RoomAssembler
 
 
+
 # ---------------------------------------------------------------------------
 # Config (no magic numbers)
 # ---------------------------------------------------------------------------
@@ -177,37 +178,22 @@ func instantiate_room(
 	if packed == null:
 		return null
 
+
 	var room := packed.instantiate() as RoomTemplateMeta
 	if room == null:
 		return null
 
-	## Size stanza in tiles (fallback su cella canonica).
-	var sz: Vector2i = room.size_tiles if room != null else grid_cell_tiles
-
-	## Offset per centrare la stanza nella cella canonica (in tiles).
-	var off_tiles: Vector2 = Vector2(
-		float(grid_cell_tiles.x - sz.x),
-		float(grid_cell_tiles.y - sz.y)
-	)
-
-	## Dimensione della cella canonica in pixel.
-	var cell_px: Vector2 = Vector2(
+	# Dimensione cella canonica in pixel
+	var cell_px := Vector2(
 		float(grid_cell_tiles.x * tile_size.x),
 		float(grid_cell_tiles.y * tile_size.y)
-	)
-
-	## Offset in pixel derivato dall'offset in tiles.
-	var off_px: Vector2 = Vector2(
-		off_tiles.x * float(tile_size.x),
-		off_tiles.y * float(tile_size.y)
 	)
 
 	room.position = Vector2(
 		float(grid_pos.x) * cell_px.x,
 		float(grid_pos.y) * cell_px.y
-	) + off_px
+	)
 
-	TileMapUtility.align_all_tilemap_layers(room)
 	return room
 
 

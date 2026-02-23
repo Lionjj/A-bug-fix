@@ -81,7 +81,6 @@ func spawn_all(context: RoomSpawnContext) -> Dictionary[RoomTemplateMeta, RoomSt
 	)
 
 	# Lista ID logici delle stanze da instanziare.
-	# Nota: l’ordine delle keys non è garantito → se vuoi run deterministiche, ordina qui.
 	var ids: Array[String] = context.positions.keys()
 
 	for id: String in ids:

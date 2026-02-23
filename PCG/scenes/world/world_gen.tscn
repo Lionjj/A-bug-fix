@@ -19,6 +19,12 @@ zoom = Vector2(1.5, 1.5)
 editor_draw_limits = true
 script = ExtResource("3_ekxqb")
 
+[node name="PhantomCameraHost" type="Node" parent="Camera2D"]
+process_priority = 300
+process_physics_priority = 300
+script = ExtResource("4_fdktm")
+metadata/_custom_type_script = "uid://bd046eokvcnu2"
+
 [node name="Final" type="TileMapLayer" parent="."]
 tile_set = ExtResource("5_veq17")
 
@@ -35,12 +41,6 @@ shadow_enabled = true
 
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
 color = Color(0.745098, 0.803922, 0.843137, 1)
-
-[node name="PhantomCameraHost" type="Node" parent="."]
-process_priority = 300
-process_physics_priority = 300
-script = ExtResource("4_fdktm")
-metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
 [node name="Parallax2D" type="Parallax2D" parent="."]
 texture_repeat = 2

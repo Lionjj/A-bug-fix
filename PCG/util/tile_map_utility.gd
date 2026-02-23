@@ -218,29 +218,3 @@ static func _merge_tile(
 			final.set_cell(dst_cell, src_id, atlas, alt)
 
 		layer.visible = false
-
-
-# ---------------------------------------------------------------------------
-# Extra helpers
-# ---------------------------------------------------------------------------
-
-## Allinea tutti i [TileMapLayer] discendenti alla posizione della stanza.[br]
-##[br]
-## Utile quando una stanza viene spostata o istanziata e i layer figli risultano offsettati.[br]
-##[br]
-## [param room]: nodo root della stanza a cui allineare i [TileMapLayer].[br]
-static func align_all_tilemap_layers(room: Node2D) -> void:
-	if room == null:
-		return
-
-	# DFS iterativa sull’albero della stanza.
-	var stack: Array[Node2D] = [room]
-	while stack.size() > 0:
-		var n: Node2D = stack.pop_back()
-		for c in n.get_children():
-			if c is Node2D:
-				stack.append(c)
-
-		var l: TileMapLayer = n as TileMapLayer
-		if l:
-			l.position = room.position

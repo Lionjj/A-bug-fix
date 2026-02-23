@@ -187,8 +187,8 @@ func build() -> void:
 
 	# --- 6) Corridors ---
 	# Collega le stanze secondo la topologia del grafo e la loro posizione su griglia.
-	#var corridor_ctx: CorridorBuildContext = CorridorBuildContext.new(self, graph, positions, cell_tiles)
-	#CorridorBuilder.connect_adjacent(corridor_ctx)
+	var corridor_ctx: CorridorBuildContext = CorridorBuildContext.new(self, graph, positions, cell_tiles)
+	CorridorBuilder.connect_adjacent(corridor_ctx)
 
 	# --- 7) Finalize (merge + player spawn) ---
 	# Produciamo la tilemap finale e instanziamo il player nel punto di spawn.

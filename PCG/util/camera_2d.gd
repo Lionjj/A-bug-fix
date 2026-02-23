@@ -27,12 +27,12 @@ func _unhandled_input(event):
 		position -= delta
 		last_mouse = now
 
-func _process(delta):
-	var s = move_speed * delta * (boost if Input.is_key_pressed(KEY_SHIFT) else 1.0)
-	var dir := Vector2.ZERO
-	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):  dir.x -= 1
-	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): dir.x += 1
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):    dir.y -= 1
-	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):  dir.y += 1
-	position += dir * s
-	
+#func _process(delta):
+	#var s = move_speed * delta * (boost if Input.is_key_pressed(KEY_SHIFT) else 1.0)
+	#var dir := Vector2.ZERO
+	#if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):  dir.x -= 1
+	#if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): dir.x += 1
+	#if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):    dir.y -= 1
+	#if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):  dir.y += 1
+	#position += dir * s
+	#
