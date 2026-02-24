@@ -9,11 +9,11 @@ static func can_traverse(G:MissionGraph, from_id:String, to_id:String, abilities
 
 # Verifica se il grafo prodotto è risovlible ovvero se esite un percorso
 # dal nodo start al goal
-static func solvable(G:MissionGraph) -> bool:
+static func solvable(G: MissionGraph) -> bool:
 	var start: String = G.start_id; 
 	var goal: String = G.boss_id
 	
-	var q: Array[Dictionary] = [ {"id":start, "abilities": [] as Array[Abilities.Ability]} ]
+	var q: Array[Dictionary] = [ {"id": start, "abilities": [] as Array[Abilities.Ability]} ]
 	var seen: Dictionary = {} # key -> true
 	
 	while q.size() > 0:

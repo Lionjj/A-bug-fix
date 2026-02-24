@@ -23,8 +23,6 @@ func _init(_context: LayoutContext) -> void:
 	solid = PackedByteArray()
 	solid.resize(size.x * size.y)
 	solid.fill(1)
-	
-	#_seed_base()
 
 
 # ---------------------------------------------------------------------------
@@ -153,33 +151,6 @@ func to_ascii() -> String:
 		lines.append(line)
 
 	return "\n".join(lines)
-
-
-# ---------------------------------------------------------------------------
-# Costruisci una stanza valida
-# ---------------------------------------------------------------------------
-
-
-## Crea una stanza base sempre valida:
-## - perimetro solido
-## - interno vuoto
-func _seed_base() -> void:
-	var w: int = size.x
-	var h: int = size.y
-
-	for y in range(h):
-		for x in range(w):
-			var is_border: bool = (
-				x < wall_thickness or
-				y < wall_thickness or
-				x >= w - wall_thickness or
-				y >= h - wall_thickness
-			)
-
-			if is_border:
-				set_solid(x, y)
-			else:
-				set_empty(x, y)
 
 
 # ---------------------------------------------------------------------------
