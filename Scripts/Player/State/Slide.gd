@@ -46,7 +46,7 @@ func Update(_delta: float):
 	if Input.is_action_just_released("ui_down") or player.is_on_floor():
 		velocity_y = wall_slide_speed
 		
-	if Input.is_action_just_pressed("jump") and player.can_wall_jump():
+	if Input.is_action_just_pressed("jump"):
 		_do_wall_jump_from_coyote()
 		Transitioned.emit(self, "Jump")
 
@@ -69,7 +69,8 @@ func _do_wall_jump_from_coyote():
 	player.switch_direction(Vector2(away, 0))
 
 	# velocità
-	player.velocity.y = -player.jump_velocity
+	player.reset_jumps()
+	player.try_jump()
 
 	# smoothing X
 	player.velocity.x = away * wall_jump_push * .8

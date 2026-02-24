@@ -22,6 +22,10 @@ func Update(_delta):
 	
 	if Input.is_action_just_pressed("dodge") and player.can_dodge:
 		Transitioned.emit(self, "Dush")
+	
+	if Input.is_action_just_pressed("jump"):
+		if player.try_jump():
+			Transitioned.emit(self, "Jump")
 
 func Physics_Update(delta):
 	# Movimento orizzontale in aria

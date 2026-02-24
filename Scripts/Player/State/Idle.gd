@@ -1,7 +1,7 @@
 extends State
 class_name IdleState
 
-@export var player: CharacterBody2D
+@export var player: Player
 @export var speed: float = 200.0
 @export var animation : AnimationPlayer
 
@@ -22,7 +22,6 @@ func Update(delta: float):
 	
 	if Input.is_action_just_pressed("jump"):
 		player.jump_buffer_timer = player.jump_buffer_time
-		Transitioned.emit(self, "Jump")
 	
 	if player.is_on_floor():
 		player.coyote_timer = player.coyote_time
@@ -33,7 +32,9 @@ func Update(delta: float):
 	if player.coyote_timer > 0 and player.jump_buffer_timer > 0:
 		player.coyote_timer = 0
 		player.jump_buffer_timer = 0
-		Transitioned.emit(self, "Jump")
+		
+		if player.try_jump():
+			Transitioned.emit(self, "Jump")
 
 	if not player.is_on_floor() and player.velocity.y >= 0:
 		Transitioned.emit(self, "Fall")

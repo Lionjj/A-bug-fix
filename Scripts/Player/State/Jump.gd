@@ -6,9 +6,8 @@ class_name JumpState
 
 
 func Enter():
-	player.velocity.y = player.jump_velocity
 	anim.play("jump")
-	GameManager.play_one_shot(player.audio["jump"], 1.0, 0.12, -2.0) 
+	GameManager.play_one_shot(player.audio["jump"], 1.0, 0.12, -2.0)
 		
 func Update(_delta):
 	if player.wall_check.is_colliding() and player.velocity.y > 0:

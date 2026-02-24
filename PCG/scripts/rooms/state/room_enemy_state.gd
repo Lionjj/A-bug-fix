@@ -140,3 +140,11 @@ func _init(
 	to_eliminate = _to_eliminate
 	started = _started
 	prepared = _prepared
+
+func reset() -> void:
+	wave_index = 0
+	enemy_index = 0
+	to_eliminate = enemies_references.size()
+	enemies_alive.clear()
+	started = false
+	

@@ -11,8 +11,8 @@ static func build_base() -> MissionGraph:
 	G.add_node(MissionNode.new("B", RoomTags.Tag.BOSS))
 	
 	## Ability granted/required
-	(G.nodes["K"] as MissionNode).grants.append(Abilities.Ability.GRAPPLE)
-	(G.nodes["C"] as MissionNode).requires.append(Abilities.Ability.GRAPPLE)
+	(G.nodes["K"] as MissionNode).grants.append(Abilities.Ability.DOUBLE_JUMP)
+	(G.nodes["C"] as MissionNode).requires.append(Abilities.Ability.DOUBLE_JUMP)
 	
 	## Item list
 	(G.nodes["S"] as MissionNode).catalog = NodeCatalogue.new([

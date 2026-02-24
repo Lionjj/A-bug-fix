@@ -26,7 +26,9 @@ func Update(delta: float):
 	if player.coyote_timer > 0 and player.jump_buffer_timer > 0:
 		player.coyote_timer = 0
 		player.jump_buffer_timer = 0
-		Transitioned.emit(self, "Jump")
+		if player.try_jump():
+			Transitioned.emit(self, "Jump")
+
 
 	if not player.is_on_floor() and player.velocity.y >= 0:
 		Transitioned.emit(self, "Fall")

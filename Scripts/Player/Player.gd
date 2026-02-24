@@ -16,6 +16,7 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 @onready var wall_check_timer = $WallCheckTimer
 @onready var shader = sprite.material
 @onready var ground_collision_2d: CollisionShape2D = $GroundCollision2D
+@onready var ability_component: AbilityComponent = $AbilityComponent
 
 # ----------- SFX -----------
 @export var audio: Dictionary[StringName, AudioStream]
@@ -30,10 +31,13 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 @export var low_jump_multiplier: float = 3.5
 @export var jump_buffer_time: float = 0.1  # In secondi
 @export var jump_velocity: float = -400.0
+@export var jump_count: int = 0
 @export var wall_jump_smooth_time := 0.12
 @export var wall_jump_accel := 9000.0  # quanto velocemente raggiunge il target (morbidezza)
 @export var coyote_time: float = 0.15  # In secondi
 
+var was_on_wall := false
+var was_on_floor := false
 var knockback:Vector2 = Vector2.ZERO
 var knockback_timer: float = 0.0
 var current_hp
@@ -101,8 +105,21 @@ func _physics_process(delta):
 			wall_jump_accel * delta * direction
 		)
 		
-		
 	move_and_slide()
+	
+	var on_floor_now = is_on_floor()
+	var on_wall_now = wall_check.is_colliding() and not on_floor_now
+
+	# RESET SOLO QUANDO ATTERRI
+	if on_floor_now and not was_on_floor:
+		reset_jumps()
+
+	# RESET SOLO QUANDO INIZI A TOCCARE IL MURO
+	if on_wall_now and not was_on_wall:
+		reset_jumps()
+
+	was_on_floor = on_floor_now
+	was_on_wall = on_wall_now
 	
 func switch_direction(velocity: Vector2):
 	if velocity.x != 0:
@@ -221,3 +238,27 @@ func start_wall_jump_smooth(target_x: float) -> void:
 
 func can_wall_jump() -> bool:
 	return wall_coyote_timer > 0.0 and not is_on_floor()
+
+func get_max_jumps() -> int:
+	if ability_component.has(Abilities.Ability.DOUBLE_JUMP):
+		return 2
+	return 1
+
+func record_ability(ability: int) -> bool:
+	ability_component.grant(ability)
+	print(ability_component.has(ability))
+	return true
+
+func try_jump() -> bool:
+	if jump_count >= get_max_jumps():
+		return false
+	velocity.y = jump_velocity
+	jump_count += 1
+	
+	return true
+
+func reset_jumps():
+	jump_count = 0
+
+func can_jump() -> bool:
+	return jump_count >= get_max_jumps()

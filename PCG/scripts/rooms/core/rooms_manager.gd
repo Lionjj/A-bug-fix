@@ -493,6 +493,7 @@ func _on_enemy_died(room: RoomTemplateMeta, enemies_state: RoomEnemyState, enemy
 ## [param room]: stanza completata.[br]
 func _end_combat(room: RoomTemplateMeta) -> void:
 	var room_state: RoomState = rooms.get(room)
+	var mission_node: MissionNode = room.logic_node 
 	room_state.done = true
 
 	for door: Door in room.doors:
@@ -501,6 +502,10 @@ func _end_combat(room: RoomTemplateMeta) -> void:
 
 	for item: ItemEntity in room_state.items_state.items_references:
 		item.show_entity()
+	
+	for ability: int in mission_node.grants:
+		print("abilità:", ability)
+		player.record_ability(ability)
 
 	_combat_room = null
 
@@ -543,11 +548,7 @@ func _reset_room(room: RoomTemplateMeta) -> void:
 ##[br]
 ## [param enemies_state]: stato runtime nemici della stanza.[br]
 func _reset_enemies(enemies_state: RoomEnemyState) -> void:
-	enemies_state.wave_index = 0
-	enemies_state.enemy_index = 0
-	enemies_state.to_eliminate = enemies_state.enemies_references.size()
-	enemies_state.enemies_alive.clear()
-	enemies_state.started = false
+	enemies_state.reset()
 
 	for enemy: EnemyEntity in enemies_state.enemies_references:
 		enemy.reset()
