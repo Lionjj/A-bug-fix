@@ -195,7 +195,7 @@ func topo_order() -> Array:
 ## [param from] Id nodo sorgente.[br]
 ## [param to] Id nodo destinazione.[br]
 ## [return] String chiave "from->to".
-func _edge_key(from: String, to: String) -> String:
+func edge_key(from: String, to: String) -> String:
 	return from + "->" + to
 
 
@@ -211,7 +211,7 @@ func lock_edge(from: String, to: String, lock: LockType = LockType.KEY) -> void:
 		push_warning("lock_edge: arco inesistente %s-%s" % [from, to])
 		return
 
-	edge_lock[_edge_key(from, to)] = lock
+	edge_lock[edge_key(from, to)] = lock
 
 
 ## Elimina un eventuale lock sull'arco direzionale [param from] -> [param to].[br]
@@ -219,7 +219,7 @@ func lock_edge(from: String, to: String, lock: LockType = LockType.KEY) -> void:
 ## [param from] Id nodo sorgente.[br]
 ## [param to] Id nodo destinazione.
 func unlock_edge(from: String, to: String) -> void:
-	edge_lock.erase(_edge_key(from, to))
+	edge_lock.erase(edge_key(from, to))
 
 
 ## Ritorna il lock sull'arco direzionale [param from] -> [param to].[br]
@@ -227,6 +227,6 @@ func unlock_edge(from: String, to: String) -> void:
 ##
 ## [param from] Id nodo sorgente.[br]
 ## [param to] Id nodo destinazione.[br]
-## [return] [LockType] associato all'edge, oppure default se assente.
+## [return] [LockType] associato all'edge, oppure default se assente
 func get_edge_lock(from: String, to: String) -> LockType:
-	return edge_lock.get(_edge_key(from, to), LockType.FREE)
+	return edge_lock.get(edge_key(from, to), LockType.FREE)
