@@ -42,6 +42,9 @@ const PICK_SAFETY_MAX_ITERS: int = 10_000
 ## Distanza minima iniziale (in pixel) tra nemici spawnati.
 const MIN_DISTANCE_PX: float = 48.0
 
+## Distanza minima dai connettori
+const MIN_DISTANCE_FROM_CONNECTOR_PX: float = 96.0
+
 ## Limiti assoluti di budget.
 const MIN_BUDGET: int = 0
 const MAX_BUDGET: int = 20
@@ -151,6 +154,7 @@ func find_free_slot_index(
 	slots: Array[Vector2i],
 	alive_enemies: Array[EnemyEntity],
 	tilemap: TileMapLayer,
+	connectors: Dictionary[String, RoomConnector],
 	min_dist: float = MIN_DISTANCE_PX
 ) -> int:
 	for i: int in range(slots.size()):
@@ -168,6 +172,15 @@ func find_free_slot_index(
 
 		if is_blocked:
 			continue
+		
+		for connector in connectors.values():
+			if connector.global_position.distance_to(world_pos) < MIN_DISTANCE_FROM_CONNECTOR_PX:
+				is_blocked = true
+				break
+
+		if is_blocked:
+			continue
+
 
 		return i
 
@@ -242,7 +255,7 @@ func istanziate_in_position(
 
 	var alive: Array[EnemyEntity] = room_enemy_state.enemies_references
 	for enemy: EnemyEntity in alive:
-		var idx: int = find_free_slot_index(slots, alive, room.collision)
+		var idx: int = find_free_slot_index(slots, alive, room.collision, room.get_connectors())
 		if idx == -1:
 			continue
 

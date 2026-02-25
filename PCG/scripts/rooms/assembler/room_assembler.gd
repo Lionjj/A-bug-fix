@@ -73,7 +73,6 @@ var _ctx: RoomAssemblerContext = null
 var _ctx_graph: MissionGraph = null
 var _ctx_rng: RandomNumberGenerator = null
 var _ctx_positions: Dictionary = {}
-var _ctx_abilities: Array = []
 
 
 # ---------------------------------------------------------------------------
@@ -236,16 +235,14 @@ func max_room_size_tiles(padding: Vector2i) -> Vector2i:
 func _can_reuse_context(
 	graph: MissionGraph,
 	positions: Dictionary[String, Vector2i],
-	rng: RandomNumberGenerator,
-	abilities: Array[Abilities.Ability]
+	rng: RandomNumberGenerator
 ) -> bool:
 	if _ctx == null:
 		return false
 
 	return _ctx_graph == graph \
 		and _ctx_positions == positions \
-		and _ctx_rng == rng \
-		and _ctx_abilities == abilities
+		and _ctx_rng == rng
 
 
 ## Resetta solo lo stato "runtime" del contesto (quello che cambia durante la build).
@@ -271,7 +268,6 @@ func make_context(
 	graph: MissionGraph,
 	positions: Dictionary[String, Vector2i],
 	rng: RandomNumberGenerator,
-	abilities: Array[Abilities.Ability]
 ) -> RoomAssemblerContext:
 	# Fail-first
 	if graph == null or rng == null:
@@ -280,7 +276,7 @@ func make_context(
 		return null
 
 	# Riusa il context se i riferimenti sono gli stessi
-	if _can_reuse_context(graph, positions, rng, abilities):
+	if _can_reuse_context(graph, positions, rng):
 		_reset_context_runtime(_ctx)
 		return _ctx
 
@@ -290,7 +286,6 @@ func make_context(
 		_picker,
 		graph,
 		rng,
-		abilities,
 		positions
 	)
 
@@ -298,7 +293,6 @@ func make_context(
 	_ctx_graph = graph
 	_ctx_positions = positions
 	_ctx_rng = rng
-	_ctx_abilities = abilities
 
 	# Stato runtime pulito (per coerenza)
 	_reset_context_runtime(_ctx)

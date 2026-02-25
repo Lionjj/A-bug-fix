@@ -8,6 +8,7 @@
 script = ExtResource("1_s8koi")
 kind = 2
 size_tiles = Vector2i(20, 14)
+requires = Array[int]([2])
 connectors = Dictionary[String, bool]({
 "E": true,
 "N": true,

@@ -61,14 +61,6 @@ var positions: Dictionary[String, Vector2i] = {}
 
 
 # ---------------------------------------------------------------------------
-# Gameplay state
-# ---------------------------------------------------------------------------
-
-## Abilità attualmente disponibili al player (gating/template filtering).[br]
-var abilities: Array[Abilities.Ability] = []
-
-
-# ---------------------------------------------------------------------------
 # Assembly constraints
 # ---------------------------------------------------------------------------
 
@@ -107,14 +99,12 @@ func _init(
 	_picker: RoomTemplatePicker,
 	_graph: MissionGraph,
 	_rng: RandomNumberGenerator,
-	_abilities: Array[Abilities.Ability],
 	_positions: Dictionary[String, Vector2i]
 ) -> void:
 	catalog = _catalog
 	picker = _picker
 	graph = _graph
 	rng = _rng
-	abilities = _abilities
 	positions = _positions
 
 

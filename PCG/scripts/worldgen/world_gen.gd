@@ -144,7 +144,7 @@ func _ready() -> void:
 func build() -> void:
 	# --- 1) Graph pipeline (fail-fast) ---
 	# Se la missione non è solvibile, interrompiamo subito: tutto il resto dipende da questo.
-	var pipeline: GraphPipeline.Result = GraphPipeline.run(seed, budget_nodes)
+	var pipeline: GraphPipeline.Result = GraphPipeline.run(seed, budget_nodes, abilities)
 	if not pipeline.solvable:
 		get_tree().reload_current_scene()
 		return
@@ -174,7 +174,6 @@ func build() -> void:
 		positions,  # dove piazzare ogni stanza logica
 		occupied,   # occupazione griglia (collisione logica / lookup)
 		rng,        # RNG condiviso
-		abilities,  # gating e filtro template
 		graph,      # topologia missione
 		assembler,  # selezione template / utilità dimensioni
 		cell_tiles  # scala griglia->tiles

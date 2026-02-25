@@ -78,20 +78,45 @@ static func abilities_match(
 	node_requires: Array[Abilities.Ability],
 	abilities: Array[Abilities.Ability]
 ) -> bool:
+
 	if info == null:
 		return false
 
-	## Requisiti del template
-	for a: Abilities.Ability in info.requires:
-		if not abilities.has(a):
-			return false
+	# --------------------------------------------------
+	# Caso 1 — Nodo richiede abilità
+	# --------------------------------------------------
+	if not node_requires.is_empty():
 
-	## Requisiti del nodo logico
-	for a: Abilities.Ability in node_requires:
-		if not abilities.has(a):
-			return false
+		# 1) Le abilità richieste dal nodo devono essere disponibili
+		for a in node_requires:
+			if not abilities.has(a):
+				return false
 
-	return true
+		# 2) Il template deve richiedere almeno quelle abilità
+		for a in node_requires:
+			if not info.requires.has(a):
+				return false
+
+		# 3) Il template non può richiedere abilità non disponibili
+		for a in info.requires:
+			if not abilities.has(a):
+				return false
+
+		return true
+
+
+	# --------------------------------------------------
+	# Caso 2 — Nodo NON richiede abilità
+	# --------------------------------------------------
+	else:
+
+		# Il template può richiedere abilità
+		# ma solo se sono disponibili
+		for a in info.requires:
+			if not abilities.has(a):
+				return false
+
+		return true
 
 
 # ---------------------------------------------------------------------------

@@ -77,7 +77,6 @@ func spawn_all(context: RoomSpawnContext) -> Dictionary[RoomTemplateMeta, RoomSt
 		context.graph,
 		context.positions,
 		context.rng,
-		context.abilities
 	)
 
 	# Lista ID logici delle stanze da instanziare.

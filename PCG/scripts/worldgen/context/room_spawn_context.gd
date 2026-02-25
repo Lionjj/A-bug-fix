@@ -52,10 +52,6 @@ var occupied: Dictionary[Vector2i, String]
 ## Deve essere quello derivato da [GraphPipeline] per mantenere determinismo/coerenza.[br]
 var rng: RandomNumberGenerator
 
-## Abilità possedute dal player.[br]
-## Input usato per gating e filtro dei template durante la selezione.[br]
-var abilities: Array[Abilities.Ability]
-
 ## Grafo logico della missione.[br]
 ## Serve per collegare la stanza fisica al nodo logico (es. room.logic_node).[br]
 var graph: MissionGraph
@@ -87,7 +83,6 @@ func _init(
 	_positions: Dictionary[String, Vector2i],
 	_occupied: Dictionary[Vector2i, String],
 	_rng: RandomNumberGenerator,
-	_abilities: Array[Abilities.Ability],
 	_graph: MissionGraph,
 	_assembler: RoomAssembler,
 	_cell_tiles: Vector2i,
@@ -96,7 +91,6 @@ func _init(
 	positions = _positions
 	occupied = _occupied
 	rng = _rng
-	abilities = _abilities
 	graph = _graph
 	assembler = _assembler
 	cell_tiles = _cell_tiles

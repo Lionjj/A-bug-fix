@@ -58,8 +58,9 @@ class Result:
 ## [param seed] Seed di partenza (usato se la cache non è attiva).[br]
 ## [param budget_nodes] Budget massimo di nodi per l'espansione.[br]
 ## [param randomize_seed] Se true, sovrascrive il seed con uno random.[br]
+## [param abilities] Abilita inizali del gioctore. [br]
 ## [return] [GraphPipeline.Result] con stato della run e dati generati.[br]
-static func run(seed: int, budget_nodes: int, randomize_seed: bool = false) -> Result:
+static func run(seed: int, budget_nodes: int, abilities: Array[Abilities.Ability] ,randomize_seed: bool = false) -> Result:
 	var r: Result = Result.new()
 	
 	var effective_seed: int = CacheRng.seed if CacheRng.cached else seed
@@ -74,7 +75,9 @@ static func run(seed: int, budget_nodes: int, randomize_seed: bool = false) -> R
 		CacheRng.cached = true
 		
 		return r
-
+	
+	ProgressionAnnotator.annotate(G, abilities)
+	
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	
 	if randomize_seed: 

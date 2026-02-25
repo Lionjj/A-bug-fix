@@ -224,7 +224,7 @@ func _eligible_info_or_null(
 	if not RoomTemplateRules.abilities_match(
 		info,
 		node.requires,
-		context.abilities
+		node.logical_abilities_before
 	):
 		return null
 

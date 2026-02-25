@@ -8,6 +8,7 @@
 script = ExtResource("1_1qwhr")
 kind = 128
 size_tiles = Vector2i(31, 20)
+requires = Array[int]([2])
 difficulty = 2
 connectors = Dictionary[String, bool]({
 "E": true,

@@ -10,6 +10,7 @@ var kind: RoomTags.Tag
 
 var grants: Array[Abilities.Ability] = []
 var requires: Array[Abilities.Ability] = []
+var logical_abilities_before: Array[Abilities.Ability] = []
 
 ## Difficolta di ciascuna stanza, influenza la difficolta dei nemici, e il numero di oggetti 
 ## che la stanza conterrà.

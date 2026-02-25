@@ -46,7 +46,7 @@ static func build_base() -> MissionGraph:
 	G.add_edge("S","H")
 	G.add_edge("H","A")
 	G.add_edge("A","K") 
-	G.add_edge("K","C") 
+	G.add_edge("A","C") 
 	G.add_edge("C","B") 
 	
 	## Regole per gestire i blocchi tra gli edge
@@ -59,8 +59,8 @@ static func build_base() -> MissionGraph:
 	G.lock_edge("A", "K", MissionGraph.LockType.ENEMIES_CLEARED)
 	G.lock_edge("K", "A", MissionGraph.LockType.ENEMIES_CLEARED)
 	
-	G.lock_edge("K", "C", MissionGraph.LockType.ENEMIES_CLEARED)
-	G.lock_edge("C", "K", MissionGraph.LockType.ENEMIES_CLEARED)
+	G.lock_edge("A", "C", MissionGraph.LockType.ENEMIES_CLEARED)
+	G.lock_edge("C", "A", MissionGraph.LockType.FREE)
 	
 	G.lock_edge("C", "B", MissionGraph.LockType.ENEMIES_CLEARED)
 	G.lock_edge("B", "C", MissionGraph.LockType.ENEMIES_CLEARED)
