@@ -202,11 +202,15 @@ static func _generate_centers(
 	all_positions: Array[Vector2i],
 	rng: RandomNumberGenerator
 ) -> Array[Vector2i]:
-	var centers: Array[Vector2i] = []
 
-	for i in VORONOI_CENTERS:
-		var idx: int = rng.randi_range(0, all_positions.size() - 1)
-		centers.append(all_positions[idx])
+	var positions: Array[Vector2i] = all_positions.duplicate()
+	positions.shuffle()
+
+	var centers: Array[Vector2i] = []
+	var num_center: int = min(VORONOI_CENTERS, positions.size())
+	
+	for i in range(num_center):
+		centers.append(positions[i])
 
 	return centers
 

@@ -31,7 +31,7 @@ func expand(G:MissionGraph, budget:int) -> void:
 			for rule in rules:
 				if _match(node, rule.get("match", {})):
 					
-					var t : Dictionary[String, MissionNode] = _apply_rule(G, k, rule)
+					var t: Dictionary[String, MissionNode] = _apply_rule(G, k, rule)
 					to_elaborate.merge(t)
 					
 			to_elaborate.erase(k)

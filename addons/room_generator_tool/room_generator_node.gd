@@ -4,6 +4,8 @@ extends Node
 
 @export var seed: int = 1
 @export var save_path: String = "res://generated_rooms/room.tscn"
+@export var size_profile: RoomSizeProfile
+@export var traversal_profile: PlayerTraversalProfile
 
 var _last_generated: RoomTemplateMeta = null
 
@@ -15,16 +17,20 @@ var _last_generated: RoomTemplateMeta = null
 func generate() -> RoomTemplateMeta:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
-
+	
+	if size_profile == null:
+		size_profile = RoomSizeProfile.new()
+	
+	if traversal_profile == null:
+		traversal_profile = PlayerTraversalProfile.new()
 	# --------------------------
 	# Context
 	# --------------------------
-	var size_profile := RoomSizeProfile.new()
+
 	var room_picker := RoomSizePicker.new(size_profile, rng)
 	var size := room_picker.pick()
 
 	var operator_registry := OperatorRegistry.new()
-	var traversal_profile := PlayerTraversalProfile.new()
 
 	var context := LayoutGenomaContext.new(
 		size_profile,

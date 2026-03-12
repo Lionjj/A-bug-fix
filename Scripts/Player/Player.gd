@@ -246,7 +246,8 @@ func get_max_jumps() -> int:
 
 func record_ability(ability: int) -> bool:
 	ability_component.grant(ability)
-	print(ability_component.has(ability))
+	var ability_name: String = Abilities.to_lable(ability)
+	hud.show_powerup("Hai ottenuto: " + ability_name)
 	return true
 
 func try_jump() -> bool:

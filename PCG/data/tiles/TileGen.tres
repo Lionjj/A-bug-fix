@@ -571,7 +571,6 @@ texture = ExtResource("1_ntenk")
 20:3/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 20:3/0/custom_data_0 = true
 0:0/0 = 0
-0:0/0/custom_data_1 = "wfc_air"
 
 [sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_1vr8j"]
 scenes/1/scene = ExtResource("4_h7tes")

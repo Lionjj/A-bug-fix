@@ -48,9 +48,6 @@ const DIVERSITY_MIN_FACTOR: float = 0.6
 ## Sigma della gaussiana per il matching di difficoltà (più alto = più permissivo).
 const DIFF_SIGMA: float = 1.6
 
-## Bonus se sia nodo che template sono “abilità-centrici”.
-const SKILL_BONUS: float = 1.15
-
 ## Peso minimo per evitare zeri assoluti nel picker.
 const MIN_WEIGHT: float = 0.0001
 
@@ -154,9 +151,9 @@ func pick(
 	# Pass 2: fallback minimo (solo ability gating)
 	# ------------------------------------------------------------
 	## Usato quando i vincoli semantici/connector/diff rendono vuoto il set.
-	## Evita hard-fail del PCG: meglio una stanza “meno ideale” che null.
+	## Evita hard-fail: meglio una stanza “meno ideale” che null.
 	if weights.is_empty():
-		weights = _build_fallback_weights_ability_only(context, keys, node)
+		return _fallback_pick_ability_only(context, keys, node)
 
 	## Fail-safe estremo: se ancora vuoto, prova a restituire la prima scena.
 	if weights.is_empty():
@@ -244,7 +241,6 @@ func _eligible_info_or_null(
 ## - cover: qualità del match dei connettori richiesti (0..1).
 ## - w_base: bias manuale del template.
 ## - w_diff: match di difficoltà con gaussiana.
-## - w_skill: bonus se sia nodo che template sono “abilità-centrici”.
 ## - w_div: penalità per ripetizione ravvicinata dello stesso ruolo (kind).
 func _score_candidate(
 	context: RoomAssemblerContext,
@@ -257,14 +253,13 @@ func _score_candidate(
 
 	var w_base: float = info.base_weight
 	var w_diff: float = _difficulty_weight(info.difficulty, node_diff)
-	var w_skill: float = _skill_bonus(node, info)
 
 	## Ruolo primario per diversità: kind del template.
 	var primary_role: int = int(info.kind)
 	var w_div: float = _diversity_factor(primary_role)
 
 	## Nota: shaping non lineare (pow) per amplificare differenze.
-	return w_base * pow(cover, cover) * w_diff * w_skill * w_div
+	return w_base * pow(cover, cover) * w_diff * w_div
 
 
 ## Calcola coverage connettori richiesti dal nodo, derivati dalla posizione
@@ -280,30 +275,21 @@ func _coverage_or_default(
 	return RoomTemplateRules.connectors_coverage(info, need_dirs)
 
 
-## Bonus sinergico: se nodo e template hanno entrambi requisiti di abilità.
-func _skill_bonus(node: MissionNode, info: RoomTemplateInfo) -> float:
-	if node.requires.is_empty():
-		return NO_BONUS
-	if info.requires.is_empty():
-		return NO_BONUS
-	return SKILL_BONUS
-
-
-## Fallback: costruisce pesi uniformi considerando solo l’ability gating.
+## Fallback: Per la scelta dei tempalte
 ## Ignora compatibilità semantica e connettori (modalità “non bloccare il PCG”).
-func _build_fallback_weights_ability_only(
+func _fallback_pick_ability_only(
 	context: RoomAssemblerContext,
 	keys: Array[String],
 	node: MissionNode
-) -> Dictionary[String, float]:
+) -> PackedScene:
 
-	var weights: Dictionary[String, float] = {}
+	var candidates: Array[String] = []
 
-	for key: String in keys:
+	for key in keys:
 		if context.catalog.is_banned(key):
 			continue
 
-		var info: RoomTemplateInfo = context.catalog.info_of_key(key)
+		var info = context.catalog.info_of_key(key)
 		if info == null:
 			continue
 
@@ -314,9 +300,13 @@ func _build_fallback_weights_ability_only(
 		):
 			continue
 
-		weights[key] = FALLBACK_MIN_WEIGHT
+		candidates.append(key)
 
-	return weights
+	if candidates.is_empty():
+		return context.catalog.get_scene(keys[0])
+
+	var k = candidates[context.rng.randi() % candidates.size()]
+	return context.catalog.get_scene(k)
 
 
 ## Esegue la pick pesata, restituisce la scena e aggiorna la diversità.

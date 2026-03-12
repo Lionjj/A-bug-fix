@@ -3,6 +3,7 @@ extends CanvasLayer
 @onready var h_container : HBoxContainer = $Root/Margin/TopBar/LeftGroup/HeartsContainer
 @onready var obj_label : Label = $Root/Margin/TopBar/ObjectiveLabel
 @onready var keys_label: Label = $Root/Margin/TopBar/LeftGroup/KeyUI/KeysLabel
+@onready var powerup_label: Label = $Root/Margin/TopBar/PowerUpLable
 var heart_scene = preload("res://Scenes/GUI/Heart.tscn")
 
 
@@ -61,3 +62,22 @@ func _on_item_quantity_changed(id: ItemRegistry.ID, quantity: int) -> void:
 
 func _refresh(_id := &"") -> void:
 	obj_label.text = ObjectiveManager.current_objective_text()
+
+func show_powerup(text: String) -> void:
+	powerup_label.text = text
+	powerup_label.visible = true
+	powerup_label.modulate.a = 0.0
+	powerup_label.scale = Vector2(0.8, 0.8)
+
+	var tween := create_tween()
+
+	tween.tween_property(powerup_label, "modulate:a", 1.0, 0.5)
+	tween.parallel().tween_property(powerup_label, "scale", Vector2.ONE, 0.5)
+
+	tween.tween_interval(2.0)
+
+	tween.tween_property(powerup_label, "modulate:a", 0.0, 0.4)
+
+	tween.finished.connect(func():
+		powerup_label.visible = false
+	)

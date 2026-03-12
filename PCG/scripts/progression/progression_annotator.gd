@@ -60,5 +60,6 @@ static func annotate(graph: MissionGraph, initial_abilities: Array) -> void:
 				"id": n_id,
 				"abilities": abilities.duplicate()
 			})
+			
 	for n in graph.nodes.values():
 		print(n.id, " -> ", n.logical_abilities_before)

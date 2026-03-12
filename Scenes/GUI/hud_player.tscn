@@ -63,6 +63,20 @@ theme_override_fonts/font = ExtResource("2_aix77")
 theme_override_font_sizes/font_size = 24
 vertical_alignment = 1
 
+[node name="Spacer2" type="Control" parent="Root/Margin/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PowerUpLable" type="Label" parent="Root/Margin/TopBar"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_aix77")
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Spacer" type="Control" parent="Root/Margin/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3

@@ -85,6 +85,7 @@ static func run(seed: int, budget_nodes: int, abilities: Array[Abilities.Ability
 		effective_seed = rng.seed
 	
 	rng.seed = effective_seed
+	seed(rng.seed)
 	r.rng = rng
 	r.graph = G
 	r.seed = effective_seed
