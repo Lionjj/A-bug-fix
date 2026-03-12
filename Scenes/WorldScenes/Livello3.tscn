@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=4 uid="uid://b3weq0mpdg5xc"]
+[gd_scene load_steps=29 format=4 uid="uid://b3weq0mpdg5xc"]
 
 [ext_resource type="Script" uid="uid://dvqftyh4ruo7j" path="res://Scripts/Scene/livelli.gd" id="1_fa0jr"]
 [ext_resource type="Script" uid="uid://dop5cqm3s5ppl" path="res://Scripts/Quest/Objective.gd" id="2_xy16t"]
@@ -15,6 +15,9 @@
 [ext_resource type="Script" uid="uid://0gsttie53bv7" path="res://Scripts/word_animation.gd" id="12_oujjk"]
 [ext_resource type="PackedScene" uid="uid://5mm4ltm5jn3f" path="res://Scenes/Interactable/checkpoint.tscn" id="15_pwkl7"]
 [ext_resource type="Script" uid="uid://dqecgl7sd6h7l" path="res://Scripts/RestManager.gd" id="15_yel0x"]
+[ext_resource type="Script" uid="uid://cwx0fq7rrtpkx" path="res://PCG/util/camera_2d.gd" id="16_wxwt0"]
+[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="17_vjwob"]
+[ext_resource type="PackedScene" uid="uid://b3qjste5bjucc" path="res://Scenes/Player.tscn" id="18_vjwob"]
 
 [sub_resource type="Resource" id="Resource_xy16t"]
 script = ExtResource("2_xy16t")
@@ -260,4 +263,38 @@ dialogue_lines = Array[String](["Ci siamo basta solo arrivare in cima", "Corremp
 script = ExtResource("15_yel0x")
 
 [node name="Checkpoint" parent="." instance=ExtResource("15_pwkl7")]
-position = Vector2(900, 586)
+position = Vector2(900, 564)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+physics_interpolation_mode = 1
+zoom = Vector2(2, 2)
+editor_draw_limits = true
+script = ExtResource("16_wxwt0")
+
+[node name="PhantomCameraHost" type="Node" parent="Camera2D"]
+process_priority = 300
+process_physics_priority = 300
+script = ExtResource("17_vjwob")
+metadata/_custom_type_script = "uid://bd046eokvcnu2"
+
+[node name="Player" parent="." instance=ExtResource("18_vjwob")]
+
+[connection signal="body_entered" from="TileMap_Foreground/LaserTrap" to="TileMap_Foreground/LaserTrap" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330294" to="TileMap_Foreground/@Area2D@330294" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330295" to="TileMap_Foreground/@Area2D@330295" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330296" to="TileMap_Foreground/@Area2D@330296" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330297" to="TileMap_Foreground/@Area2D@330297" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330298" to="TileMap_Foreground/@Area2D@330298" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330301" to="TileMap_Foreground/@Area2D@330301" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330302" to="TileMap_Foreground/@Area2D@330302" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330303" to="TileMap_Foreground/@Area2D@330303" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330304" to="TileMap_Foreground/@Area2D@330304" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330305" to="TileMap_Foreground/@Area2D@330305" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330306" to="TileMap_Foreground/@Area2D@330306" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330307" to="TileMap_Foreground/@Area2D@330307" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330308" to="TileMap_Foreground/@Area2D@330308" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330309" to="TileMap_Foreground/@Area2D@330309" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330311" to="TileMap_Foreground/@Area2D@330311" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330312" to="TileMap_Foreground/@Area2D@330312" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330314" to="TileMap_Foreground/@Area2D@330314" method="_on_body_entered"]
+[connection signal="body_entered" from="TileMap_Foreground/@Area2D@330315" to="TileMap_Foreground/@Area2D@330315" method="_on_body_entered"]

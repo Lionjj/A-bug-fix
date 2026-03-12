@@ -13,7 +13,6 @@ var sprite_2d_name: String = "Sprite2D"
 func _ready() -> void:
 	spawn_offset = _compute_anchor_offset()
 	footprint_width_cells = compute_footprint_cells()
-	hide_entity()
 
 func show_entity() -> void:
 	visible = true

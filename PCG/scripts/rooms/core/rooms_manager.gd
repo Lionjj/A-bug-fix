@@ -299,6 +299,9 @@ func _add_items(room: RoomTemplateMeta) -> void:
 		return
 
 	items_spawner.istanziate_in_position(item_spawn_points, items, room, item_state, rng)
+	
+	for item: ItemEntity in item_state.items_references:
+		item.hide_entity()
 
 	item_state.items = items
 	item_state.item_spawn_points = item_spawn_points

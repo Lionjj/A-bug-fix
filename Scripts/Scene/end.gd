@@ -4,20 +4,22 @@ extends Node2D
 @onready var camera_2d: Camera2D = $Camera2D
 @export var unlock_on_quest: StringName
 
-var palyer_cam: Camera2D 
+@onready var palyer_cam: Camera2D = $"../Camera2D"
 
 
 func _ready() -> void:
-	if not GameManager.player:
-		var player = get_tree().current_scene.get_node_or_null("Player")
+	#if not GameManager.player:
+		#var player = get_tree().current_scene.get_node_or_null("Player")
+		#
+		#if player: 
+			#palyer_cam = player.get_node_or_null("Camera2D")
+	#else:
+		#palyer_cam = GameManager.player.get_node_or_null("Camera2D")
+		#
+	#if not palyer_cam:
+		#return
+	
 		
-		if player: 
-			palyer_cam = player.get_node_or_null("Camera2D")
-	else:
-		palyer_cam = GameManager.player.get_node_or_null("Camera2D")
-		
-	if not palyer_cam:
-		return
 		
 	camera_2d.enabled = false
 	if ObjectiveManager.has_signal("quest_completed"):
