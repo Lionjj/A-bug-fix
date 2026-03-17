@@ -26,6 +26,7 @@ var enemy_directive: EnemyDirective = EnemyDirective.new()
 ## Direttive logiche usate per gestire lo spawn delle trappole.
 var trap_directive: TrapDirective = TrapDirective.new()
 
-func _init(_id: String, _kind: RoomTags.Tag): 
-	id=_id
-	kind=_kind
+func _init(_id: String, _kind: RoomTags.Tag, _diff: int = 1): 
+	id = _id
+	kind = _kind
+	diff = _diff

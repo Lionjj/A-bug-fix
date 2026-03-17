@@ -141,8 +141,8 @@ func _ready() -> void:
 		# Popola contenuti stanza
 		_add_items(room)
 		_add_traps(room)
-		_add_enemies(room)
 		_add_doors(room)
+		_add_enemies(room)
 		_add_decos(room)
 
 

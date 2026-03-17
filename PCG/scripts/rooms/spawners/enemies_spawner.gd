@@ -42,8 +42,9 @@ const PICK_SAFETY_MAX_ITERS: int = 10_000
 ## Distanza minima iniziale (in pixel) tra nemici spawnati.
 const MIN_DISTANCE_PX: float = 48.0
 
-## Distanza minima dai connettori
-const MIN_DISTANCE_FROM_CONNECTOR_PX: float = 96.0
+## Distanza minima dai connettori, è consigliabile teenere questo valore guale o poco maggiore
+## dello spessore dei muri.
+const MIN_DISTANCE_FROM_CONNECTOR: int = 3
 
 ## Limiti assoluti di budget.
 const MIN_BUDGET: int = 0
@@ -172,15 +173,6 @@ func find_free_slot_index(
 
 		if is_blocked:
 			continue
-		
-		for connector in connectors.values():
-			if connector.global_position.distance_to(world_pos) < MIN_DISTANCE_FROM_CONNECTOR_PX:
-				is_blocked = true
-				break
-
-		if is_blocked:
-			continue
-
 
 		return i
 
@@ -250,6 +242,22 @@ func istanziate_in_position(
 	room_enemy_state: RoomEnemyState,
 	rng: RandomNumberGenerator
 ) -> void:
+	
+	# Elimina le celle troppo vicine agli ingressi/uscite
+	slots = slots.filter(
+		func(pos):
+			for connector: RoomConnector in room.get_connectors().values():
+				var cell: Vector2i = room.collision.local_to_map(
+					room.collision.to_local(connector.global_position)
+				)
+				
+				if pos.distance_to(cell) <= MIN_DISTANCE_FROM_CONNECTOR:
+					return false
+			
+			return true
+	)
+				
+		
 	for enemy_id: EnemiesRegistry.ID in enemies:
 		spawn_enemy_at_free_slot(room, room_enemy_state, enemy_id, slots, rng)
 

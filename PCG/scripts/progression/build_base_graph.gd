@@ -5,10 +5,10 @@ static func build_base() -> MissionGraph:
 	## Main path
 	G.add_node(MissionNode.new("S", RoomTags.Tag.START))
 	G.add_node(MissionNode.new("H", RoomTags.Tag.HUB))
-	G.add_node(MissionNode.new("A", RoomTags.Tag.ARENA))
+	G.add_node(MissionNode.new("A", RoomTags.Tag.ARENA, 2))
 	G.add_node(MissionNode.new("K", RoomTags.Tag.KEY_ROOM))
-	G.add_node(MissionNode.new("C", RoomTags.Tag.CHALLENGE))
-	G.add_node(MissionNode.new("B", RoomTags.Tag.BOSS))
+	G.add_node(MissionNode.new("C", RoomTags.Tag.CHALLENGE, 2))
+	G.add_node(MissionNode.new("B", RoomTags.Tag.BOSS, 3))
 	
 	## Ability granted/required
 	(G.nodes["K"] as MissionNode).grants.append(Abilities.Ability.DOUBLE_JUMP)
