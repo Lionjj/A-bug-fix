@@ -287,6 +287,7 @@ script = ExtResource("1_53xta")
 
 [node name="Player" parent="." instance=ExtResource("2_5f545")]
 position = Vector2(603, 307)
+can_fall = true
 movement_enabled = true
 
 [node name="BakgroundAudio" type="AudioStreamPlayer" parent="."]

@@ -24,7 +24,7 @@ class_name RoomTemplateCatalog
 # ---------------------------------------------------------------------------
 
 ## Path di default per il caricamento dei template stanza.
-const DEFAULT_PATH: String = "res://PCG/scenes/rooms/tmpl"
+const DEFAULT_PATH: String = "res://PCG/scenes/rooms/tmpl/"
 
 ## Estensione di default per i template.
 const DEFAULT_EXTENSION: String = "tscn"
@@ -241,30 +241,42 @@ func _load_templates_from_dir(
 ) -> Dictionary[String, PackedScene]:
 
 	var out: Dictionary[String, PackedScene] = {}
+	
+	var dir: PackedStringArray = ResourceLoader.list_directory(path)
 
-	var dir: DirAccess = DirAccess.open(path)
-	if dir == null:
+	if dir == null or dir.is_empty():
 		push_error("%s: impossibile aprire dir: %s" % [LOG_PREFIX, path])
 		return out
-
-	dir.list_dir_begin()
-	var file_name: String = dir.get_next()
-
-	var safety: int = DIR_LOOP_SAFETY_MAX
-	while file_name != EMPTY_STRING and safety > 0:
-		safety -= 1
-
-		## Fail-first: scarta subito sottodirectory o estensione non compatibile.
-		if dir.current_is_dir() or file_name.get_extension() != extension:
-			file_name = dir.get_next()
+	
+	for scene in dir:
+		var file_to_load: String = path.path_join(scene)
+		var current: PackedScene = ResourceLoader.load(file_to_load)
+		
+		if current == null:
 			continue
+		
+		var file_name: String = scene.get_basename().to_upper()
+		
+		out[file_name] = current
 
-		var full_path: String = path.path_join(file_name)
-		out[file_name.get_basename().to_upper()] = load(full_path)
-
-		file_name = dir.get_next()
-
-	if safety <= 0:
-		push_error("%s: loop safety trigger in _load_templates_from_dir(%s)" % [LOG_PREFIX, path])
+	#dir.list_dir_begin()
+	#var file_name: String = dir.get_next()
+#
+	#var safety: int = DIR_LOOP_SAFETY_MAX
+	#while file_name != EMPTY_STRING and safety > 0:
+		#safety -= 1
+#
+		### Fail-first: scarta subito sottodirectory o estensione non compatibile.
+		#if dir.current_is_dir() or file_name.get_extension() != extension:
+			#file_name = dir.get_next()
+			#continue
+#
+		#var full_path: String = path.path_join(file_name)
+		#out[file_name.get_basename().to_upper()] = load(full_path)
+#
+		#file_name = dir.get_next()
+#
+	#if safety <= 0:
+		#push_error("%s: loop safety trigger in _load_templates_from_dir(%s)" % [LOG_PREFIX, path])
 
 	return out

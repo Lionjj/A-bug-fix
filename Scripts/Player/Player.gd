@@ -35,6 +35,7 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 @export var wall_jump_smooth_time := 0.12
 @export var wall_jump_accel := 9000.0  # quanto velocemente raggiunge il target (morbidezza)
 @export var coyote_time: float = 0.15  # In secondi
+@export var can_fall: bool = false
 
 var was_on_wall := false
 var was_on_floor := false

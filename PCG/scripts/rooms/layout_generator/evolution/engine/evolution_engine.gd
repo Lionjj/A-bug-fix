@@ -70,7 +70,6 @@ func evolve() -> Genome:
 
 
 func _evaluate(population: Array[Genome]) -> Array[EvaluationResult]:
-	var t0 := Time.get_ticks_msec()
 	var scored: Array[EvaluationResult] = []
 
 	for genome in population:
@@ -86,6 +85,5 @@ func _evaluate(population: Array[Genome]) -> Array[EvaluationResult]:
 	scored.sort_custom(func(a, b):
 		return a.score > b.score
 	)
-	print("EVALUATE TIME:", Time.get_ticks_msec() - t0, "ms")
 
 	return scored

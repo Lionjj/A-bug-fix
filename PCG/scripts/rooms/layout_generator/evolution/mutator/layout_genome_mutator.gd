@@ -87,13 +87,10 @@ func mutate(genome: Genome) -> Genome:
 ## Mutazione dei parametri di un gene secondario
 func _mutate_param(g: LayoutGenome) -> void:
 	
-	if g.genes.size() <= FIRST_MUTABLE_INDEX:
+	if g.genes.is_empty():
 		return
 	
-	var idx: int = rng.randi_range(
-		FIRST_MUTABLE_INDEX,
-		g.genes.size() - 1
-	)
+	var idx: int = rng.randi_range(0, g.genes.size() - 1)
 	
 	var gene: LayoutGene = g.genes[idx]
 	

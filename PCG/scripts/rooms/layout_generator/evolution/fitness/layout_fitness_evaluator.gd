@@ -18,7 +18,6 @@ func evaluate(genome: Genome) -> float:
 	if g == null:
 		return -INF
 	print("GENE COUNT:", genome.genes.size())
-	var t0 := Time.get_ticks_msec()
 
 	var validator_context: LayoutValidatorContext = LayoutPhenotypeBuilder.build(g, context)
 	if validator_context.mask == null:
@@ -29,7 +28,6 @@ func evaluate(genome: Genome) -> float:
 		return -INF
 	
 	var score: float = LayoutScorer.score(validator_context.mask)
-	print("Single genome evaluate:", Time.get_ticks_msec() - t0, "ms")
 	return score
 
 static func debug_print_with_connectors(
